@@ -1,3 +1,94 @@
-/* You can add global styles to this file, and also import other style files */
-
+@import '@fontsource-variable/inter';
 @import 'tailwindcss';
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: 'resyst-light';
+  default: true;
+  prefersdark: true;
+  color-scheme: 'light';
+  --color-base-100: #f7f9fa;
+  --color-base-200: #f1f2f4;
+  --color-base-300: #e4e4e4;
+  --color-base-content: #354464;
+  --color-primary: #354464;
+  --color-primary-content: #ffffff;
+  --color-secondary: #8fa0b8;
+  --color-secondary-content: oklch(12% 0.042 264.695);
+  --color-accent: hsl(155 30% 94%);
+  --color-accent-content: oklch(27% 0.046 192.524);
+  --color-neutral: #4e5c7b;
+  --color-neutral-content: oklch(98% 0 0);
+  --color-info: #89e0eb;
+  --color-info-content: oklch(30% 0.056 229.695);
+  --color-success: #26c485;
+  --color-success-content: oklch(26% 0.065 152.934);
+  --color-warning: oklch(75% 0.183 55.934);
+  --color-warning-content: oklch(26% 0.079 36.259);
+  --color-error: #de6449;
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 1rem;
+  --radius-field: 2rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1.5px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'resyst-dark';
+  default: false;
+  prefersdark: true;
+  color-scheme: 'dark';
+  --color-base-100: #1e2d45;
+  --color-base-200: #243652;
+  --color-base-300: #354464;
+  --color-base-content: #ffffff;
+  --color-primary: #a4c3e7;
+  --color-primary-content: #354464;
+  --color-secondary: #4e5c7b;
+  --color-secondary-content: #f4f7fb;
+  --color-accent: #c8ddf0;
+  --color-accent-content: #1e2d45;
+  --color-neutral: #687897;
+  --color-neutral-content: #f4f7fb;
+  --color-info: #89e0eb;
+  --color-info-content: oklch(30% 0.056 229.695);
+  --color-success: #26c485;
+  --color-success-content: oklch(26% 0.065 152.934);
+  --color-warning: oklch(75% 0.183 55.934);
+  --color-warning-content: oklch(26% 0.079 36.259);
+  --color-error: #de6449;
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 1rem;
+  --radius-field: 2rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1.5px;
+  --depth: 1;
+  --noise: 0;
+}
+
+body {
+  font-family: 'Inter Variable', sans-serif;
+  scroll-behavior: smooth;
+}
+
+@utility input {
+  @apply rounded-sm bg-base-200 border border-secondary focus-within:outline-none transition-colors duration-200 ease-in-out h-12.5 w-full placeholder:text-secondary placeholder:text-xs;
+}
+
+@utility btn {
+  @apply shadow-xs font-normal py-5;
+}
+
+code {
+  @apply text-error;
+}
+
+.fieldset-legend , .label{
+  @apply opacity-70 font-normal text-sm;
+}

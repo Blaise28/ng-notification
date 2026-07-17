@@ -1,0 +1,68 @@
+<section class="min-h-screen grid grid-cols-12 bg-base-100">
+  <section class="flex flex-col items-center justify-center col-span-12 lg:col-span-6 text-primary z-1 p-6">
+    <div class="max-w-md w-full mx-auto">
+      <div class="flex flex-col gap-2 mb-8">
+        <h3 class="text-xl font-bold">Bon retour</h3>
+        <p class="text-secondary text-sm">Connectez-vous pour accéder à Notification.</p>
+      </div>
+
+      @if (errorMessage(); as message) {
+        <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+      }
+
+      <form (submit)="signInWithEmail($event)">
+        <fieldset class="fieldset w-full">
+          <legend class="fieldset-legend font-medium text-sm text-primary/90">
+            E-mail <code>*</code>
+          </legend>
+          <input
+            type="email"
+            [formField]="loginForm.email"
+            class="input"
+            placeholder="vous@exemple.com"
+            autocomplete="email"
+          />
+        </fieldset>
+        <fieldset class="fieldset w-full mt-4">
+          <legend class="fieldset-legend font-medium text-sm text-primary/90">
+            Mot de passe <code>*</code>
+          </legend>
+          <input
+            type="password"
+            [formField]="loginForm.password"
+            class="input"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+        </fieldset>
+        <div class="mt-8">
+          <button
+            [disabled]="loginForm().invalid() || submitLoginLoading()"
+            type="submit"
+            class="btn btn-primary w-full"
+          >
+            Se connecter
+            @if (submitLoginLoading()) {
+              <span class="loading loading-sm ms-2"></span>
+            }
+          </button>
+        </div>
+        <p class="text-xs mt-5 text-center">
+          <span class="text-secondary me-1">Pas encore de compte ?</span>
+          <a routerLink="/register" class="text-primary font-semibold hover:underline">S'inscrire</a>
+        </p>
+      </form>
+    </div>
+  </section>
+  <section
+    class="hidden lg:flex col-span-6 bg-secondary/30 flex-col justify-center items-center gap-6 relative"
+  >
+    <div class="absolute top-3 right-4">
+      <app-theme-controller />
+    </div>
+    <h2 class="text-primary font-bold text-2xl px-8 text-center">Centre de notifications</h2>
+    <p class="text-center max-w-sm text-primary/60 px-8 text-sm">
+      Gérez vos alertes et votre compte en toute simplicité.
+    </p>
+  </section>
+</section>
