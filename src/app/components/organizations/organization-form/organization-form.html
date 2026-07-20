@@ -1,0 +1,106 @@
+<section class="p-6 max-w-2xl mx-auto">
+  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
+    {{ isEdit() ? "Modifier l'organisation" : 'Nouvelle organisation' }}
+  </h1>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else {
+    <form (submit)="submit($event)" class="flex flex-col gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
+        <input
+          type="text"
+          class="input w-full"
+          [value]="organizationForm.name().value()"
+          (input)="onNameInput($any($event.target).value)"
+          required
+        />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Slug <code>*</code></legend>
+        <input
+          type="text"
+          class="input w-full"
+          [value]="organizationForm.slug().value()"
+          (input)="onSlugInput($any($event.target).value)"
+          aria-describedby="slug-hint"
+          required
+        />
+        <p id="slug-hint" class="text-xs text-base-content/60 mt-1">
+          Lettres minuscules et tirets uniquement, ex. mon-organisation
+        </p>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">URL du logo</legend>
+        <input type="url" [formField]="organizationForm.logoUrl" class="input w-full" />
+      </fieldset>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Couleur principale</legend>
+          <div class="flex items-center gap-2">
+            <input
+              type="color"
+              [formField]="organizationForm.primaryColor"
+              class="w-10 h-10 p-0 border-0"
+            />
+            <input type="text" [formField]="organizationForm.primaryColor" class="input w-full" />
+          </div>
+        </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Couleur secondaire</legend>
+          <div class="flex items-center gap-2">
+            <input
+              type="color"
+              [formField]="organizationForm.secondaryColor"
+              class="w-10 h-10 p-0 border-0"
+            />
+            <input type="text" [formField]="organizationForm.secondaryColor" class="input w-full" />
+          </div>
+        </fieldset>
+      </div>
+
+      <div
+        class="rounded-lg p-4 flex items-center justify-between"
+        [style.background-color]="organizationForm.primaryColor().value()"
+        [style.color]="previewTextColor()"
+      >
+        <span class="font-semibold">Aperçu de la marque</span>
+        <span class="text-sm">{{
+          organizationForm.name().value() || 'Nom de l’organisation'
+        }}</span>
+      </div>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">E-mail de support</legend>
+        <input type="email" [formField]="organizationForm.supportEmail" class="input w-full" />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Site web</legend>
+        <input type="url" [formField]="organizationForm.websiteUrl" class="input w-full" />
+      </fieldset>
+
+      <div class="flex gap-3 mt-4">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="organizationForm().invalid() || submitLoading()"
+        >
+          Enregistrer
+          @if (submitLoading()) {
+            <span class="loading loading-sm ms-2"></span>
+          }
+        </button>
+        <a routerLink="/organizations" class="btn btn-ghost">Annuler</a>
+      </div>
+    </form>
+  }
+</section>

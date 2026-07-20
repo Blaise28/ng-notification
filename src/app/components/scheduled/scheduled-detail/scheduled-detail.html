@@ -1,0 +1,54 @@
+<section class="p-6 max-w-2xl mx-auto">
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else if (scheduled(); as currentScheduled) {
+    <div class="flex items-center justify-between mb-6">
+      <h1 tabindex="-1" class="text-xl font-bold text-primary">
+        Envoi programmé du {{ currentScheduled.sendAt | date: 'medium' }}
+      </h1>
+      @if (currentScheduled.status === 'PENDING') {
+        <button type="button" class="btn btn-error btn-sm" (click)="confirmCancel()">
+          Annuler
+        </button>
+      }
+    </div>
+
+    <div class="card bg-base-200 mb-4">
+      <div class="card-body">
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt class="text-secondary">Statut</dt>
+            <dd class="font-medium">{{ currentScheduled.status }}</dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Canal</dt>
+            <dd class="font-medium uppercase">{{ currentScheduled.channel }}</dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Type de cible</dt>
+            <dd class="font-medium capitalize">{{ currentScheduled.targetType }}</dd>
+          </div>
+          @if (currentScheduled.errorMessage) {
+            <div>
+              <dt class="text-secondary">Erreur</dt>
+              <dd class="font-medium text-error">{{ currentScheduled.errorMessage }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+    </div>
+
+    <div class="card bg-base-200">
+      <div class="card-body">
+        <h2 class="card-title text-sm">Contenu</h2>
+        <pre class="text-xs whitespace-pre-wrap">{{ currentScheduled.payload | json }}</pre>
+      </div>
+    </div>
+
+    <a routerLink="/scheduled" class="btn btn-ghost mt-6">Retour à la liste</a>
+  }
+</section>

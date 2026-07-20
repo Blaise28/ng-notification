@@ -1,30 +1,24 @@
-<main class="min-h-screen bg-base-100 text-base-content">
-  <header class="flex items-center justify-between p-4 border-b border-base-300">
-    <h1 class="text-xl font-bold text-primary">Notification</h1>
-    <app-theme-controller />
-  </header>
-  <section class="max-w-lg mx-auto p-6 mt-10">
-    @if (user(); as currentUser) {
-      <div class="card bg-base-200 shadow-sm">
-        <div class="card-body gap-4">
-          <h2 class="card-title">Bienvenue</h2>
-          <dl class="space-y-2 text-sm">
-            <div class="flex justify-between gap-4">
-              <dt class="text-secondary">Nom</dt>
-              <dd class="font-medium">{{ currentUser.name }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-secondary">E-mail</dt>
-              <dd class="font-medium">{{ currentUser.email }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-secondary">Rôle</dt>
-              <dd class="font-medium capitalize">{{ currentUser.role }}</dd>
-            </div>
-          </dl>
-          <button type="button" class="btn btn-primary mt-4" (click)="logout()">Se déconnecter</button>
-        </div>
+<section class="max-w-lg mx-auto p-6 mt-10">
+  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-4">Tableau de bord</h1>
+  @if (user(); as currentUser) {
+    <div class="card bg-base-200 shadow-sm">
+      <div class="card-body gap-4">
+        <h2 class="card-title">Bienvenue</h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between gap-4">
+            <dt class="text-secondary">Nom</dt>
+            <dd class="font-medium">{{ currentUser.name }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-secondary">E-mail</dt>
+            <dd class="font-medium">{{ currentUser.email }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-secondary">Rôle</dt>
+            <dd class="font-medium capitalize">{{ currentUser.role }}</dd>
+          </div>
+        </dl>
       </div>
-    }
-  </section>
-</main>
+    </div>
+  }
+</section>

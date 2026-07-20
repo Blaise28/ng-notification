@@ -18,8 +18,7 @@ export interface ApiRequestOptions {
   headers?: HttpHeaders | Record<string, string | string[]>;
   context?: HttpContext;
   params?:
-    | HttpParams
-    | Record<string, string | number | boolean | readonly (string | number | boolean)[]>;
+    HttpParams | Record<string, string | number | boolean | readonly (string | number | boolean)[]>;
   reportProgress?: boolean;
   responseType?: 'json';
   withCredentials?: boolean;

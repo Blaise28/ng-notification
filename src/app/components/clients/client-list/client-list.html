@@ -1,0 +1,175 @@
+<section class="p-6 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h1 tabindex="-1" class="text-xl font-bold text-primary">Clients</h1>
+    <a routerLink="/clients/new" class="btn btn-primary gap-2">
+      <hugeicons-icon [icon]="PlusSignIcon" [size]="18" [strokeWidth]="2" />
+      Nouveau client
+    </a>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  <form
+    (submit)="$event.preventDefault(); applyFilters()"
+    class="card bg-base-200 mb-6 p-4"
+    aria-label="Filtrer les clients"
+  >
+    <div class="flex flex-wrap items-end gap-4">
+      <fieldset class="fieldset">
+        <label class="fieldset-legend text-sm" for="type-filter">Type</label>
+        <select
+          id="type-filter"
+          class="select"
+          [value]="typeFilter()"
+          (change)="typeFilter.set($any($event.target).value)"
+        >
+          <option value="">Tous</option>
+          <option value="individual">Particulier</option>
+          <option value="business">Entreprise</option>
+        </select>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm">Consentements</legend>
+        <div class="flex gap-3">
+          <label class="label gap-2">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-sm"
+              [checked]="optInSmsFilter()"
+              (change)="optInSmsFilter.set($any($event.target).checked)"
+            />
+            SMS
+          </label>
+          <label class="label gap-2">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-sm"
+              [checked]="optInWhatsappFilter()"
+              (change)="optInWhatsappFilter.set($any($event.target).checked)"
+            />
+            WhatsApp
+          </label>
+          <label class="label gap-2">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-sm"
+              [checked]="optInEmailFilter()"
+              (change)="optInEmailFilter.set($any($event.target).checked)"
+            />
+            E-mail
+          </label>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-secondary">Filtrer</button>
+    </div>
+  </form>
+
+  <div class="overflow-x-auto">
+    <table class="table">
+      <caption class="sr-only">
+        Liste des clients
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Nom</th>
+          <th scope="col">Type</th>
+          <th scope="col">Téléphone</th>
+          <th scope="col">E-mail</th>
+          <th scope="col">Consentements</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="6" class="text-center py-8">
+              <span class="loading loading-spinner"></span>
+            </td>
+          </tr>
+        } @else if (clients().length === 0) {
+          <tr>
+            <td colspan="6" class="text-center py-8 text-base-content/60">Aucun client trouvé.</td>
+          </tr>
+        } @else {
+          @for (client of clients(); track client.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/clients', client.id]" class="link link-primary font-medium">
+                  {{ client.displayName }}
+                </a>
+              </td>
+              <td>
+                <span class="badge badge-soft">
+                  {{ client.type === 'business' ? 'Entreprise' : 'Particulier' }}
+                </span>
+              </td>
+              <td>{{ client.phoneE164 }}</td>
+              <td>{{ client.email || '—' }}</td>
+              <td>
+                <div class="flex gap-1">
+                  @if (client.optInSms) {
+                    <span class="badge badge-success badge-sm">SMS</span>
+                  }
+                  @if (client.optInWhatsapp) {
+                    <span class="badge badge-success badge-sm">WhatsApp</span>
+                  }
+                  @if (client.optInEmail) {
+                    <span class="badge badge-success badge-sm">E-mail</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="flex justify-end gap-2">
+                  <a
+                    [routerLink]="['/clients', client.id, 'edit']"
+                    class="btn btn-ghost btn-sm btn-square"
+                    [attr.aria-label]="'Modifier ' + client.displayName"
+                  >
+                    <hugeicons-icon [icon]="Edit02Icon" [size]="16" [strokeWidth]="1.7" />
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm btn-square text-error"
+                    [attr.aria-label]="'Supprimer ' + client.displayName"
+                    [disabled]="deletingId() === client.id"
+                    (click)="confirmDelete(client)"
+                  >
+                    <hugeicons-icon [icon]="Delete02Icon" [size]="16" [strokeWidth]="1.7" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (totalPages() > 1) {
+    <nav aria-label="Pagination" class="flex justify-center gap-2 mt-6">
+      <button
+        type="button"
+        class="btn btn-sm"
+        [disabled]="page() === 1"
+        (click)="goToPage(page() - 1)"
+      >
+        Précédent
+      </button>
+      <span class="btn btn-sm btn-ghost pointer-events-none" aria-current="page">
+        Page {{ page() }} / {{ totalPages() }}
+      </span>
+      <button
+        type="button"
+        class="btn btn-sm"
+        [disabled]="page() === totalPages()"
+        (click)="goToPage(page() + 1)"
+      >
+        Suivant
+      </button>
+    </nav>
+  }
+</section>

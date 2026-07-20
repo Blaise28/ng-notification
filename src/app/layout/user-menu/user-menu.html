@@ -1,0 +1,43 @@
+@if (user(); as currentUser) {
+  <div class="dropdown dropdown-end">
+    <button
+      type="button"
+      class="btn btn-ghost btn-circle"
+      aria-haspopup="menu"
+      [attr.aria-expanded]="open()"
+      aria-label="Menu utilisateur"
+      (click)="toggle()"
+    >
+      <hugeicons-icon [icon]="UserIcon" [size]="20" [strokeWidth]="1.7" />
+    </button>
+    @if (open()) {
+      <div
+        role="menu"
+        class="dropdown-content menu bg-base-200 rounded-box z-10 mt-3 w-64 p-3 shadow-sm"
+      >
+        <div class="px-2 py-1">
+          <p class="font-medium">{{ currentUser.name }}</p>
+          <p class="text-sm text-base-content/70">{{ currentUser.email }}</p>
+          <p class="text-xs uppercase tracking-wide text-base-content/50 mt-1">
+            {{ currentUser.role }}
+          </p>
+        </div>
+        <div class="divider my-1" role="separator"></div>
+        <div class="flex items-center justify-between px-2 py-1">
+          <span class="text-sm" id="theme-toggle-label">Thème</span>
+          <app-theme-controller aria-labelledby="theme-toggle-label" />
+        </div>
+        <div class="divider my-1" role="separator"></div>
+        <button
+          type="button"
+          role="menuitem"
+          class="btn btn-ghost justify-start gap-2"
+          (click)="logout()"
+        >
+          <hugeicons-icon [icon]="Logout01Icon" [size]="18" [strokeWidth]="1.7" />
+          <span>Se déconnecter</span>
+        </button>
+      </div>
+    }
+  </div>
+}

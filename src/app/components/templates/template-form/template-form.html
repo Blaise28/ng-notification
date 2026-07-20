@@ -1,0 +1,136 @@
+<section class="p-6 max-w-3xl mx-auto">
+  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
+    {{ isEdit() ? 'Modifier le modèle' : 'Nouveau modèle' }}
+  </h1>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else {
+    <form (submit)="submit($event)" class="flex flex-col gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Organisation <code>*</code></legend>
+        @if (isEdit()) {
+          <p class="input w-full items-center bg-base-200">{{ selectedOrganizationName() }}</p>
+        } @else {
+          <select [formField]="templateForm.organizationId" class="select w-full">
+            <option value="" disabled>Sélectionner…</option>
+            @for (organization of organizations(); track organization.id) {
+              <option [value]="organization.id">{{ organization.name }}</option>
+            }
+          </select>
+        }
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
+        <input
+          type="text"
+          class="input w-full"
+          [value]="templateForm.name().value()"
+          (input)="onNameInput($any($event.target).value)"
+          required
+        />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Slug <code>*</code></legend>
+        <input
+          type="text"
+          class="input w-full"
+          [value]="templateForm.slug().value()"
+          (input)="onSlugInput($any($event.target).value)"
+          required
+        />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
+        <select [formField]="templateForm.channel" class="select w-full">
+          <option value="email">E-mail</option>
+          <option value="sms">SMS</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="multi">Multi-canal</option>
+        </select>
+      </fieldset>
+
+      @let channel = templateForm.channel().value();
+
+      @if (channel === 'email' || channel === 'multi') {
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Sujet (e-mail)</legend>
+          <input type="text" [formField]="templateForm.subject" class="input w-full" />
+        </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Corps HTML</legend>
+          <textarea [formField]="templateForm.htmlBody" class="textarea w-full" rows="5"></textarea>
+        </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Corps texte brut</legend>
+          <textarea [formField]="templateForm.textBody" class="textarea w-full" rows="3"></textarea>
+        </fieldset>
+      }
+
+      @if (channel === 'sms' || channel === 'multi') {
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Corps SMS</legend>
+          <textarea [formField]="templateForm.smsBody" class="textarea w-full" rows="3"></textarea>
+        </fieldset>
+      }
+
+      @if (channel === 'whatsapp' || channel === 'multi') {
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">
+            SID du modèle de contenu WhatsApp
+          </legend>
+          <input type="text" [formField]="templateForm.whatsappContentSid" class="input w-full" />
+        </fieldset>
+      }
+
+      <fieldset class="fieldset">
+        <label class="label gap-2">
+          <input type="checkbox" [formField]="templateForm.isDefault" class="checkbox" />
+          Modèle par défaut pour ce canal
+        </label>
+      </fieldset>
+
+      <div class="card bg-base-200">
+        <div class="card-body">
+          <h2 class="card-title text-sm">Aperçu (données d'exemple)</h2>
+          <p class="text-xs text-base-content/60 mb-2">
+            Variables disponibles :
+            @for (token of variableTokens; track token) {
+              <code class="mx-0.5">{{ '{{' + token + '}}' }}</code>
+            }
+          </p>
+          @if (channel === 'email' || channel === 'multi') {
+            <p class="text-sm font-medium">{{ previewSubject() || '(sans sujet)' }}</p>
+            <div class="text-sm whitespace-pre-wrap border-t border-base-300 pt-2 mt-2">
+              {{ previewHtmlBody() || '(vide)' }}
+            </div>
+          }
+          @if (channel === 'sms' || channel === 'multi') {
+            <p class="text-sm whitespace-pre-wrap">{{ previewSmsBody() || '(vide)' }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="templateForm().invalid() || submitLoading()"
+        >
+          Enregistrer
+          @if (submitLoading()) {
+            <span class="loading loading-sm ms-2"></span>
+          }
+        </button>
+        <a routerLink="/templates" class="btn btn-ghost">Annuler</a>
+      </div>
+    </form>
+  }
+</section>

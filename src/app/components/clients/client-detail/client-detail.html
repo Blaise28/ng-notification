@@ -1,0 +1,77 @@
+<section class="p-6 max-w-2xl mx-auto">
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else if (client(); as currentClient) {
+    <div class="flex items-center justify-between mb-6">
+      <h1 tabindex="-1" class="text-xl font-bold text-primary">{{ currentClient.displayName }}</h1>
+      <div class="flex gap-2">
+        <a [routerLink]="['/clients', currentClient.id, 'edit']" class="btn btn-secondary btn-sm">
+          Modifier
+        </a>
+        <button type="button" class="btn btn-error btn-sm" (click)="confirmDelete()">
+          Supprimer
+        </button>
+      </div>
+    </div>
+
+    <div class="card bg-base-200">
+      <div class="card-body gap-4">
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt class="text-secondary">Type</dt>
+            <dd class="font-medium">
+              {{ currentClient.type === 'business' ? 'Entreprise' : 'Particulier' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Téléphone</dt>
+            <dd class="font-medium">{{ currentClient.phoneE164 }}</dd>
+          </div>
+          <div>
+            <dt class="text-secondary">E-mail</dt>
+            <dd class="font-medium">{{ currentClient.email || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Langue</dt>
+            <dd class="font-medium">{{ currentClient.locale }}</dd>
+          </div>
+          @if (currentClient.companyName) {
+            <div>
+              <dt class="text-secondary">Entreprise</dt>
+              <dd class="font-medium">{{ currentClient.companyName }}</dd>
+            </div>
+          }
+          @if (currentClient.contactPersonName) {
+            <div>
+              <dt class="text-secondary">Contact</dt>
+              <dd class="font-medium">{{ currentClient.contactPersonName }}</dd>
+            </div>
+          }
+          @if (currentClient.externalRef) {
+            <div>
+              <dt class="text-secondary">Référence externe</dt>
+              <dd class="font-medium">{{ currentClient.externalRef }}</dd>
+            </div>
+          }
+        </dl>
+
+        <div class="divider my-1" role="separator"></div>
+
+        <div>
+          <p class="text-secondary text-sm mb-2">Consentements</p>
+          <div class="flex gap-2">
+            <span class="badge" [class.badge-success]="currentClient.optInSms">SMS</span>
+            <span class="badge" [class.badge-success]="currentClient.optInWhatsapp">WhatsApp</span>
+            <span class="badge" [class.badge-success]="currentClient.optInEmail">E-mail</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a routerLink="/clients" class="btn btn-ghost mt-6">Retour à la liste</a>
+  }
+</section>

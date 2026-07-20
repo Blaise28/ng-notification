@@ -5,6 +5,7 @@ import { Register } from '@components/auth/register/register';
 import { Home } from '@components/home/home';
 import { authGuard } from '@guards/auth.guard';
 import { noAuthGuard } from '@guards/no-auth.guard';
+import { Layout } from '@layout/layout/layout';
 
 export const routes: Routes = [
   {
@@ -20,7 +21,34 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    component: Home,
+    component: Layout,
+    children: [
+      { path: '', component: Home },
+      {
+        path: 'clients',
+        loadChildren: () => import('@components/clients/client.routes').then((m) => m.clientRoutes),
+      },
+      {
+        path: 'organizations',
+        loadChildren: () =>
+          import('@components/organizations/organization.routes').then((m) => m.organizationRoutes),
+      },
+      {
+        path: 'templates',
+        loadChildren: () =>
+          import('@components/templates/template.routes').then((m) => m.templateRoutes),
+      },
+      {
+        path: 'notifications',
+        loadChildren: () =>
+          import('@components/notifications/notification.routes').then((m) => m.notificationRoutes),
+      },
+      {
+        path: 'scheduled',
+        loadChildren: () =>
+          import('@components/scheduled/scheduled.routes').then((m) => m.scheduledRoutes),
+      },
+    ],
   },
   {
     path: '**',

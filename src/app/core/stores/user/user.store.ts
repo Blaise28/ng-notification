@@ -29,11 +29,9 @@ export const UserStore = signalStore(
     let hydrationPromise: Promise<void> | null = null;
 
     function persistSession(session: PersistedSessionState): void {
-      void storageService
-        .put(IDB_STORE.SESSION, IDB_SESSION_KEY, session)
-        .catch((error) => {
-          console.error('Failed to persist session.', error);
-        });
+      void storageService.put(IDB_STORE.SESSION, IDB_SESSION_KEY, session).catch((error) => {
+        console.error('Failed to persist session.', error);
+      });
     }
 
     function clearPersistedSession(): void {

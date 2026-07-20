@@ -1,0 +1,278 @@
+<section class="p-6 max-w-3xl mx-auto">
+  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">Envoyer une notification</h1>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  <form (submit)="submit($event)" class="flex flex-col gap-6">
+    <fieldset class="fieldset card bg-base-200 p-4">
+      <legend class="fieldset-legend text-sm text-primary/90 px-2">Destinataires</legend>
+
+      <div class="flex gap-4 mb-3">
+        <label class="label gap-2">
+          <input
+            type="radio"
+            name="target-mode"
+            class="radio radio-sm"
+            [checked]="targetMode() === 'clients'"
+            (change)="targetMode.set('clients')"
+          />
+          Clients sélectionnés
+        </label>
+        <label class="label gap-2">
+          <input
+            type="radio"
+            name="target-mode"
+            class="radio radio-sm"
+            [checked]="targetMode() === 'filter'"
+            (change)="targetMode.set('filter')"
+          />
+          Filtrer par type
+        </label>
+        <label class="label gap-2">
+          <input
+            type="radio"
+            name="target-mode"
+            class="radio radio-sm"
+            [checked]="targetMode() === 'broadcast'"
+            (change)="targetMode.set('broadcast')"
+          />
+          Diffuser à tous
+        </label>
+      </div>
+
+      @if (targetMode() === 'clients') {
+        <input
+          type="search"
+          class="input w-full mb-2"
+          placeholder="Rechercher un client…"
+          [value]="clientSearch()"
+          (input)="clientSearch.set($any($event.target).value)"
+          aria-label="Rechercher un client"
+        />
+        <div class="max-h-48 overflow-y-auto border border-base-300 rounded-lg p-2">
+          @for (client of filteredClients(); track client.id) {
+            <label class="label gap-2 justify-start">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm"
+                [checked]="selectedClientIds().includes(client.id)"
+                (change)="toggleClient(client.id)"
+              />
+              {{ client.displayName }}
+            </label>
+          }
+        </div>
+        <p class="text-xs text-base-content/60 mt-1">
+          {{ selectedClientIds().length }} client(s) sélectionné(s)
+        </p>
+      }
+
+      @if (targetMode() === 'filter') {
+        <label class="fieldset-legend text-sm" for="filter-type">Type de client</label>
+        <select
+          id="filter-type"
+          class="select w-full"
+          [value]="filterType()"
+          (change)="filterType.set($any($event.target).value)"
+        >
+          <option value="">Sélectionner…</option>
+          <option value="individual">Particulier</option>
+          <option value="business">Entreprise</option>
+        </select>
+      }
+
+      @if (targetMode() === 'broadcast') {
+        <div role="alert" class="alert alert-warning text-sm mb-2">
+          Cette action enverra la notification à <strong>tous</strong> les clients opt-in. Cette
+          action est irréversible.
+        </div>
+        <label class="label gap-2">
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm checkbox-warning"
+            [checked]="broadcastConfirmed()"
+            (change)="broadcastConfirmed.set($any($event.target).checked)"
+          />
+          Je comprends et confirme la diffusion à tous les clients
+        </label>
+      }
+    </fieldset>
+
+    <fieldset class="fieldset card bg-base-200 p-4">
+      <legend class="fieldset-legend text-sm text-primary/90 px-2">Canaux <code>*</code></legend>
+      <div class="flex gap-4">
+        <label class="label gap-2">
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            [checked]="selectedChannels().includes('email')"
+            (change)="toggleChannel('email')"
+          />
+          E-mail
+        </label>
+        <label class="label gap-2">
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            [checked]="selectedChannels().includes('sms')"
+            (change)="toggleChannel('sms')"
+          />
+          SMS
+        </label>
+        <label class="label gap-2">
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            [checked]="selectedChannels().includes('whatsapp')"
+            (change)="toggleChannel('whatsapp')"
+          />
+          WhatsApp
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset card bg-base-200 p-4">
+      <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
+
+      <div class="flex gap-4 mb-3">
+        <label class="label gap-2">
+          <input
+            type="radio"
+            name="content-source"
+            class="radio radio-sm"
+            [checked]="contentSource() === 'template'"
+            (change)="contentSource.set('template')"
+          />
+          Utiliser un modèle
+        </label>
+        <label class="label gap-2">
+          <input
+            type="radio"
+            name="content-source"
+            class="radio radio-sm"
+            [checked]="contentSource() === 'custom'"
+            (change)="contentSource.set('custom')"
+          />
+          Contenu personnalisé
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+        <div>
+          <label class="fieldset-legend text-sm" for="organization-select">Organisation</label>
+          <select
+            id="organization-select"
+            class="select w-full"
+            [value]="organizationId()"
+            (change)="organizationId.set($any($event.target).value)"
+          >
+            <option value="">Aucune</option>
+            @for (organization of organizations(); track organization.id) {
+              <option [value]="organization.id">{{ organization.name }}</option>
+            }
+          </select>
+        </div>
+
+        @if (contentSource() === 'template') {
+          <div>
+            <label class="fieldset-legend text-sm" for="template-select">Modèle</label>
+            <select
+              id="template-select"
+              class="select w-full"
+              [value]="templateId()"
+              (change)="templateId.set($any($event.target).value)"
+            >
+              <option value="">Sélectionner…</option>
+              @for (template of filteredTemplates(); track template.id) {
+                <option [value]="template.id">{{ template.name }} ({{ template.channel }})</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      @if (contentSource() === 'template' && templateVariableTokens().length > 0) {
+        <div class="mb-3">
+          <p class="text-sm text-secondary mb-2">Variables du modèle</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @for (token of templateVariableTokens(); track token) {
+              <label class="fieldset">
+                <span class="fieldset-legend text-xs">{{ token }}</span>
+                <input
+                  type="text"
+                  class="input input-sm w-full"
+                  (input)="setVariable(token, $any($event.target).value)"
+                />
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      @if (contentSource() === 'custom') {
+        @if (selectedChannels().includes('email')) {
+          <div class="mb-3">
+            <p class="text-sm font-medium mb-2">E-mail</p>
+            <input
+              type="text"
+              class="input w-full mb-2"
+              placeholder="Sujet"
+              [value]="emailSubject()"
+              (input)="emailSubject.set($any($event.target).value)"
+            />
+            <textarea
+              class="textarea w-full mb-2"
+              rows="4"
+              placeholder="Contenu HTML"
+              [value]="emailHtml()"
+              (input)="emailHtml.set($any($event.target).value)"
+            ></textarea>
+            <textarea
+              class="textarea w-full"
+              rows="2"
+              placeholder="Contenu texte (optionnel)"
+              [value]="emailText()"
+              (input)="emailText.set($any($event.target).value)"
+            ></textarea>
+          </div>
+        }
+        @if (selectedChannels().includes('sms')) {
+          <div class="mb-3">
+            <p class="text-sm font-medium mb-2">SMS</p>
+            <textarea
+              class="textarea w-full"
+              rows="3"
+              placeholder="Contenu du SMS"
+              [value]="smsBody()"
+              (input)="smsBody.set($any($event.target).value)"
+            ></textarea>
+          </div>
+        }
+        @if (selectedChannels().includes('whatsapp')) {
+          <div>
+            <p class="text-sm font-medium mb-2">WhatsApp</p>
+            <input
+              type="text"
+              class="input w-full"
+              placeholder="SID du modèle de contenu"
+              [value]="whatsappContentSid()"
+              (input)="whatsappContentSid.set($any($event.target).value)"
+            />
+          </div>
+        }
+      }
+    </fieldset>
+
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary" [disabled]="submitLoading()">
+        Envoyer
+        @if (submitLoading()) {
+          <span class="loading loading-sm ms-2"></span>
+        }
+      </button>
+      <a routerLink="/notifications" class="btn btn-ghost">Annuler</a>
+    </div>
+  </form>
+</section>

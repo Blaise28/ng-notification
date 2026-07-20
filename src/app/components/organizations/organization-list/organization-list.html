@@ -1,0 +1,101 @@
+<section class="p-6 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h1 tabindex="-1" class="text-xl font-bold text-primary">Organisations</h1>
+    <a routerLink="/organizations/new" class="btn btn-primary gap-2">
+      <hugeicons-icon [icon]="PlusSignIcon" [size]="18" [strokeWidth]="2" />
+      Nouvelle organisation
+    </a>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  <div class="overflow-x-auto">
+    <table class="table">
+      <caption class="sr-only">
+        Liste des organisations
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col"><span class="sr-only">Logo</span></th>
+          <th scope="col">Nom</th>
+          <th scope="col">Slug</th>
+          <th scope="col">Support</th>
+          <th scope="col">Site web</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="6" class="text-center py-8">
+              <span class="loading loading-spinner"></span>
+            </td>
+          </tr>
+        } @else if (organizations().length === 0) {
+          <tr>
+            <td colspan="6" class="text-center py-8 text-base-content/60">
+              Aucune organisation trouvée.
+            </td>
+          </tr>
+        } @else {
+          @for (organization of organizations(); track organization.id) {
+            <tr>
+              <td>
+                @if (organization.logoUrl) {
+                  <img
+                    [ngSrc]="organization.logoUrl"
+                    width="32"
+                    height="32"
+                    class="rounded object-cover"
+                    [alt]="'Logo ' + organization.name"
+                  />
+                } @else {
+                  <div
+                    class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white"
+                    [style.background-color]="organization.primaryColor"
+                    aria-hidden="true"
+                  >
+                    {{ organization.name.charAt(0) }}
+                  </div>
+                }
+              </td>
+              <td>
+                <a
+                  [routerLink]="['/organizations', organization.id]"
+                  class="link link-primary font-medium"
+                >
+                  {{ organization.name }}
+                </a>
+              </td>
+              <td>{{ organization.slug }}</td>
+              <td>{{ organization.supportEmail || '—' }}</td>
+              <td>{{ organization.websiteUrl || '—' }}</td>
+              <td>
+                <div class="flex justify-end gap-2">
+                  <a
+                    [routerLink]="['/organizations', organization.id, 'edit']"
+                    class="btn btn-ghost btn-sm btn-square"
+                    [attr.aria-label]="'Modifier ' + organization.name"
+                  >
+                    <hugeicons-icon [icon]="Edit02Icon" [size]="16" [strokeWidth]="1.7" />
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm btn-square text-error"
+                    [attr.aria-label]="'Supprimer ' + organization.name"
+                    [disabled]="deletingId() === organization.id"
+                    (click)="confirmDelete(organization)"
+                  >
+                    <hugeicons-icon [icon]="Delete02Icon" [size]="16" [strokeWidth]="1.7" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

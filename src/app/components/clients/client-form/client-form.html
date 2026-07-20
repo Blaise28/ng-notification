@@ -1,0 +1,111 @@
+<section class="p-6 max-w-2xl mx-auto">
+  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
+    {{ isEdit() ? 'Modifier le client' : 'Nouveau client' }}
+  </h1>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else {
+    <form (submit)="submit($event)" class="flex flex-col gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">
+          Type de client <code>*</code>
+        </legend>
+        <select [formField]="clientForm.type" class="select w-full">
+          <option value="individual">Particulier</option>
+          <option value="business">Entreprise</option>
+        </select>
+      </fieldset>
+
+      @if (clientForm.type().value() === 'individual') {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Prénom <code>*</code></legend>
+            <input type="text" [formField]="clientForm.firstName" class="input w-full" />
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
+            <input type="text" [formField]="clientForm.lastName" class="input w-full" />
+          </fieldset>
+        </div>
+      } @else {
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">
+            Nom de l'entreprise <code>*</code>
+          </legend>
+          <input type="text" [formField]="clientForm.companyName" class="input w-full" />
+        </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Personne à contacter</legend>
+          <input type="text" [formField]="clientForm.contactPersonName" class="input w-full" />
+        </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Numéro fiscal</legend>
+          <input type="text" [formField]="clientForm.taxId" class="input w-full" />
+        </fieldset>
+      }
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">
+          Téléphone (E.164) <code>*</code>
+        </legend>
+        <input
+          type="tel"
+          [formField]="clientForm.phoneE164"
+          class="input w-full"
+          placeholder="+33612345678"
+          aria-describedby="phone-hint"
+        />
+        <p id="phone-hint" class="text-xs text-base-content/60 mt-1">
+          Format international, ex. +33612345678
+        </p>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">E-mail</legend>
+        <input type="email" [formField]="clientForm.email" class="input w-full" />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Référence externe</legend>
+        <input type="text" [formField]="clientForm.externalRef" class="input w-full" />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Consentements</legend>
+        <div class="flex gap-4">
+          <label class="label gap-2">
+            <input type="checkbox" [formField]="clientForm.optInSms" class="checkbox" />
+            SMS
+          </label>
+          <label class="label gap-2">
+            <input type="checkbox" [formField]="clientForm.optInWhatsapp" class="checkbox" />
+            WhatsApp
+          </label>
+          <label class="label gap-2">
+            <input type="checkbox" [formField]="clientForm.optInEmail" class="checkbox" />
+            E-mail
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="flex gap-3 mt-4">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="clientForm().invalid() || submitLoading()"
+        >
+          Enregistrer
+          @if (submitLoading()) {
+            <span class="loading loading-sm ms-2"></span>
+          }
+        </button>
+        <a routerLink="/clients" class="btn btn-ghost">Annuler</a>
+      </div>
+    </form>
+  }
+</section>

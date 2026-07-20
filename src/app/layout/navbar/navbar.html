@@ -1,0 +1,23 @@
+<nav class="navbar justify-between px-5 border-b border-base-300 py-2 min-h-auto">
+  <small class="text-base-content/60 font-medium">Version {{ appVersion }}</small>
+  <div class="flex items-center gap-4">
+    @if (!isOnline()) {
+      <div
+        role="status"
+        aria-live="polite"
+        class="alert alert-warning alert-soft flex items-center gap-2 rounded-lg py-1 px-3 shadow-sm h-8"
+      >
+        <hugeicons-icon [icon]="WifiOff01Icon" [size]="16" [strokeWidth]="2.5" />
+        <span class="text-xs font-semibold uppercase tracking-tight">Hors-ligne</span>
+      </div>
+    }
+    <a
+      routerLink="/notifications"
+      class="btn btn-ghost btn-circle"
+      aria-label="Voir les notifications"
+    >
+      <hugeicons-icon [icon]="Notification02Icon" [size]="20" [strokeWidth]="1.5" />
+    </a>
+    <app-user-menu />
+  </div>
+</nav>

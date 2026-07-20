@@ -1,0 +1,82 @@
+<section class="p-6 max-w-3xl mx-auto">
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else if (notification(); as currentNotification) {
+    <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
+      Notification du {{ currentNotification.createdAt | date: 'medium' }}
+    </h1>
+
+    <div class="card bg-base-200 mb-4">
+      <div class="card-body">
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt class="text-secondary">Statut</dt>
+            <dd>
+              <span class="badge" [class]="statusBadgeClass(currentNotification.status)">
+                {{ currentNotification.status }}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Mode</dt>
+            <dd class="font-medium">{{ currentNotification.mode }}</dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Canaux</dt>
+            <dd class="font-medium uppercase">{{ currentNotification.channels.join(', ') }}</dd>
+          </div>
+          <div>
+            <dt class="text-secondary">Destinataires</dt>
+            <dd class="font-medium">{{ currentNotification.recipientCount }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table">
+        <caption class="sr-only">
+          Destinataires de la notification
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Destinataire</th>
+            <th scope="col">Canal</th>
+            <th scope="col">Statut</th>
+            <th scope="col">Détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (currentNotification.recipients.length === 0) {
+            <tr>
+              <td colspan="4" class="text-center py-6 text-base-content/60">Aucun destinataire.</td>
+            </tr>
+          } @else {
+            @for (recipient of currentNotification.recipients; track recipient.id) {
+              <tr>
+                <td>{{ recipient.displayName || recipient.toAddress }}</td>
+                <td>
+                  <span class="badge badge-soft badge-sm uppercase">{{ recipient.channel }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class]="statusBadgeClass(recipient.status)">
+                    {{ recipient.status }}
+                  </span>
+                </td>
+                <td class="text-sm text-base-content/70">
+                  {{ recipient.errorMessage || recipient.skipReason || '—' }}
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <a routerLink="/notifications" class="btn btn-ghost mt-6">Retour à l'historique</a>
+  }
+</section>

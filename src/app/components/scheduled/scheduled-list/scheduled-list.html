@@ -1,0 +1,97 @@
+<section class="p-6 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h1 tabindex="-1" class="text-xl font-bold text-primary">Notifications programmées</h1>
+    <a routerLink="/scheduled/new" class="btn btn-primary gap-2">
+      <hugeicons-icon [icon]="PlusSignIcon" [size]="18" [strokeWidth]="2" />
+      Nouvelle planification
+    </a>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  <div role="tablist" class="tabs tabs-box mb-4 w-fit">
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.tab-active]="activeTab() === 'upcoming'"
+      [attr.aria-selected]="activeTab() === 'upcoming'"
+      (click)="activeTab.set('upcoming')"
+    >
+      À venir ({{ upcomingItems().length }})
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.tab-active]="activeTab() === 'past'"
+      [attr.aria-selected]="activeTab() === 'past'"
+      (click)="activeTab.set('past')"
+    >
+      Passées / autres ({{ pastItems().length }})
+    </button>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="table">
+      <caption class="sr-only">
+        Notifications programmées
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Envoi prévu</th>
+          <th scope="col">Canal</th>
+          <th scope="col">Cible</th>
+          <th scope="col">Statut</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="5" class="text-center py-8">
+              <span class="loading loading-spinner"></span>
+            </td>
+          </tr>
+        } @else if (visibleItems().length === 0) {
+          <tr>
+            <td colspan="5" class="text-center py-8 text-base-content/60">Aucun élément trouvé.</td>
+          </tr>
+        } @else {
+          @for (item of visibleItems(); track item.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/scheduled', item.id]" class="link link-primary font-medium">
+                  {{ item.sendAt | date: 'short' }}
+                </a>
+              </td>
+              <td>
+                <span class="badge badge-soft uppercase">{{ item.channel }}</span>
+              </td>
+              <td class="capitalize">{{ item.targetType }}</td>
+              <td>
+                <span class="badge" [class]="statusBadgeClass(item.status)">{{ item.status }}</span>
+              </td>
+              <td>
+                @if (item.status === 'PENDING') {
+                  <div class="flex justify-end">
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm text-error"
+                      [disabled]="cancellingId() === item.id"
+                      (click)="confirmCancel(item)"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

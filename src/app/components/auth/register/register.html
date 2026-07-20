@@ -15,11 +15,20 @@
 
       <form (submit)="submitRegister($event)">
         <fieldset class="fieldset w-full">
-          <legend class="fieldset-legend font-medium text-sm text-primary/90">Nom <code>*</code></legend>
-          <input type="text" [formField]="registerForm.name" class="input" placeholder="Jean Dupont" />
+          <legend class="fieldset-legend font-medium text-sm text-primary/90">
+            Nom <code>*</code>
+          </legend>
+          <input
+            type="text"
+            [formField]="registerForm.name"
+            class="input"
+            placeholder="Jean Dupont"
+          />
         </fieldset>
         <fieldset class="fieldset w-full mt-4">
-          <legend class="fieldset-legend font-medium text-sm text-primary/90">E-mail <code>*</code></legend>
+          <legend class="fieldset-legend font-medium text-sm text-primary/90">
+            E-mail <code>*</code>
+          </legend>
           <input
             type="email"
             [formField]="registerForm.email"
@@ -41,8 +50,13 @@
           />
         </fieldset>
         <fieldset class="fieldset w-full mt-4">
-          <legend class="fieldset-legend font-medium text-sm text-primary/90">Rôle <code>*</code></legend>
-          <select [formField]="registerForm.role" class="select w-full bg-base-200 border-secondary">
+          <legend class="fieldset-legend font-medium text-sm text-primary/90">
+            Rôle <code>*</code>
+          </legend>
+          <select
+            [formField]="registerForm.role"
+            class="select w-full bg-base-200 border-secondary"
+          >
             <option value="operator">Opérateur</option>
             <option value="admin">Administrateur</option>
           </select>
@@ -66,7 +80,8 @@
   </section>
   <section class="hidden lg:flex col-span-6 bg-secondary/30 items-center justify-center p-8">
     <p class="text-primary/70 text-center max-w-sm text-sm">
-      Les comptes administrateur et opérateur accèdent aux fonctionnalités de notification selon leur rôle.
+      Les comptes administrateur et opérateur accèdent aux fonctionnalités de notification selon
+      leur rôle.
     </p>
   </section>
 </section>
