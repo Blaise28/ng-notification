@@ -2,10 +2,12 @@ import { inject, Service } from '@angular/core';
 
 import {
   CreateScheduledBodyModel,
+  ListScheduledQueryModel,
   ScheduledListResponse,
   ScheduledResponse,
 } from '@components/scheduled/scheduled.models';
 import { Api } from '@services/api/api';
+import { toQueryParams } from '@utils/api-query';
 
 @Service()
 export class ScheduledService {
@@ -15,8 +17,10 @@ export class ScheduledService {
     return this.api.post<ScheduledResponse>('/api/v1/scheduled', body);
   }
 
-  list() {
-    return this.api.get<ScheduledListResponse>('/api/v1/scheduled');
+  list(query?: ListScheduledQueryModel) {
+    return this.api.get<ScheduledListResponse>('/api/v1/scheduled', {
+      params: toQueryParams(query),
+    });
   }
 
   getById(id: string) {

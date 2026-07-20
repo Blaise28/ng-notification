@@ -1,19 +1,7 @@
-<section class="p-6 max-w-6xl mx-auto">
-  <div class="flex items-center justify-between mb-6">
-    <h1 tabindex="-1" class="text-xl font-bold text-primary">Historique des notifications</h1>
-    <a routerLink="/notifications/compose" class="btn btn-primary gap-2">
-      <hugeicons-icon [icon]="Megaphone02Icon" [size]="18" [strokeWidth]="2" />
-      Envoyer une notification
-    </a>
-  </div>
-
-  @if (errorMessage(); as message) {
-    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
-  }
-
+<section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col gap-4">
   <form
     (submit)="$event.preventDefault(); applyFilters()"
-    class="card bg-base-200 mb-6 p-4"
+    class="card bg-base-200 p-4"
     aria-label="Filtrer l'historique"
   >
     <div class="flex flex-wrap items-end gap-4">
@@ -35,84 +23,17 @@
     </div>
   </form>
 
-  <div class="overflow-x-auto">
-    <table class="table">
-      <caption class="sr-only">
-        Historique des envois
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Date</th>
-          <th scope="col">Canaux</th>
-          <th scope="col">Mode</th>
-          <th scope="col">Statut</th>
-          <th scope="col">Destinataires</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading()) {
-          <tr>
-            <td colspan="5" class="text-center py-8">
-              <span class="loading loading-spinner"></span>
-            </td>
-          </tr>
-        } @else if (notifications().length === 0) {
-          <tr>
-            <td colspan="5" class="text-center py-8 text-base-content/60">Aucun envoi trouvé.</td>
-          </tr>
-        } @else {
-          @for (notification of notifications(); track notification.id) {
-            <tr>
-              <td>
-                <a
-                  [routerLink]="['/notifications', notification.id]"
-                  class="link link-primary font-medium"
-                >
-                  {{ notification.createdAt | date: 'short' }}
-                </a>
-              </td>
-              <td>
-                <div class="flex gap-1">
-                  @for (channel of notification.channels; track channel) {
-                    <span class="badge badge-soft badge-sm uppercase">{{ channel }}</span>
-                  }
-                </div>
-              </td>
-              <td>{{ notification.mode }}</td>
-              <td>
-                <span class="badge" [class]="statusBadgeClass(notification.status)">
-                  {{ notification.status }}
-                </span>
-              </td>
-              <td>{{ notification.recipientCount }}</td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
+  <div class="flex-1 min-h-0">
+    <app-list
+      listTitle="Historique"
+      [url]="listUrl()"
+      [headers]="headers"
+      [detailLink]="{ link: '/notifications/', field: 'id' }"
+      [showAddButton]="true"
+      [addButtonLink]="{ url: '/notifications/compose' }"
+      [showFilters]="false"
+      [showOverview]="false"
+      [showPageSizeSelector]="true"
+    />
   </div>
-
-  @if (totalPages() > 1) {
-    <nav aria-label="Pagination" class="flex justify-center gap-2 mt-6">
-      <button
-        type="button"
-        class="btn btn-sm"
-        [disabled]="page() === 1"
-        (click)="goToPage(page() - 1)"
-      >
-        Précédent
-      </button>
-      <span class="btn btn-sm btn-ghost pointer-events-none" aria-current="page">
-        Page {{ page() }} / {{ totalPages() }}
-      </span>
-      <button
-        type="button"
-        class="btn btn-sm"
-        [disabled]="page() === totalPages()"
-        (click)="goToPage(page() + 1)"
-      >
-        Suivant
-      </button>
-    </nav>
-  }
 </section>

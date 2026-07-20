@@ -36,7 +36,7 @@ export class OrganizationDetail {
       .subscribe({
         next: (response) => {
           this.loading.set(false);
-          this.organization.set(response.object.organization);
+          this.organization.set(response.object);
         },
         error: (err: unknown) => {
           this.loading.set(false);

@@ -1,70 +1,55 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
-import { NgOptimizedImage } from '@angular/common';
+import { Router } from '@angular/router';
 
-import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Delete02Icon, Edit02Icon, PlusSignIcon } from '@hugeicons/core-free-icons';
-
+import type { ListAction, ListHeaderModel } from '@globals/models/list.models';
+import { List } from '@globals/components/list/list';
 import { ApiError } from '@services/api/api-error';
 import { OrganizationService } from '@services/organizations/organization.service';
 import { OrganizationModel } from '../organization.models';
 
 @Component({
   selector: 'app-organization-list',
-  imports: [RouterLink, NgOptimizedImage, HugeiconsIconComponent],
+  imports: [List],
   templateUrl: './organization-list.html',
 })
 export class OrganizationList {
   private readonly destroyRef = inject(DestroyRef);
   private readonly organizationService = inject(OrganizationService);
+  private readonly router = inject(Router);
+  private readonly list = viewChild(List);
 
-  protected readonly PlusSignIcon = PlusSignIcon;
-  protected readonly Edit02Icon = Edit02Icon;
-  protected readonly Delete02Icon = Delete02Icon;
+  protected readonly headers: ListHeaderModel[] = [
+    { label: 'Nom', field: ['name'] },
+    { label: 'Slug', field: ['slug'] },
+    { label: 'Support', field: ['supportEmail'] },
+  ];
 
-  protected readonly organizations = signal<OrganizationModel[]>([]);
-  protected readonly loading = signal(true);
+  protected readonly actions: ListAction[] = [
+    {
+      name: 'Modifier',
+      callback: (line) => {
+        void this.router.navigate(['/organizations', (line as OrganizationModel).id, 'edit']);
+      },
+    },
+    {
+      name: 'Supprimer',
+      callback: (line) => this.confirmDelete(line as OrganizationModel),
+    },
+  ];
+
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly deletingId = signal<string | null>(null);
 
-  constructor() {
-    this.fetch();
-  }
-
-  confirmDelete(organization: OrganizationModel): void {
+  private confirmDelete(organization: OrganizationModel): void {
     if (!confirm(`Supprimer l'organisation « ${organization.name} » ?`)) {
       return;
     }
-    this.deletingId.set(organization.id);
     this.organizationService
       .remove(organization.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
-          this.deletingId.set(null);
-          this.fetch();
-        },
+        next: () => this.list()?.reloadList(),
         error: (err: unknown) => {
-          this.deletingId.set(null);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
-        },
-      });
-  }
-
-  private fetch(): void {
-    this.loading.set(true);
-    this.errorMessage.set(null);
-    this.organizationService
-      .list()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => {
-          this.loading.set(false);
-          this.organizations.set(response.object.items);
-        },
-        error: (err: unknown) => {
-          this.loading.set(false);
           this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
         },
       });

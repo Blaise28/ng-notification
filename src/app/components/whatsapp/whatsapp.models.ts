@@ -35,5 +35,5 @@ export interface WhatsappJobModel {
 }
 
 export interface WhatsappJobResponse {
-  object: { success: true; job: WhatsappJobModel };
+  object: WhatsappJobModel;
 }

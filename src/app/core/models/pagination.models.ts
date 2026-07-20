@@ -1,12 +1,14 @@
 export interface PaginatedQueryModel {
-  page?: number;
   limit?: number;
+  offset?: number;
+  search?: string;
 }
 
-export interface PaginatedResultModel<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+export interface SingleResponseModel<T> {
+  object: T;
+}
+
+export interface ListResponseModel<T> {
+  objects: T[];
+  count: number;
 }

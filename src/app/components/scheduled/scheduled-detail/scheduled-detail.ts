@@ -30,7 +30,7 @@ export class ScheduledDetail {
       .subscribe({
         next: (response) => {
           this.loading.set(false);
-          this.scheduled.set(response.object.scheduled);
+          this.scheduled.set(response.object);
         },
         error: (err: unknown) => {
           this.loading.set(false);

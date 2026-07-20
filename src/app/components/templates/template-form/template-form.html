@@ -12,12 +12,12 @@
   } @else {
     <form (submit)="submit($event)" class="flex flex-col gap-4">
       <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Organisation <code>*</code></legend>
+        <legend class="fieldset-legend text-sm text-primary/90">Organisation</legend>
         @if (isEdit()) {
           <p class="input w-full items-center bg-base-200">{{ selectedOrganizationName() }}</p>
         } @else {
           <select [formField]="templateForm.organizationId" class="select w-full">
-            <option value="" disabled>Sélectionner…</option>
+            <option value="">Aucune (optionnel)</option>
             @for (organization of organizations(); track organization.id) {
               <option [value]="organization.id">{{ organization.name }}</option>
             }

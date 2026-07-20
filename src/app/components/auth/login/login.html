@@ -25,18 +25,13 @@
             autocomplete="email"
           />
         </fieldset>
-        <fieldset class="fieldset w-full mt-4">
-          <legend class="fieldset-legend font-medium text-sm text-primary/90">
-            Mot de passe <code>*</code>
-          </legend>
-          <input
-            type="password"
-            [formField]="loginForm.password"
-            class="input"
-            placeholder="••••••••"
-            autocomplete="current-password"
-          />
-        </fieldset>
+        <app-password
+          [field]="loginForm.password"
+          label="Mot de passe"
+          [required]="true"
+          mode="simple"
+          autocomplete="current-password"
+        />
         <div class="mt-8">
           <button
             [disabled]="loginForm().invalid() || submitLoginLoading()"

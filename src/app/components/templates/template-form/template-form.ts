@@ -70,17 +70,17 @@ export class TemplateForm {
   protected readonly organizations = signal<OrganizationModel[]>([]);
   protected readonly variableTokens = TEMPLATE_VARIABLE_TOKENS;
 
-  protected readonly selectedOrganizationName = computed(
-    () =>
-      this.organizations().find(
-        (organization) => organization.id === this.templateForm.organizationId().value(),
-      )?.name ?? '—',
-  );
+  protected readonly selectedOrganizationName = computed(() => {
+    const id = this.templateForm.organizationId().value();
+    if (!id) {
+      return 'Aucune';
+    }
+    return this.organizations().find((organization) => organization.id === id)?.name ?? '—';
+  });
 
   protected readonly templateForm = form(
     signal<TemplateFormValue>({ ...EMPTY_FORM_VALUE }),
     (schema) => {
-      required(schema.organizationId);
       required(schema.name);
       required(schema.slug);
       required(schema.channel);
@@ -103,10 +103,10 @@ export class TemplateForm {
 
   constructor() {
     this.organizationService
-      .list()
+      .list({ limit: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.organizations.set(response.object.items),
+        next: (response) => this.organizations.set(response.objects),
         error: () => undefined,
       });
 
@@ -120,9 +120,9 @@ export class TemplateForm {
         .subscribe({
           next: (response) => {
             this.loading.set(false);
-            const template = response.object.template;
+            const template = response.object;
             this.templateForm().value.set({
-              organizationId: template.organizationId,
+              organizationId: template.organizationId ?? '',
               name: template.name,
               slug: template.slug,
               channel: template.channel,
@@ -170,7 +170,7 @@ export class TemplateForm {
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: async (response) => {
         this.submitLoading.set(false);
-        await this.router.navigate(['/templates', response.object.template.id]);
+        await this.router.navigate(['/templates', response.object.id]);
       },
       error: (err: unknown) => {
         this.submitLoading.set(false);
@@ -189,7 +189,7 @@ function interpolate(source: string, variables: Record<string, string>): string 
 
 function toBody(value: TemplateFormValue): CreateTemplateBodyModel {
   return {
-    organizationId: value.organizationId,
+    organizationId: value.organizationId.trim() || undefined,
     name: value.name.trim(),
     slug: value.slug.trim(),
     channel: value.channel,
@@ -203,6 +203,7 @@ function toBody(value: TemplateFormValue): CreateTemplateBodyModel {
 }
 
 function toUpdateBody(value: TemplateFormValue): UpdateTemplateBodyModel {
-  const { organizationId: _organizationId, ...body } = toBody(value);
+  const body = { ...toBody(value) };
+  delete body.organizationId;
   return body;
 }

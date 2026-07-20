@@ -29,7 +29,7 @@ export class NotificationDetail {
       .subscribe({
         next: (response) => {
           this.loading.set(false);
-          this.notification.set(response.object.notification);
+          this.notification.set(response.object);
         },
         error: (err: unknown) => {
           this.loading.set(false);

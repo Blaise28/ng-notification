@@ -49,7 +49,7 @@ export class ScheduledForm {
       .list({ limit: 200 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.clients.set(response.object.items),
+        next: (response) => this.clients.set(response.objects),
         error: () => undefined,
       });
   }
@@ -79,7 +79,7 @@ export class ScheduledForm {
       .subscribe({
         next: async (response) => {
           this.submitLoading.set(false);
-          await this.router.navigate(['/scheduled', response.object.scheduled.id]);
+          await this.router.navigate(['/scheduled', response.object.id]);
         },
         error: (err: unknown) => {
           this.submitLoading.set(false);

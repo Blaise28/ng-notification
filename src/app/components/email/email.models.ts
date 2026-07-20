@@ -37,5 +37,5 @@ export interface EmailJobModel {
 }
 
 export interface EmailJobResponse {
-  object: { success: true; job: EmailJobModel };
+  object: EmailJobModel;
 }

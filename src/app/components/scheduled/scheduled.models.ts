@@ -1,7 +1,20 @@
 import { ClientType } from '@components/clients/client.models';
+import {
+  ListResponseModel,
+  PaginatedQueryModel,
+  SingleResponseModel,
+} from '@models/pagination.models';
 
 export type ScheduledChannel = 'sms' | 'whatsapp' | 'email' | 'multi';
-export type ScheduledStatus = 'PENDING' | 'QUEUED' | 'CANCELLED' | 'FAILED';
+export type ScheduledStatus =
+  | 'PENDING'
+  | 'QUEUED'
+  | 'CANCELLED'
+  | 'FAILED'
+  | 'pending'
+  | 'queued'
+  | 'cancelled'
+  | 'failed';
 export type ScheduledTargetType = 'all' | 'clientId' | 'filter';
 
 export interface ScheduledTargetModel {
@@ -30,10 +43,10 @@ export interface ScheduledNotificationModel {
   createdAt: string;
 }
 
-export interface ScheduledResponse {
-  object: { success: true; scheduled: ScheduledNotificationModel };
+export interface ListScheduledQueryModel extends PaginatedQueryModel {
+  status?: ScheduledStatus;
+  tab?: 'upcoming' | 'past';
 }
 
-export interface ScheduledListResponse {
-  object: { success: true; items: ScheduledNotificationModel[] };
-}
+export type ScheduledResponse = SingleResponseModel<ScheduledNotificationModel>;
+export type ScheduledListResponse = ListResponseModel<ScheduledNotificationModel>;

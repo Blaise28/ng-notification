@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { form, FormField, required } from '@angular/forms/signals';
 
+import { PhoneNumberFieldComponent } from '@globals/components/phone-number-field/phone-number-field.component';
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
 import { ClientType, CreateClientBodyModel } from '../client.models';
@@ -41,7 +42,7 @@ const EMPTY_FORM_VALUE: ClientFormValue = {
 
 @Component({
   selector: 'app-client-form',
-  imports: [RouterLink, FormField],
+  imports: [RouterLink, FormField, PhoneNumberFieldComponent],
   templateUrl: './client-form.html',
 })
 export class ClientForm {
@@ -75,7 +76,7 @@ export class ClientForm {
         .subscribe({
           next: (response) => {
             this.loading.set(false);
-            const client = response.object.client;
+            const client = response.object;
             this.clientForm().value.set({
               type: client.type,
               firstName: client.firstName ?? '',
@@ -102,6 +103,10 @@ export class ClientForm {
     }
   }
 
+  onPhoneNumber(phone: string | null): void {
+    this.clientForm.phoneE164().value.set(phone ?? '');
+  }
+
   submit(event: SubmitEvent): void {
     event.preventDefault();
 
@@ -112,6 +117,10 @@ export class ClientForm {
     }
     if (value.type === 'business' && !value.companyName.trim()) {
       this.errorMessage.set("Le nom de l'entreprise est requis pour un client entreprise.");
+      return;
+    }
+    if (!value.phoneE164.trim()) {
+      this.errorMessage.set('Un numéro de téléphone valide est requis.');
       return;
     }
 
@@ -125,7 +134,7 @@ export class ClientForm {
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: async (response) => {
         this.submitLoading.set(false);
-        await this.router.navigate(['/clients', response.object.client.id]);
+        await this.router.navigate(['/clients', response.object.id]);
       },
       error: (err: unknown) => {
         this.submitLoading.set(false);

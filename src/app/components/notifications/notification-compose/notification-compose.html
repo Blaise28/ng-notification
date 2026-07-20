@@ -46,22 +46,45 @@
         <input
           type="search"
           class="input w-full mb-2"
-          placeholder="Rechercher un client…"
+          placeholder="Rechercher par nom, e-mail, téléphone…"
           [value]="clientSearch()"
-          (input)="clientSearch.set($any($event.target).value)"
+          (input)="onClientSearch($any($event.target).value)"
           aria-label="Rechercher un client"
+          aria-controls="client-search-results"
+          [attr.aria-busy]="clientsLoading()"
         />
-        <div class="max-h-48 overflow-y-auto border border-base-300 rounded-lg p-2">
-          @for (client of filteredClients(); track client.id) {
-            <label class="label gap-2 justify-start">
-              <input
-                type="checkbox"
-                class="checkbox checkbox-sm"
-                [checked]="selectedClientIds().includes(client.id)"
-                (change)="toggleClient(client.id)"
-              />
-              {{ client.displayName }}
-            </label>
+        <div
+          id="client-search-results"
+          class="max-h-48 overflow-y-auto border border-base-300 rounded-lg p-2"
+          role="listbox"
+          aria-label="Résultats de recherche clients"
+          aria-multiselectable="true"
+        >
+          @if (clientsLoading()) {
+            <p class="text-sm text-base-content/60 px-1 py-2">Recherche…</p>
+          } @else if (displayedClients().length === 0) {
+            <p class="text-sm text-base-content/60 px-1 py-2">Aucun client trouvé</p>
+          } @else {
+            @for (client of displayedClients(); track client.id) {
+              <label class="label gap-2 justify-start">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  role="option"
+                  [attr.aria-selected]="selectedClientIds().includes(client.id)"
+                  [checked]="selectedClientIds().includes(client.id)"
+                  (change)="toggleClient(client)"
+                />
+                <span class="flex flex-col items-start gap-0.5">
+                  <span>{{ client.displayName }}</span>
+                  @if (client.email || client.phoneE164) {
+                    <span class="text-xs text-base-content/60">
+                      {{ client.email || client.phoneE164 }}
+                    </span>
+                  }
+                </span>
+              </label>
+            }
           }
         </div>
         <p class="text-xs text-base-content/60 mt-1">

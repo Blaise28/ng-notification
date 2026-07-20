@@ -1,4 +1,8 @@
-import { PaginatedQueryModel, PaginatedResultModel } from '@models/pagination.models';
+import {
+  ListResponseModel,
+  PaginatedQueryModel,
+  SingleResponseModel,
+} from '@models/pagination.models';
 
 export type ClientType = 'individual' | 'business';
 
@@ -49,14 +53,6 @@ export interface ClientModel {
   updatedAt: string;
 }
 
-export interface ClientResponse {
-  object: { success: true; client: ClientModel };
-}
-
-export interface ClientsListResponse {
-  object: { success: true } & PaginatedResultModel<ClientModel>;
-}
-
-export interface DeleteClientResponse {
-  object: { success: true; id: string };
-}
+export type ClientResponse = SingleResponseModel<ClientModel>;
+export type ClientsListResponse = ListResponseModel<ClientModel>;
+export type DeleteClientResponse = SingleResponseModel<{ id: string }>;

@@ -1,5 +1,6 @@
 @import '@fontsource-variable/inter';
 @import 'tailwindcss';
+@import 'intl-tel-input/styles';
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {

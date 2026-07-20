@@ -29,7 +29,7 @@ export class ClientDetail {
       .subscribe({
         next: (response) => {
           this.loading.set(false);
-          this.client.set(response.object.client);
+          this.client.set(response.object);
         },
         error: (err: unknown) => {
           this.loading.set(false);

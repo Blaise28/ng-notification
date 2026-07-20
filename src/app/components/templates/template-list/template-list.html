@@ -1,106 +1,18 @@
-<section class="p-6 max-w-6xl mx-auto">
-  <div class="flex items-center justify-between mb-6">
-    <h1 tabindex="-1" class="text-xl font-bold text-primary">Modèles</h1>
-    <a routerLink="/templates/new" class="btn btn-primary gap-2">
-      <hugeicons-icon [icon]="PlusSignIcon" [size]="18" [strokeWidth]="2" />
-      Nouveau modèle
-    </a>
-  </div>
-
+<section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)]">
   @if (errorMessage(); as message) {
     <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
   }
 
-  <form
-    (submit)="$event.preventDefault(); applyFilter()"
-    class="card bg-base-200 mb-6 p-4"
-    aria-label="Filtrer les modèles"
-  >
-    <div class="flex flex-wrap items-end gap-4">
-      <fieldset class="fieldset">
-        <label class="fieldset-legend text-sm" for="org-filter">Organisation</label>
-        <select
-          id="org-filter"
-          class="select"
-          [value]="organizationFilter()"
-          (change)="organizationFilter.set($any($event.target).value)"
-        >
-          <option value="">Toutes</option>
-          @for (organization of organizations(); track organization.id) {
-            <option [value]="organization.id">{{ organization.name }}</option>
-          }
-        </select>
-      </fieldset>
-      <button type="submit" class="btn btn-secondary">Filtrer</button>
-    </div>
-  </form>
-
-  <div class="overflow-x-auto">
-    <table class="table">
-      <caption class="sr-only">
-        Liste des modèles
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Nom</th>
-          <th scope="col">Organisation</th>
-          <th scope="col">Canal</th>
-          <th scope="col">Par défaut</th>
-          <th scope="col"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading()) {
-          <tr>
-            <td colspan="5" class="text-center py-8">
-              <span class="loading loading-spinner"></span>
-            </td>
-          </tr>
-        } @else if (templates().length === 0) {
-          <tr>
-            <td colspan="5" class="text-center py-8 text-base-content/60">Aucun modèle trouvé.</td>
-          </tr>
-        } @else {
-          @for (template of templates(); track template.id) {
-            <tr>
-              <td>
-                <a [routerLink]="['/templates', template.id]" class="link link-primary font-medium">
-                  {{ template.name }}
-                </a>
-              </td>
-              <td>{{ organizationName(template.organizationId) }}</td>
-              <td>
-                <span class="badge badge-soft uppercase">{{ template.channel }}</span>
-              </td>
-              <td>
-                @if (template.isDefault) {
-                  <span class="badge badge-success badge-sm">Défaut</span>
-                }
-              </td>
-              <td>
-                <div class="flex justify-end gap-2">
-                  <a
-                    [routerLink]="['/templates', template.id, 'edit']"
-                    class="btn btn-ghost btn-sm btn-square"
-                    [attr.aria-label]="'Modifier ' + template.name"
-                  >
-                    <hugeicons-icon [icon]="Edit02Icon" [size]="16" [strokeWidth]="1.7" />
-                  </a>
-                  <button
-                    type="button"
-                    class="btn btn-ghost btn-sm btn-square text-error"
-                    [attr.aria-label]="'Supprimer ' + template.name"
-                    [disabled]="deletingId() === template.id"
-                    (click)="confirmDelete(template)"
-                  >
-                    <hugeicons-icon [icon]="Delete02Icon" [size]="16" [strokeWidth]="1.7" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
-  </div>
+  <app-list
+    listTitle="Modèles"
+    url="/api/v1/templates"
+    [headers]="headers"
+    [action]="actions"
+    [showAddButton]="true"
+    [addButtonLink]="{ url: '/templates/new' }"
+    [detailLink]="{ link: '/templates/', field: 'id' }"
+    [showFilters]="false"
+    [showOverview]="false"
+    [showPageSizeSelector]="true"
+  />
 </section>

@@ -33,5 +33,5 @@ export interface SmsJobModel {
 }
 
 export interface SmsJobResponse {
-  object: { success: true; job: SmsJobModel };
+  object: SmsJobModel;
 }

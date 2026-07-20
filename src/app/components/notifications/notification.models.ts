@@ -1,5 +1,9 @@
 import { ClientType } from '@components/clients/client.models';
-import { PaginatedQueryModel, PaginatedResultModel } from '@models/pagination.models';
+import {
+  ListResponseModel,
+  PaginatedQueryModel,
+  SingleResponseModel,
+} from '@models/pagination.models';
 
 export type NotificationChannel = 'email' | 'sms' | 'whatsapp';
 export type SentNotificationMode = 'SINGLE' | 'MULTI' | 'BROADCAST';
@@ -64,14 +68,6 @@ export interface ListSentNotificationsQueryModel extends PaginatedQueryModel {
   clientId?: string;
 }
 
-export interface SendNotificationResponse {
-  object: { success: true; notification: SentNotificationDetailModel };
-}
-
-export interface NotificationsListResponse {
-  object: { success: true } & PaginatedResultModel<SentNotificationModel>;
-}
-
-export interface NotificationDetailResponse {
-  object: { success: true; notification: SentNotificationDetailModel };
-}
+export type SendNotificationResponse = SingleResponseModel<SentNotificationDetailModel>;
+export type NotificationsListResponse = ListResponseModel<SentNotificationModel>;
+export type NotificationDetailResponse = SingleResponseModel<SentNotificationDetailModel>;

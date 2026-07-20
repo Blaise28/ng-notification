@@ -1,3 +1,9 @@
+import {
+  ListResponseModel,
+  PaginatedQueryModel,
+  SingleResponseModel,
+} from '@models/pagination.models';
+
 export interface CreateOrganizationBodyModel {
   name: string;
   slug: string;
@@ -9,6 +15,8 @@ export interface CreateOrganizationBodyModel {
 }
 
 export type UpdateOrganizationBodyModel = Partial<CreateOrganizationBodyModel>;
+
+export type ListOrganizationsQueryModel = PaginatedQueryModel;
 
 export interface OrganizationModel {
   id: string;
@@ -23,14 +31,6 @@ export interface OrganizationModel {
   updatedAt: string;
 }
 
-export interface OrganizationResponse {
-  object: { success: true; organization: OrganizationModel };
-}
-
-export interface OrganizationsListResponse {
-  object: { success: true; items: OrganizationModel[] };
-}
-
-export interface DeleteOrganizationResponse {
-  object: { success: true; id: string };
-}
+export type OrganizationResponse = SingleResponseModel<OrganizationModel>;
+export type OrganizationsListResponse = ListResponseModel<OrganizationModel>;
+export type DeleteOrganizationResponse = SingleResponseModel<{ id: string }>;

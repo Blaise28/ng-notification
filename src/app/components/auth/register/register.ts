@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { Password } from '@globals/components/password/password';
 import { ApiError } from '@services/api/api-error';
 import { AuthService } from '@services/auth/auth.service';
 import { ThemeController } from '@layout/theme-controller/theme-controller';
@@ -11,7 +12,7 @@ import { UserStore } from '@stores/user/user.store';
 
 @Component({
   selector: 'app-register',
-  imports: [ThemeController, RouterLink, FormField],
+  imports: [ThemeController, RouterLink, FormField, Password],
   templateUrl: './register.html',
 })
 export class Register {

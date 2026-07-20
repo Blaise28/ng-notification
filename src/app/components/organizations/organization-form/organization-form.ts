@@ -74,7 +74,7 @@ export class OrganizationForm {
         .subscribe({
           next: (response) => {
             this.loading.set(false);
-            const organization = response.object.organization;
+            const organization = response.object;
             this.organizationForm().value.set({
               name: organization.name,
               slug: organization.slug,
@@ -121,7 +121,7 @@ export class OrganizationForm {
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: async (response) => {
         this.submitLoading.set(false);
-        await this.router.navigate(['/organizations', response.object.organization.id]);
+        await this.router.navigate(['/organizations', response.object.id]);
       },
       error: (err: unknown) => {
         this.submitLoading.set(false);

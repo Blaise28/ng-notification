@@ -32,16 +32,19 @@ export class TemplateDetail {
       .subscribe({
         next: (response) => {
           this.loading.set(false);
-          const template = response.object.template;
+          const template = response.object;
           this.template.set(template);
-          this.organizationService
-            .getById(template.organizationId)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-              next: (orgResponse) =>
-                this.organizationName.set(orgResponse.object.organization.name),
-              error: () => undefined,
-            });
+          if (template.organizationId) {
+            this.organizationService
+              .getById(template.organizationId)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
+                next: (orgResponse) => this.organizationName.set(orgResponse.object.name),
+                error: () => undefined,
+              });
+          } else {
+            this.organizationName.set('Aucune');
+          }
         },
         error: (err: unknown) => {
           this.loading.set(false);

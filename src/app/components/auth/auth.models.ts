@@ -19,21 +19,15 @@ export interface RegisterBodyModel {
   role: UserRole;
 }
 
-export interface AuthSuccessPayload {
-  success: true;
+export interface AuthPayloadModel {
   accessToken: string;
   user: UserModel;
 }
 
 export interface AuthSuccessResponse {
-  object: AuthSuccessPayload;
-}
-
-export interface MeSuccessPayload {
-  success: true;
-  user: UserModel;
+  object: AuthPayloadModel;
 }
 
 export interface MeSuccessResponse {
-  object: MeSuccessPayload;
+  object: UserModel;
 }

@@ -1,6 +1,7 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
@@ -19,6 +20,8 @@ import {
 type TargetMode = 'clients' | 'filter' | 'broadcast';
 type ContentSource = 'template' | 'custom';
 
+const CLIENT_SEARCH_LIMIT = 50;
+
 @Component({
   selector: 'app-notification-compose',
   imports: [RouterLink],
@@ -31,8 +34,11 @@ export class NotificationCompose {
   private readonly organizationService = inject(OrganizationService);
   private readonly templateService = inject(TemplateService);
   private readonly notificationService = inject(NotificationService);
+  private readonly clientSearch$ = new Subject<string>();
+  private readonly selectedClientsById = signal<Record<string, ClientModel>>({});
 
   protected readonly clients = signal<ClientModel[]>([]);
+  protected readonly clientsLoading = signal(false);
   protected readonly organizations = signal<OrganizationModel[]>([]);
   protected readonly templates = signal<TemplateModel[]>([]);
 
@@ -42,12 +48,16 @@ export class NotificationCompose {
   protected readonly filterType = signal<ClientType | ''>('');
   protected readonly broadcastConfirmed = signal(false);
 
-  protected readonly filteredClients = computed(() => {
-    const search = this.clientSearch().trim().toLowerCase();
-    if (!search) {
-      return this.clients();
-    }
-    return this.clients().filter((client) => client.displayName.toLowerCase().includes(search));
+  /** Search results, with already-selected clients kept visible even if outside the current page. */
+  protected readonly displayedClients = computed(() => {
+    const results = this.clients();
+    const selectedIds = this.selectedClientIds();
+    const selectedById = this.selectedClientsById();
+    const resultIds = new Set(results.map((client) => client.id));
+    const selectedOutsideResults = selectedIds
+      .filter((id) => !resultIds.has(id) && selectedById[id])
+      .map((id) => selectedById[id]);
+    return [...selectedOutsideResults, ...results];
   });
 
   protected readonly selectedChannels = signal<NotificationChannel[]>([]);
@@ -58,7 +68,8 @@ export class NotificationCompose {
   protected readonly filteredTemplates = computed(() => {
     const organizationId = this.organizationId();
     return this.templates().filter(
-      (template) => !organizationId || template.organizationId === organizationId,
+      (template) =>
+        !organizationId || !template.organizationId || template.organizationId === organizationId,
     );
   });
 
@@ -93,35 +104,64 @@ export class NotificationCompose {
   protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
-    this.clientService
-      .list({ limit: 200 })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => this.clients.set(response.object.items),
-        error: () => undefined,
+    this.clientSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((term) => {
+          this.clientsLoading.set(true);
+          const search = term.trim();
+          return this.clientService
+            .list({
+              limit: CLIENT_SEARCH_LIMIT,
+              ...(search ? { search } : {}),
+            })
+            .pipe(catchError(() => of({ objects: [] as ClientModel[], count: 0 })));
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        this.clients.set(response.objects);
+        this.clientsLoading.set(false);
       });
 
+    this.clientSearch$.next('');
+
     this.organizationService
-      .list()
+      .list({ limit: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.organizations.set(response.object.items),
+        next: (response) => this.organizations.set(response.objects),
         error: () => undefined,
       });
 
     this.templateService
-      .list()
+      .list({ limit: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.templates.set(response.object.items),
+        next: (response) => this.templates.set(response.objects),
         error: () => undefined,
       });
   }
 
-  toggleClient(clientId: string): void {
+  onClientSearch(value: string): void {
+    this.clientSearch.set(value);
+    this.clientSearch$.next(value);
+  }
+
+  toggleClient(client: ClientModel): void {
+    const isSelected = this.selectedClientIds().includes(client.id);
     this.selectedClientIds.update((ids) =>
-      ids.includes(clientId) ? ids.filter((id) => id !== clientId) : [...ids, clientId],
+      isSelected ? ids.filter((id) => id !== client.id) : [...ids, client.id],
     );
+    this.selectedClientsById.update((current) => {
+      if (isSelected) {
+        const rest = { ...current };
+        delete rest[client.id];
+        return rest;
+      }
+      return { ...current, [client.id]: client };
+    });
   }
 
   toggleChannel(channel: NotificationChannel): void {
@@ -153,7 +193,7 @@ export class NotificationCompose {
       .subscribe({
         next: async (response) => {
           this.submitLoading.set(false);
-          await this.router.navigate(['/notifications', response.object.notification.id]);
+          await this.router.navigate(['/notifications', response.object.id]);
         },
         error: (err: unknown) => {
           this.submitLoading.set(false);

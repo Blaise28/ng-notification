@@ -102,9 +102,7 @@ export class Lookup implements OnInit {
   // focus au champ (donc showAutoComplete() encore à false).
   private readonly pendingSelectedIdResolution = computed(
     () =>
-      this.option() === 'autocomplete' &&
-      this.selectedId() != null &&
-      this.selectedItem() == null,
+      this.option() === 'autocomplete' && this.selectedId() != null && this.selectedItem() == null,
   );
 
   protected readonly autocompleteResource = this.api.getResource<Record<string, unknown>>(() => {
@@ -161,10 +159,7 @@ export class Lookup implements OnInit {
   // trouvé et verrouillage activé). À utiliser dans le template pour désactiver
   // l'input et/ou masquer le bouton d'annulation.
   protected readonly isValueLocked = computed(
-    () =>
-      this.selectedId() != null &&
-      this.selectedItem() != null &&
-      this.lockValueWhenFound(),
+    () => this.selectedId() != null && this.selectedItem() != null && this.lockValueWhenFound(),
   );
 
   protected readonly selectedCardClass = computed(() => {
@@ -215,7 +210,7 @@ export class Lookup implements OnInit {
       } else {
         this.dialogService.showToast({
           type: 'error',
-          message: $localize`Aucun résultat trouvé`,
+          message: 'Aucun résultat trouvé',
         });
       }
     });

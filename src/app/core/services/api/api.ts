@@ -4,6 +4,7 @@ import {
   HttpErrorResponse,
   HttpHeaders,
   HttpParams,
+  httpResource,
 } from '@angular/common/http';
 import { inject, Service, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -18,7 +19,8 @@ export interface ApiRequestOptions {
   headers?: HttpHeaders | Record<string, string | string[]>;
   context?: HttpContext;
   params?:
-    HttpParams | Record<string, string | number | boolean | readonly (string | number | boolean)[]>;
+    | HttpParams
+    | Record<string, string | number | boolean | readonly (string | number | boolean)[]>;
   reportProgress?: boolean;
   responseType?: 'json';
   withCredentials?: boolean;
@@ -39,6 +41,16 @@ export class Api {
       window.addEventListener('online', () => this.isOnline.set(true));
       window.addEventListener('offline', () => this.isOnline.set(false));
     }
+  }
+
+  getResource<T>(urlFn: () => string | undefined) {
+    return httpResource<T>(() => {
+      const path = urlFn();
+      if (!path) {
+        return undefined;
+      }
+      return this.buildUrl(path);
+    });
   }
 
   get<T>(path: string, options?: ApiRequestOptions): Observable<T> {

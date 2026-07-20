@@ -1,3 +1,9 @@
+import {
+  ListResponseModel,
+  PaginatedQueryModel,
+  SingleResponseModel,
+} from '@models/pagination.models';
+
 export type TemplateChannel = 'email' | 'sms' | 'whatsapp' | 'multi';
 
 export const TEMPLATE_VARIABLE_TOKENS = [
@@ -11,7 +17,7 @@ export const TEMPLATE_VARIABLE_TOKENS = [
 ] as const;
 
 export interface CreateTemplateBodyModel {
-  organizationId: string;
+  organizationId?: string;
   name: string;
   slug: string;
   channel: TemplateChannel;
@@ -25,13 +31,13 @@ export interface CreateTemplateBodyModel {
 
 export type UpdateTemplateBodyModel = Partial<Omit<CreateTemplateBodyModel, 'organizationId'>>;
 
-export interface ListTemplatesQueryModel {
+export interface ListTemplatesQueryModel extends PaginatedQueryModel {
   organizationId?: string;
 }
 
 export interface TemplateModel {
   id: string;
-  organizationId: string;
+  organizationId?: string | null;
   name: string;
   slug: string;
   channel: TemplateChannel;
@@ -45,14 +51,6 @@ export interface TemplateModel {
   updatedAt: string;
 }
 
-export interface TemplateResponse {
-  object: { success: true; template: TemplateModel };
-}
-
-export interface TemplatesListResponse {
-  object: { success: true; items: TemplateModel[] };
-}
-
-export interface DeleteTemplateResponse {
-  object: { success: true; id: string };
-}
+export type TemplateResponse = SingleResponseModel<TemplateModel>;
+export type TemplatesListResponse = ListResponseModel<TemplateModel>;
+export type DeleteTemplateResponse = SingleResponseModel<{ id: string }>;

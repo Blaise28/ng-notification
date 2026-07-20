@@ -45,5 +45,5 @@ export interface OmnichannelJobModel {
 }
 
 export interface OmnichannelJobResponse {
-  object: { success: true; job: OmnichannelJobModel };
+  object: OmnichannelJobModel;
 }

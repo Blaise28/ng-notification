@@ -3,11 +3,13 @@ import { inject, Service } from '@angular/core';
 import {
   CreateOrganizationBodyModel,
   DeleteOrganizationResponse,
+  ListOrganizationsQueryModel,
   OrganizationResponse,
   OrganizationsListResponse,
   UpdateOrganizationBodyModel,
 } from '@components/organizations/organization.models';
 import { Api } from '@services/api/api';
+import { toQueryParams } from '@utils/api-query';
 
 @Service()
 export class OrganizationService {
@@ -17,8 +19,10 @@ export class OrganizationService {
     return this.api.post<OrganizationResponse>('/api/v1/organizations', body);
   }
 
-  list() {
-    return this.api.get<OrganizationsListResponse>('/api/v1/organizations');
+  list(query?: ListOrganizationsQueryModel) {
+    return this.api.get<OrganizationsListResponse>('/api/v1/organizations', {
+      params: toQueryParams(query),
+    });
   }
 
   getById(id: string) {

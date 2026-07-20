@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { Password } from '@globals/components/password/password';
 import { ApiError } from '@services/api/api-error';
 import { AuthService } from '@services/auth/auth.service';
 import { ThemeController } from '@layout/theme-controller/theme-controller';
@@ -13,7 +14,7 @@ import { ThemeStore } from '@stores/theme/theme.store';
 
 @Component({
   selector: 'app-login',
-  imports: [ThemeController, RouterLink, FormField],
+  imports: [ThemeController, RouterLink, FormField, Password],
   templateUrl: './login.html',
 })
 export class Login {

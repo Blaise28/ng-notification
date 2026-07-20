@@ -25,7 +25,9 @@
       "@stores/*": ["src/app/core/stores/*"],
       "@layout/*": ["src/app/layout/*"],
       "@models/*": ["src/app/core/models/*"],
-      "@environments/*": ["src/environments/*"]
+      "@environments/*": ["src/environments/*"],
+      "@globals/*": ["src/app/global/*"],
+      "@globals": ["src/app/global/index.ts"]
     }
   },
   "angularCompilerOptions": {
