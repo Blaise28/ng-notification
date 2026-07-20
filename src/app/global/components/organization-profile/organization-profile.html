@@ -1,0 +1,124 @@
+@if (currentOrg(); as org) {
+  <div class="dropdown dropdown-bottom min-w-full">
+    <button
+      type="button"
+      class="btn btn-ghost h-11 min-h-11 px-2 w-full rounded-lg border border-base-300 bg-base-100 hover:bg-base-200/70"
+      aria-haspopup="listbox"
+      [attr.aria-label]="'Organisation active : ' + org.organization.name"
+    >
+      <div class="flex items-center gap-2">
+        <div class="avatar">
+          <div
+            class="w-8 rounded-full text-white text-xs font-semibold grid place-items-center"
+            [style.background]="orgFallbackBackground(org)"
+          >
+            <span>{{ orgInitial(org) }}</span>
+          </div>
+        </div>
+
+        <div class="flex min-w-0 flex-wrap items-center gap-1">
+          <span class="font-medium truncate">{{ org.organization.name }}</span>
+          <span class="badge badge-ghost badge-xs">{{ orgPlan(org) }}</span>
+        </div>
+        <hugeicons-icon
+          [icon]="arrowDownIcon()"
+          [size]="16"
+          [strokeWidth]="1.8"
+          class="opacity-60"
+          aria-hidden="true"
+        />
+      </div>
+    </button>
+
+    <div
+      class="dropdown-content z-30 mt-2 w-80 rounded-xl border border-base-300 bg-base-100 shadow-2xl p-0"
+    >
+      <div class="p-3 pb-2">
+        <label class="input h-8 rounded-full shadow-none border-0 w-full flex items-center gap-2 ro">
+          <hugeicons-icon
+            [icon]="searchIcon()"
+            [size]="16"
+            [strokeWidth]="1.8"
+            class="opacity-60"
+            aria-hidden="true"
+          />
+          <input
+            type="text"
+            placeholder="Rechercher ..."
+            [value]="searchTerm()"
+            (input)="onSearchInput($event)"
+          />
+        </label>
+      </div>
+
+      <ul class="menu menu-sm p-2 max-h-72 overflow-y-auto" role="listbox">
+        <li class="menu-title text-xs">Organisations</li>
+        @for (item of filteredOrganizations(); track item.organization.id) {
+          <li>
+            <button
+              type="button"
+              class="flex items-center gap-3 rounded-lg mb-2"
+              [class.bg-base-200]="item.organization.id === org.organization.id"
+              (click)="switchOrg(item)"
+            >
+              <div class="avatar">
+                <div
+                  class="w-7 rounded-full text-white text-[11px] font-semibold grid place-items-center"
+                  [style.background]="orgFallbackBackground(item)"
+                >
+                  <span>{{ orgInitial(item) }}</span>
+                </div>
+              </div>
+
+              <div class="flex min-w-0 grow items-center gap-2">
+                <span class="truncate">{{ item.organization.name }}</span>
+                <span class="badge badge-ghost badge-xs">{{ orgPlan(item) }}</span>
+              </div>
+
+              @if (item.organization.id === org.organization.id) {
+                <hugeicons-icon
+                  [icon]="checkIcon()"
+                  [size]="16"
+                  [strokeWidth]="1.8"
+                  class="text-success"
+                  aria-hidden="true"
+                />
+              }
+            </button>
+          </li>
+        } @empty {
+          <li class="px-3 py-2 text-sm text-base-content/70" i18n>Aucune organisation trouvée.</li>
+        }
+      </ul>
+
+      <div class="divider divide-secondary/30 my-0 px-2"></div>
+
+      <ul class="menu gap-y-3 menu-sm p-2 pb-5">
+        <li>
+          <button
+            class="tooltip"
+            data-tip="En construction"
+            type="button"
+            (click)="createOrg()"
+            i18n-data-tip
+          >
+            <hugeicons-icon [icon]="addIcon()" [size]="16" [strokeWidth]="1.8" aria-hidden="true" />
+            <span i18n>Créer une organisation</span>
+          </button>
+        </li>
+        <li>
+          <a routerLink="/settings" (click)="manageOrg()">
+            <hugeicons-icon [icon]="settingsIcon()" [size]="16" [strokeWidth]="1.8" aria-hidden="true" />
+            <span i18n>Paramètres</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/settings/organizations" (click)="invite()">
+            <hugeicons-icon [icon]="inviteIcon()" [size]="16" [strokeWidth]="1.8" aria-hidden="true" />
+            <span i18n>Inviter les membres</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+}

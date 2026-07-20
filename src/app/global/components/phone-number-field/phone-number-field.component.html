@@ -1,0 +1,14 @@
+<input
+  #phoneInput
+  type="tel"
+  class="input py-3"
+  (input)="emitPhoneNumber()"
+  (countrychange)="emitPhoneNumber()" />
+@if (phoneInvalid()) {
+  <span class="flex flex-wrap text-error text-sm mt-1">
+    <span class="text-xs"
+      ><i class="fa-solid fa-triangle-exclamation mr-1"></i
+    ></span>
+    <span> Numéro de téléphone invalide</span>
+  </span>
+}

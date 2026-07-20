@@ -1,0 +1,56 @@
+<div class="flex min-h-0 flex-1 flex-col gap-3">
+  <div
+    class="relative flex min-h-[40vh] flex-1 items-center justify-center overflow-hidden rounded-lg border border-base-300/60 bg-base-200/30"
+  >
+    <img
+      [src]="src()"
+      [alt]="alt()"
+      class="max-h-full max-w-full transition-transform duration-300"
+      [style.transform]="imageTransform()"
+      decoding="async"
+    />
+  </div>
+
+  <div class="flex flex-wrap items-center justify-center gap-2" role="toolbar" aria-label="Contrôles de l’image">
+    <button
+      type="button"
+      class="btn btn-ghost btn-xs btn-square"
+      aria-label="Pivoter à gauche"
+      (click)="rotate(-90)"
+    >
+      <hugeicons-icon [icon]="RotateLeft01Icon" [size]="18" [strokeWidth]="1.7" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost btn-xs btn-square"
+      aria-label="Pivoter à droite"
+      (click)="rotate(90)"
+    >
+      <hugeicons-icon [icon]="RotateRight01Icon" [size]="18" [strokeWidth]="1.7" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost btn-xs btn-square"
+      aria-label="Zoom avant"
+      (click)="zoom(0.1)"
+    >
+      <hugeicons-icon [icon]="ZoomInAreaIcon" [size]="18" [strokeWidth]="1.7" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost btn-xs btn-square"
+      aria-label="Zoom arrière"
+      (click)="zoom(-0.1)"
+    >
+      <hugeicons-icon [icon]="ZoomOutAreaIcon" [size]="18" [strokeWidth]="1.7" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost btn-xs"
+      aria-label="Réinitialiser l’aperçu"
+      (click)="resetView()"
+    >
+      Réinitialiser
+    </button>
+  </div>
+</div>

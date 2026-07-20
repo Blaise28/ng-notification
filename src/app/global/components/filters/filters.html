@@ -1,0 +1,232 @@
+<button
+  type="button"
+  class="btn btn-sm gap-2 btn-accent border-0 px-4 py-3"
+  [class.pointer-events-none]="isLoading()"
+  [attr.aria-expanded]="showFiltersCard()"
+  aria-haspopup="dialog"
+  [attr.aria-busy]="isLoading()"
+  title="Filtres"
+  (click)="toggleFilterCard()"
+>
+  <span class="font-semibold">Filtres</span>
+  @if (activeFilterCount() > 0) {
+    <span class="badge badge-primary badge-sm">{{ activeFilterCount() }}</span>
+  }
+  <hugeicons-icon [icon]="FilterIcon" [size]="16" [strokeWidth]="2" aria-hidden="true" />
+</button>
+
+<section
+  class="filters-panel card bg-base-100 border border-base-300 shadow-lg rounded-box p-4"
+  [class]="panelPositionClass()"
+  [class.filters-panel--open]="showFiltersCard()"
+  [attr.aria-hidden]="!showFiltersCard()"
+  role="dialog"
+  aria-label="Filtres"
+>
+  <h2 class="text-center font-bold text-lg mb-3">Filtres</h2>
+
+  @if (filtersError(); as errorMessage) {
+    <div class="flex flex-col items-center gap-3 py-6 px-2 text-center">
+      <p class="text-sm text-error" role="alert">{{ errorMessage }}</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="retryLoadFilters()">
+        Réessayer
+      </button>
+    </div>
+  }
+
+  @if (filtersData().filters.length > 0 && !isLoading() && !filtersError()) {
+    <form
+      class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-2"
+      (submit)="$event.preventDefault()"
+    >
+      @for (filter of filtersData().filters; track trackFilter($index, filter)) {
+        @switch (filter.type) {
+          @case ('lookup') {
+            <div class="md:col-span-2 mb-3">
+              <span class="text-secondary text-xs font-medium block mb-1">{{ filter.title }}</span>
+              <app-lookup
+                [url]="filter.data?.url ?? ''"
+                [label]="filter.title"
+                option="lookup"
+                [selectedId]="getSelectedIdForLookup(filter.name)"
+                (selectedItemEvent)="onLookupSelected($event, filter.name)"
+              />
+            </div>
+          }
+          @case ('autocomplete') {
+            <div class="md:col-span-2 mb-3">
+              <span class="text-secondary text-xs font-medium block mb-1">{{ filter.title }}</span>
+              <app-lookup
+                [url]="lookupUrl(filter)"
+                [label]="filter.title"
+                option="autocomplete"
+                [selectedId]="getSelectedIdForLookup(filter.name)"
+                (selectedItemEvent)="onLookupSelected($event, filter.name)"
+              />
+            </div>
+          }
+          @case ('select') {
+            <fieldset class="md:col-span-2 mb-3">
+              <legend class="text-secondary text-sm font-medium mb-2">{{ filter.title }}</legend>
+              <div
+                class="flex flex-wrap gap-4 border-s-2 border-primary/30 ps-3"
+                role="radiogroup"
+                [attr.aria-label]="filter.title"
+              >
+                @for (choice of filter.data?.choices; track trackChoice($index, choice)) {
+                  <label class="flex items-center gap-2 cursor-pointer font-medium text-sm">
+                    <input
+                      type="radio"
+                      class="radio radio-primary radio-sm"
+                      [name]="filter.name"
+                      [value]="choice.value"
+                      [checked]="getFilterValue(filter.name) === choice.value"
+                      (change)="setFilterValue(filter.name, choice.value)"
+                    />
+                    <span>{{ choice.title }}</span>
+                  </label>
+                }
+              </div>
+            </fieldset>
+          }
+          @case ('date') {
+            <div class="mb-3">
+              <label class="text-secondary text-xs font-medium block mb-1" [for]="filter.name">
+                {{ filter.title }}
+              </label>
+              <input
+                type="date"
+                class="input h-9 input-sm w-full"
+                [id]="filter.name"
+                [value]="getFilterValue(filter.name)"
+                (input)="setFilterValue(filter.name, $any($event.target).value)"
+              />
+            </div>
+          }
+          @case ('range') {
+            <div class="md:col-span-2 mb-3">
+              <span class="text-secondary text-xs font-medium block mb-1">{{ filter.title }}</span>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="form-control w-full">
+                  <span class="label-text text-xs text-secondary mb-1">Min</span>
+                  <input
+                    type="number"
+                    class="input h-9 input-sm w-full"
+                    [attr.min]="filter.data?.min"
+                    [attr.max]="filter.data?.max"
+                    [attr.step]="filter.data?.step"
+                    [value]="getRangeValue(filter.name).min"
+                    (input)="setRangeValue(filter.name, 'min', $any($event.target).value)"
+                  />
+                </label>
+                <label class="form-control w-full">
+                  <span class="label-text text-xs text-secondary mb-1">Max</span>
+                  <input
+                    type="number"
+                    class="input h-9 input-sm w-full"
+                    [attr.min]="filter.data?.min"
+                    [attr.max]="filter.data?.max"
+                    [attr.step]="filter.data?.step"
+                    [value]="getRangeValue(filter.name).max"
+                    (input)="setRangeValue(filter.name, 'max', $any($event.target).value)"
+                  />
+                </label>
+              </div>
+            </div>
+          }
+          @case ('select_multiple') {
+            <fieldset class="md:col-span-2 mb-3 border border-base-300 rounded-box p-3">
+              <legend class="text-secondary text-xs font-medium mb-2">{{ filter.title }}</legend>
+              <div class="flex flex-wrap gap-4">
+                @for (choice of filter.data?.choices; track trackChoice($index, choice)) {
+                  <label class="flex items-center gap-2 cursor-pointer font-medium text-sm">
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-primary checkbox-sm"
+                      [checked]="isMultiSelected(filter.name, choice.value)"
+                      (change)="toggleMultiSelect(filter.name, choice.value)"
+                    />
+                    <span>{{ choice.title }}</span>
+                  </label>
+                }
+              </div>
+            </fieldset>
+          }
+          @case ('form_value') {
+            <div class="mb-3">
+              <label class="text-secondary text-xs font-medium block mb-1" [for]="filter.name">
+                {{ filter.title }}
+              </label>
+              <input
+                [type]="filter.data?.field_type ?? 'text'"
+                class="input h-9 input-sm w-full"
+                [id]="filter.name"
+                [placeholder]="filter.title"
+                [value]="getFilterValue(filter.name)"
+                (input)="setFilterValue(filter.name, $any($event.target).value)"
+              />
+            </div>
+          }
+          @case ('bool') {
+            <div class="mb-3">
+              <span class="text-secondary text-xs font-medium block mb-1">{{ filter.title }}</span>
+              <div class="join w-full" role="group" [attr.aria-label]="filter.title">
+                <button
+                  type="button"
+                  class="btn btn-sm join-item flex-1"
+                  [class.btn-primary]="getBoolValue(filter.name) === null"
+                  (click)="setBoolValue(filter.name, null)"
+                >
+                  Tous
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm join-item flex-1"
+                  [class.btn-primary]="getBoolValue(filter.name) === true"
+                  (click)="setBoolValue(filter.name, true)"
+                >
+                  Oui
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm join-item flex-1"
+                  [class.btn-primary]="getBoolValue(filter.name) === false"
+                  (click)="setBoolValue(filter.name, false)"
+                >
+                  Non
+                </button>
+              </div>
+            </div>
+          }
+        }
+      }
+
+      <div class="md:col-span-2 mt-3 flex flex-wrap justify-center gap-x-5">
+        <button
+          type="button"
+          class="btn btn-soft btn-error py-4 btn-sm"
+          [disabled]="activeFilterCount() === 0"
+          (click)="resetFilters()"
+        >
+          Réinitialiser
+        </button>
+        <button type="button" class="btn btn-primary btn-sm px-8 py-4 font-bold" (click)="applyFilters()">
+          Appliquer
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (filtersData().filters.length === 0 && isLoading()) {
+    <div class="flex justify-center items-center mt-8 py-6" role="status" aria-live="polite">
+      <span class="loading loading-spinner loading-md text-primary"></span>
+    </div>
+  }
+
+  @if (filtersData().filters.length === 0 && !isLoading() && !filtersError()) {
+    <div class="flex flex-col items-center text-secondary py-6 gap-2">
+      <hugeicons-icon [icon]="Sad01Icon" [size]="40" [strokeWidth]="1.5" aria-hidden="true" />
+      <p class="font-semibold">Aucun filtre</p>
+    </div>
+  }
+</section>

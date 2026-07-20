@@ -1,0 +1,48 @@
+.filters-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  z-index: 10;
+  width: min(100vw - 2rem, 300px);
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s;
+
+  @media screen and (min-width: 600px) {
+    width: 500px;
+  }
+
+  &--open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  &--center {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) translateY(-4px);
+
+    &.filters-panel--open {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  &--end {
+    right: 0;
+    left: auto;
+  }
+
+  &--start {
+    left: 0;
+    right: auto;
+  }
+}

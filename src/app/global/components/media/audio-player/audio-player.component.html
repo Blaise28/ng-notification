@@ -1,0 +1,203 @@
+<article
+  class="audio-player mx-auto flex w-full max-w-xl flex-col items-stretch gap-5 p-4"
+  tabindex="0"
+  role="region"
+  [attr.aria-label]="displayTitle()"
+  (focusin)="setActive()"
+  (focusout)="setInactive()"
+  (keydown)="setActive()"
+  (keyup)="setActive()"
+  (keypress)="setActive()"
+  (click)="setActive()"
+>
+  <audio #audio class="hidden" [src]="audioSource()" preload="metadata"></audio>
+
+  <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-5">
+    <div
+      class="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-base-200"
+      aria-hidden="true"
+    >
+      @if (artworkUrl()) {
+        <img
+          [src]="artworkUrl()!"
+          alt=""
+          width="112"
+          height="112"
+          class="size-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+      } @else {
+        <hugeicons-icon
+          class="text-base-content/45"
+          [icon]="MusicIcon"
+          [size]="48"
+          [strokeWidth]="1.5"
+        />
+      }
+    </div>
+
+    <div class="min-w-0 flex-1 text-center sm:text-left">
+      <h2 class="m-0 truncate text-lg font-semibold text-base-content">{{ displayTitle() }}</h2>
+      @if (isLoading()) {
+        <p class="m-0 mt-1 text-sm text-base-content/60" i18n>Chargement…</p>
+      } @else if (showReplay()) {
+        <p class="m-0 mt-1 text-sm text-base-content/60" i18n>Lecture terminée</p>
+      }
+    </div>
+  </div>
+
+  <div class="progress-track relative w-full">
+    <div class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center">
+      <div class="relative h-1.5 w-full overflow-hidden rounded-full bg-base-300">
+        <div class="absolute inset-y-0 left-0 bg-base-content/25" [style.width.%]="bufferedPercent()"></div>
+        <div class="absolute inset-y-0 left-0 bg-primary" [style.width.%]="playedPercent()"></div>
+      </div>
+    </div>
+    <input
+      #progressBar
+      type="range"
+      min="0"
+      [max]="duration() || 0"
+      step="0.1"
+      [value]="currentTime()"
+      (input)="onProgressChange($event)"
+      class="range range-primary range-xs relative z-10 w-full cursor-pointer bg-transparent"
+      i18n-aria-label
+      aria-label="Progression de la lecture"
+    />
+  </div>
+
+  <div class="flex items-center justify-between gap-3 text-sm tabular-nums text-base-content/70">
+    <span>{{ formatTime(currentTime()) }}</span>
+    <span>{{ formatTime(duration()) }}</span>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-center gap-2">
+    <button
+      type="button"
+      class="btn btn-ghost btn-circle"
+      i18n-aria-label
+      aria-label="Reculer de 10 secondes"
+      (click)="skip(-10)"
+    >
+      <hugeicons-icon [icon]="Backward01Icon" [strokeWidth]="2" [size]="20" aria-hidden="true" />
+    </button>
+
+    @if (showReplay()) {
+      <button
+        type="button"
+        class="btn btn-primary btn-circle btn-lg"
+        i18n-aria-label
+        aria-label="Rejouer"
+        (click)="replay()"
+      >
+        <hugeicons-icon [icon]="PlayIcon" [strokeWidth]="2" [size]="24" class="pl-0.5" aria-hidden="true" />
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="btn btn-primary btn-circle btn-lg"
+        [attr.aria-label]="playPauseAriaLabel()"
+        (click)="playPause()"
+      >
+        @if (isPlaying()) {
+          <hugeicons-icon [icon]="PauseIcon" [strokeWidth]="2" [size]="24" aria-hidden="true" />
+        } @else {
+          <hugeicons-icon [icon]="PlayIcon" [strokeWidth]="2" [size]="24" class="pl-0.5" aria-hidden="true" />
+        }
+      </button>
+    }
+
+    <button
+      type="button"
+      class="btn btn-ghost btn-circle"
+      i18n-aria-label
+      aria-label="Avancer de 10 secondes"
+      (click)="skip(10)"
+    >
+      <hugeicons-icon [icon]="Forward01Icon" [strokeWidth]="2" [size]="20" aria-hidden="true" />
+    </button>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-center gap-2">
+    <div class="relative flex items-center" (mouseleave)="hideVolumeControl()">
+      <button
+        type="button"
+        class="btn btn-ghost btn-circle btn-sm"
+        [attr.aria-label]="muteAriaLabel()"
+        (mouseenter)="showVolumeControl()"
+        (click)="muteUnmute()"
+      >
+        @if (isMuted() || volume() === 0) {
+          <hugeicons-icon [icon]="VolumeMute01Icon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+        } @else if (volume() > 0.5) {
+          <hugeicons-icon [icon]="VolumeHighIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+        } @else {
+          <hugeicons-icon [icon]="VolumeLowIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+        }
+      </button>
+
+      @if (showVolumeSlider()) {
+        <input
+          #volumeSlider
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          [value]="volume()"
+          (input)="setVolume($event)"
+          class="range range-primary range-xs ms-2 w-24"
+          i18n-aria-label
+          aria-label="Volume"
+        />
+      }
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-ghost btn-circle btn-sm"
+      [class.text-primary]="isLooping()"
+      [attr.aria-label]="loopAriaLabel()"
+      [attr.aria-pressed]="isLooping()"
+      (click)="toggleLoop()"
+    >
+      <hugeicons-icon [icon]="RepeatIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+    </button>
+
+    <div class="dropdown dropdown-top">
+      <button
+        type="button"
+        tabindex="0"
+        class="btn btn-ghost btn-circle btn-sm"
+        i18n-aria-label
+        aria-label="Vitesse de lecture"
+      >
+        <hugeicons-icon [icon]="DashboardSpeed01Icon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+      </button>
+      <ul
+        tabindex="0"
+        class="dropdown-content menu mb-2 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl"
+      >
+        <li class="menu-title px-2 py-1 text-xs">
+          <span i18n>Vitesse · {{ getPlaybackRateLabel(selectedPlaybackRate()) }}</span>
+        </li>
+        @for (speed of playbackRates; track speed.value) {
+          <li>
+            <button
+              type="button"
+              class="justify-between"
+              [class.active]="selectedPlaybackRate() === speed.value"
+              (click)="setPlaybackRate(speed.value)"
+            >
+              {{ speed.label }}
+              @if (selectedPlaybackRate() === speed.value) {
+                <hugeicons-icon [icon]="Tick02Icon" [strokeWidth]="2" [size]="12" aria-hidden="true" />
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,78 @@
+@switch (cell().format) {
+  @case ('date') {
+    <span [title]="cell().value ?? ''" class="text-nowrap">
+      {{ (cell().value | date: 'short') ?? '---' }}
+    </span>
+  }
+  @case ('currency') {
+    <span class="text-nowrap">
+      @if (cell().value) {
+        {{ cell().value | number: cell().currencyDigitsInfo }} {{ cell().currencyCode }}
+      } @else {
+        ----
+      }
+    </span>
+  }
+  @case ('number') {
+    @if (cell().value) {
+      <span>{{ cell().value | number }}</span>
+    } @else {
+      <span>----</span>
+    }
+  }
+  @case ('pourcentage') {
+    @if (cell().value) {
+      <span>{{ cell().value | number }} %</span>
+    } @else {
+      <span>----</span>
+    }
+  }
+  @case ('image') {
+    <div
+      class="size-10 flex justify-center items-center rounded-full overflow-hidden shrink-0"
+    >
+      @if (!cell().value || !isHttpImage(cell().value)) {
+        <span class="text-base-content/70" aria-hidden="true">
+          <hugeicons-icon [icon]="Image01Icon" [size]="24" [strokeWidth]="1.5" />
+        </span>
+      } @else {
+        <img
+          appImagePreview
+          [src]="cell().value!"
+          alt=""
+          tabindex="0"
+          role="button"
+          class="size-full object-cover rounded-full cursor-zoom-in"
+          i18n-aria-label
+          aria-label="Aperçu de l'image"
+          (click)="stopRowNavigation($event)"
+          (keydown.enter)="stopRowNavigation($event)"
+          (keydown.space)="stopRowNavigation($event)"
+        />
+      }
+    </div>
+  }
+  @case ('badge') {
+    <span>{{ cell().value ?? '---' }}</span>
+  }
+  @case ('boolean') {
+    @if (cell().booleanType === 'badge') {
+      @if (cell().booleanLabel) {
+        <span class="badge badge-sm" [class]="cell().booleanBadgeClass">{{ cell().booleanLabel }}</span>
+      }
+    } @else {
+      @if (isTrueValue(cell().value)) {
+        <span class="text-success" aria-label="Oui" i18n-aria-label>
+          <hugeicons-icon [icon]="CheckmarkCircle02Icon" [size]="18" [strokeWidth]="2" />
+        </span>
+      } @else if (isFalseValue(cell().value)) {
+        <span class="text-error" aria-label="Non" i18n-aria-label>
+          <hugeicons-icon [icon]="CancelCircleIcon" [size]="18" [strokeWidth]="2" />
+        </span>
+      }
+    }
+  }
+  @default {
+    <span>{{ cell().value ?? '---' }}</span>
+  }
+}

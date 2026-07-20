@@ -1,0 +1,18 @@
+<div class="h-full min-h-0">
+  @if (isLoading()) {
+    <div class="flex flex-col gap-3 p-4" aria-busy="true" aria-label="Chargement du document Markdown" i18n-aria-label>
+      <div class="skeleton h-6 w-3/4 rounded-lg"></div>
+      <div class="skeleton h-4 w-full rounded-lg"></div>
+      <div class="skeleton h-4 w-5/6 rounded-lg"></div>
+      <div class="skeleton h-4 w-2/3 rounded-lg"></div>
+    </div>
+  } @else if (hasError() || !hasContent()) {
+    <p class="m-0 text-sm text-base-content/60" role="status" i18n>Aperçu Markdown indisponible.</p>
+  } @else {
+    <article
+      class="markdown-body h-full overflow-y-auto rounded-lg border border-base-300/60 p-4 sm:p-6"
+      role="article"
+      [innerHTML]="renderedHtml()"
+    ></article>
+  }
+</div>

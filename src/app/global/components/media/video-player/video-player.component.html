@@ -1,0 +1,292 @@
+<div
+  class="relative videoplayer group/player flex h-full w-full items-center justify-center"
+  [class.hide-cursor]="!showCursor()"
+  (mousemove)="onPlayerMouseMove()"
+  (mouseenter)="onPlayerMouseEnter()"
+  (mouseleave)="onPlayerMouseLeave()"
+>
+  <video
+    #video
+    class="h-full w-full cursor-pointer rounded-lg bg-black object-contain"
+    [src]="videoSource()"
+    (click)="onVideoClick()"
+    (focusin)="setActive()"
+    (focusout)="setInactive()"
+    (dblclick)="toggleFullScreen()"
+    [attr.autoplay]="autoplayOnHover() || autoplay() ? true : null"
+  ></video>
+
+  <video #previewVideo class="pointer-events-none absolute h-0 w-0 opacity-0" muted preload="metadata" aria-hidden="true"></video>
+
+  @if (isLoading() && videoSource()) {
+    <div class="video-loading pointer-events-none absolute inset-0 z-100 flex items-center justify-center">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <span class="sr-only" i18n>Chargement…</span>
+    </div>
+  }
+
+  @if (!isPlaying() && !isLoading() && !showReplay()) {
+    <button
+      type="button"
+      class="btn btn-circle btn-lg absolute z-20 bg-black/55 text-white border-0 hover:bg-black/70"
+      [attr.aria-label]="playPauseAriaLabel()"
+      (click)="setActive(); playPause()"
+    >
+      <hugeicons-icon [icon]="PlayIcon" [strokeWidth]="2" [size]="28" class="pl-1" aria-hidden="true" />
+    </button>
+  }
+
+  @if (showReplay()) {
+    <button
+      type="button"
+      class="btn btn-lg absolute z-20 gap-2 border-0 bg-black/55 text-white hover:bg-black/70"
+      i18n-aria-label
+      aria-label="Rejouer la vidéo"
+      (click)="setActive(); replay()"
+    >
+      <hugeicons-icon [icon]="PlayIcon" [strokeWidth]="2" [size]="22" aria-hidden="true" />
+      <span i18n>Rejouer</span>
+    </button>
+  }
+
+  <div
+    class="custom-controls absolute inset-x-0 bottom-0 z-10 rounded-b-xl px-2 pb-2 transition-all duration-300"
+    [class.opacity-0]="isPlaying() && !showControls()"
+    [class.translate-y-2]="isPlaying() && !showControls()"
+  >
+    <div
+      class="progress-track relative mb-2 w-full"
+      (mousemove)="onProgressHover($event)"
+      (mouseleave)="onProgressLeave()"
+    >
+      <div class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center px-0">
+        <div class="relative h-1 w-full overflow-hidden rounded-full bg-white/20">
+          <div
+            class="absolute inset-y-0 left-0 bg-white/35"
+            [style.width.%]="bufferedPercent()"
+          ></div>
+          <div
+            class="absolute inset-y-0 left-0 bg-accent"
+            [style.width.%]="playedPercent()"
+          ></div>
+        </div>
+      </div>
+
+      <input
+        #progressBar
+        type="range"
+        min="0"
+        [max]="duration() || 0"
+        step="0.1"
+        [value]="currentTime()"
+        (input)="onProgressChange($event)"
+        class="range range-accent range-xs relative z-10 mb-0 w-full cursor-pointer bg-transparent [--range-bg:transparent] [--range-fill:0]"
+        i18n-aria-label
+        aria-label="Progression de la lecture"
+      />
+
+      <div
+        class="pointer-events-none absolute bottom-full z-30 mb-2 -translate-x-1/2"
+        [class.invisible]="scrubHoverTime() === null"
+        [style.left.%]="scrubHoverPercent()"
+      >
+        <div class="flex flex-col items-center gap-1 rounded-lg bg-base-300 p-1 shadow-xl">
+          <canvas
+            #previewCanvas
+            class="h-auto max-h-24 w-40 rounded-md bg-black"
+            [class.hidden]="!scrubPreviewAvailable()"
+            aria-hidden="true"
+          ></canvas>
+          @if (scrubHoverTime() !== null) {
+            <span class="px-1 text-xs font-medium tabular-nums text-base-content">
+              {{ formatTime(scrubHoverTime()!) }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="flex w-full items-center justify-between px-4 text-white">
+      <div class="flex items-center gap-2">
+        <div class="tooltip" data-tip="Reculer de 5s" i18n-data-tip>
+          <button
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm py-3"
+            i18n-aria-label
+            aria-label="Reculer de 5 secondes"
+            (click)="skip(-5)"
+          >
+            <hugeicons-icon [icon]="Backward01Icon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div class="tooltip" [attr.data-tip]="playPauseTooltip()">
+          <button
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm py-3"
+            [attr.aria-label]="playPauseAriaLabel()"
+            (click)="playPause()"
+          >
+            @if (isPlaying()) {
+              <hugeicons-icon [icon]="PauseIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+            } @else {
+              <hugeicons-icon [icon]="PlayIcon" [strokeWidth]="2" [size]="18" class="pl-0.5" aria-hidden="true" />
+            }
+          </button>
+        </div>
+
+        <div class="tooltip" data-tip="Avancer de 5s" i18n-data-tip>
+          <button
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm py-3"
+            i18n-aria-label
+            aria-label="Avancer de 5 secondes"
+            (click)="skip(5)"
+          >
+            <hugeicons-icon [icon]="Forward01Icon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div class="group/volume relative flex items-center" (mouseleave)="hideVolumeControl()">
+          <div class="tooltip" [attr.data-tip]="muteAriaLabel()">
+            <button
+              type="button"
+              class="btn btn-ghost btn-circle btn-sm py-3"
+              [attr.aria-label]="muteAriaLabel()"
+              (mouseenter)="showVolumeControl()"
+              (click)="muteUnmute()"
+            >
+              @if (isMuted() || volume() === 0) {
+                <hugeicons-icon [icon]="VolumeMute01Icon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+              } @else if (volume() > 0.5) {
+                <hugeicons-icon [icon]="VolumeHighIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+              } @else {
+                <hugeicons-icon [icon]="VolumeLowIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+              }
+            </button>
+          </div>
+
+          <div
+            class="absolute bottom-full left-1/2 mb-4 -translate-x-1/2 rounded-lg bg-base-300 p-2 shadow-xl transition-all duration-200"
+            [class.opacity-0]="!showVolumeSlider()"
+            [class.pointer-events-none]="!showVolumeSlider()"
+            [class.translate-y-2]="!showVolumeSlider()"
+          >
+            <input
+              #volumeSlider
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              [value]="volume()"
+              (input)="setVolume($event)"
+              class="range range-primary range-xs h-24 [writing-mode:vertical-lr] [-webkit-appearance:slider-vertical]"
+              i18n-aria-label
+              aria-label="Volume"
+            />
+          </div>
+        </div>
+
+        <span class="ml-2 text-xs font-medium tabular-nums">
+          {{ formatTime(currentTime()) }} / {{ formatTime(duration()) }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="tooltip" [attr.data-tip]="loopAriaLabel()">
+          <button
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm py-3"
+            [class.text-accent]="isLooping()"
+            [attr.aria-label]="loopAriaLabel()"
+            [attr.aria-pressed]="isLooping()"
+            (click)="toggleLoop()"
+          >
+            <hugeicons-icon [icon]="RepeatIcon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div class="dropdown dropdown-top dropdown-end">
+          <div class="tooltip" data-tip="Paramètres" i18n-data-tip>
+            <button
+              type="button"
+              tabindex="0"
+              class="btn btn-ghost btn-circle btn-sm py-3"
+              i18n-aria-label
+              aria-label="Paramètres de lecture"
+            >
+              <hugeicons-icon [icon]="Settings02Icon" [strokeWidth]="2" [size]="18" aria-hidden="true" />
+            </button>
+          </div>
+          <ul
+            tabindex="0"
+            class="dropdown-content menu mb-4 w-52 rounded-box border border-white/10 bg-base-200 p-2 text-base-content shadow-2xl backdrop-blur"
+          >
+            <li>
+              <details #speedDetails>
+                <summary class="flex items-center justify-between py-2">
+                  <span class="flex items-center gap-2">
+                    <hugeicons-icon [strokeWidth]="2" [icon]="DashboardSpeed01Icon" [size]="16" aria-hidden="true" />
+                    <ng-container i18n>Vitesse</ng-container>
+                  </span>
+                  <span class="text-xs opacity-60">
+                    {{ getPlaybackRateLabel(selectedPlaybackRate()) }}
+                  </span>
+                </summary>
+                <ul class="mt-1 gap-1 rounded-lg bg-base-300 p-2">
+                  @for (speed of playbackRates; track speed.value) {
+                    <li>
+                      <button
+                        type="button"
+                        (click)="setPlaybackRate(speed.value); speedDetails.removeAttribute('open')"
+                        class="justify-between"
+                        [class.active]="selectedPlaybackRate() === speed.value"
+                      >
+                        {{ speed.label }}
+                        @if (selectedPlaybackRate() === speed.value) {
+                          <hugeicons-icon [strokeWidth]="2" [icon]="Tick02Icon" [size]="12" aria-hidden="true" />
+                        }
+                      </button>
+                    </li>
+                  }
+                </ul>
+              </details>
+            </li>
+          </ul>
+        </div>
+
+        @if (pipSupported()) {
+          <div class="tooltip" [attr.data-tip]="pipAriaLabel()">
+            <button
+              type="button"
+              class="btn btn-ghost btn-circle btn-sm py-3"
+              [attr.aria-label]="pipAriaLabel()"
+              (click)="togglePictureInPicture()"
+            >
+              @if (isPictureInPicture()) {
+                <hugeicons-icon [strokeWidth]="2" [icon]="PictureInPictureExitIcon" [size]="18" aria-hidden="true" />
+              } @else {
+                <hugeicons-icon [strokeWidth]="2" [icon]="PictureInPictureOnIcon" [size]="18" aria-hidden="true" />
+              }
+            </button>
+          </div>
+        }
+
+        <div class="tooltip tooltip-left" [attr.data-tip]="fullScreenAriaLabel()">
+          <button
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm py-3"
+            [attr.aria-label]="fullScreenAriaLabel()"
+            (click)="toggleFullScreen()"
+          >
+            @if (isFullScreen()) {
+              <hugeicons-icon [strokeWidth]="2" [icon]="ArrowShrink02Icon" [size]="18" aria-hidden="true" />
+            } @else {
+              <hugeicons-icon [strokeWidth]="2" [icon]="ArrowExpand01Icon" [size]="18" aria-hidden="true" />
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

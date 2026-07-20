@@ -1,0 +1,119 @@
+<div
+  class="dropdown"
+  [class.dropdown-top]="dropdownAlign() === 'top'"
+  [class.dropdown-end]="dropdownAlign() === 'end'"
+  [class.dropdown-start]="dropdownAlign() === 'start'"
+  [class.dropdown-bottom]="dropdownAlign() === 'bottom'"
+>
+  @let userObject = user();
+  @if (design() === 'account') {
+    <button
+      tabindex="0"
+      role="button"
+      class="btn btn-ghost h-auto min-w-full rounded-md bg-base-200/30 px-2 py-2 normal-case"
+    >
+      <div class="flex items-center gap-2">
+        <div class="avatar">
+          <div class="w-8 rounded-full bg-success/20 text-success flex items-center justify-center">
+            @if (userObject?.avatar; as avatarUrl) {
+              <img [alt]="userObject?.last_name" [src]="avatarUrl" />
+            } @else {
+              <b>{{ userInitial() }}</b>
+            }
+          </div>
+        </div>
+        <div class="flex flex-col items-start gap-1 leading-tight">
+          <b class="truncate text-sm">{{ userDisplayName() }}</b>
+          <small class="text-base-content/75 truncate">{{ userObject?.email }}</small>
+        </div>
+        <hugeicons-icon
+          [icon]="arrowDownIcon()"
+          [size]="18"
+          [strokeWidth]="1.8"
+          class="opacity-75"
+        />
+      </div>
+    </button>
+  } @else {
+    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+      <div class="w-8 rounded-full flex items-center justify-center ring-1 ring-success">
+        @if (userObject?.avatar; as avatarUrl) {
+          <img [alt]="userObject?.last_name" [src]="avatarUrl" />
+        } @else {
+          <b>{{ userInitial() }}</b>
+        }
+      </div>
+    </div>
+  }
+  <ul
+    tabindex="-1"
+    class="menu menu-sm dropdown-content bg-base-200 rounded-lg z-100 w-72 p-4 shadow-2xl border border-base-300 gap-y-3"
+  >
+    <section class="mb-2">
+      <div class="avatar">
+        <div
+          class="ring-primary ring-offset-base-100 w-12 rounded-full ring-2 ring-offset-2 flex items-center justify-center"
+        >
+          @if (userObject?.avatar; as avatarUrl) {
+            <img [alt]="userObject?.last_name" [src]="avatarUrl" />
+          } @else {
+            <b>{{ userInitial() }}</b>
+          }
+        </div>
+      </div>
+      <div class="mt-5 flex flex-col">
+        <b class="text-sm truncate">{{ userObject?.first_name }} {{ userObject?.last_name }}</b>
+        <small class="text-xs mt-1 truncate">{{ userObject?.email }}</small>
+        <small class="mt-2 truncate">{{ userObject?.username }}</small>
+      </div>
+    </section>
+
+    <li class="border-t border-secondary/50 pt-4 mt-2">
+      <a class="text-sm" routerLink="/settings/profile">
+        <hugeicons-icon [icon]="userIcon()" [size]="17" [strokeWidth]="1.5" />
+        <span>Profile</span>
+      </a>
+    </li>
+    <li>
+      <a class="text-sm" routerLink="/document">
+        <hugeicons-icon [icon]="folderIcon()" [size]="17" [strokeWidth]="1.5" />
+        <span>Mes dossies</span>
+      </a>
+    </li>
+    <li>
+      <a class="text-sm">
+        <hugeicons-icon [icon]="archiveIcon()" [size]="17" [strokeWidth]="1.5" />
+        <span>Archives</span>
+      </a>
+    </li>
+    <li>
+      <a class="text-sm" routerLink="/settings/profile">
+        <hugeicons-icon [icon]="settingsIcon()" [size]="17" [strokeWidth]="1.5" />
+        <span>Paramètres</span>
+      </a>
+    </li>
+    <li>
+      <span class="text-sm flex justify-between">
+        <span class="flex gap-2 items-center">
+          <hugeicons-icon [icon]="lightIcon()" [size]="17" [strokeWidth]="1.5" />
+          <span>Thème</span>
+        </span>
+        <app-theme-controller />
+      </span>
+    </li>
+    <li class="border-t border-secondary/50 pt-2 mt-2">
+      <button
+        type="button"
+        class="text-sm text-error"
+        [disabled]="isLoggingOut()"
+        (click)="logout()"
+      >
+        <hugeicons-icon [icon]="logoutIcon()" [size]="20" [strokeWidth]="1.5" />
+        <span>{{ isLoggingOut() ? 'Déconnexion...' : 'Se déconnecter' }} </span>
+        @if (isLoggingOut()) {
+          <span class="laoding loading-sm ms-auto"></span>
+        }
+      </button>
+    </li>
+  </ul>
+</div>

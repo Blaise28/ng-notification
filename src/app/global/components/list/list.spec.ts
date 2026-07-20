@@ -1,0 +1,28 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+
+import { List } from './list';
+
+describe('List', () => {
+  let component: List;
+  let fixture: ComponentFixture<List>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [List],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(List);
+    component = fixture.componentInstance;
+    fixture.componentRef.setInput('url', '/test/');
+    fixture.componentRef.setInput('headers', [{ name: 'Name', field: ['name'] }]);
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

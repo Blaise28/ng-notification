@@ -1,0 +1,49 @@
+.videoplayer {
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  // Gradient overlay so controls stay readable on any frame.
+  .custom-controls {
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 50;
+    user-select: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      top: auto;
+      height: 150px;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.15) 80%,
+        transparent 100%
+      );
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    * {
+      pointer-events: auto;
+      user-select: auto;
+    }
+  }
+
+  .progress-track {
+    input[type='range'] {
+      // Keep the native thumb interactive while the custom track shows buffer/played.
+      background: transparent;
+    }
+  }
+}
+
+.hide-cursor {
+  cursor: none !important;
+}

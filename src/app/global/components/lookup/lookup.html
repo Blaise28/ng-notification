@@ -1,0 +1,236 @@
+<section #lookupContainer class="lookup relative w-full">
+  @if (selectedItem(); as item) {
+    @if (option() === 'lookup') {
+      <div [class]="selectedCardClass()">
+        <div class="flex items-center gap-2 min-w-0">
+          @if (showProfile()) {
+            @if (item.lookup_image) {
+              <div
+                class="lookup-avatar shrink-0 overflow-hidden rounded-box border border-base-300 bg-base-200"
+              >
+                <img [src]="item.lookup_image" class="size-full object-cover" alt="" />
+              </div>
+            } @else {
+              <div
+                class="lookup-avatar shrink-0 flex items-center justify-center rounded-box border border-base-300 bg-base-200 text-secondary"
+                aria-hidden="true"
+              >
+                <hugeicons-icon [icon]="Image01Icon" [size]="22" [strokeWidth]="1.5" />
+              </div>
+            }
+          }
+
+          <div class="min-w-0">
+            <span class="font-semibold text-sm text-base-content block truncate">{{
+                item.lookup_title
+              }}</span>
+            @if (item.lookup_subtitle) {
+              <span class="text-xs text-secondary block truncate">{{ item.lookup_subtitle }}</span>
+            }
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs btn-circle py-3 text-error shrink-0"
+          aria-label="Retirer la sélection"
+          (click)="deselect()"
+        >
+          <hugeicons-icon [icon]="CancelCircleIcon" [size]="18" [strokeWidth]="2" />
+        </button>
+      </div>
+    }
+  }
+
+  @if (option() === 'lookup' && !selectedItem()) {
+    <div class="relative">
+      <input
+        type="text"
+        id="lookup"
+        class="input input-sm w-full pe-10"
+        [placeholder]="label()"
+        [attr.aria-label]="label()"
+        [disabled]="loadingLookup()"
+        [required]="isRequired()"
+        [value]="lookupTerm()"
+        (input)="onLookupInput($event)"
+        (keydown)="onLookupKeydown($event)"
+      />
+      <button
+        type="button"
+        class="lookup-search-btn btn btn-ghost btn-xs btn-circle"
+        [disabled]="loadingLookup()"
+        [attr.aria-label]="'Rechercher ' + label()"
+        (click)="doLookup()"
+      >
+        @if (loadingLookup()) {
+          <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
+        } @else {
+          <hugeicons-icon [icon]="Search01Icon" [size]="16" [strokeWidth]="2" aria-hidden="true" />
+        }
+      </button>
+    </div>
+  }
+
+  @if (option() === 'autocomplete') {
+    <fieldset class="fieldset w-full p-0">
+      <legend class="fieldset-legend text-sm font-medium">
+        {{ label() }}
+        @if (isRequired()) {
+          <code class="text-error">*</code>
+        }
+      </legend>
+
+      @if (selectedItem(); as item) {
+        <div class="relative">
+          <input
+            type="text"
+            class="input  w-full pe-10"
+            readonly
+            [value]="item.lookup_title"
+            [attr.aria-label]="label()"
+          />
+          <button
+            type="button"
+            class="lookup-search-btn btn btn-ghost btn-xs btn-circle py-3 text-error"
+            aria-label="Retirer la sélection"
+            (click)="deselect()"
+          >
+            <hugeicons-icon [icon]="CancelCircleIcon" [size]="16" [strokeWidth]="2" />
+          </button>
+        </div>
+      } @else {
+        <input
+          #autocompleteInput
+          id="autocomplete"
+          type="search"
+          class="input input-sm w-full"
+          [placeholder]="label()"
+          autocomplete="off"
+          role="combobox"
+          [attr.aria-expanded]="showAutoComplete()"
+          [attr.aria-controls]="showAutoComplete() ? 'autocomplete-listbox' : null"
+          [attr.aria-activedescendant]="
+            activeOptionIndex() >= 0 ? 'autocomplete-option-' + activeOptionIndex() : null
+          "
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+          (focus)="showAutocompleteDropdown()"
+          (click)="showAutocompleteDropdown()"
+          (keydown)="onAutocompleteKeydown($event)"
+        />
+      }
+    </fieldset>
+
+    @if (showAutoComplete() && !selectedItem()) {
+      <div
+        #autocompleteDropdown
+        id="autocomplete-listbox"
+        class="lookup-dropdown absolute z-50 -mt-0.5 w-full max-h-62 overflow-y-auto rounded-lg border border-base-300 bg-base-100 shadow-lg py-2"
+        role="listbox"
+        [attr.aria-label]="label()"
+        [attr.aria-busy]="isLoading() || loadingMore()"
+        (scroll)="onDropdownScroll($event)"
+      >
+        <div class="flex items-center justify-between gap-2 px-3 mb-2">
+          <span class="text-secondary text-xs font-semibold">{{ label() }}</span>
+          <button
+            type="button"
+            class="btn btn-ghost btn-xs btn-circle py-3 text-error"
+            aria-label="Fermer la liste"
+            (click)="closeAutocompleteDropdown()"
+          >
+            <hugeicons-icon [icon]="CancelCircleIcon" [size]="16" [strokeWidth]="2" />
+          </button>
+        </div>
+
+        @if (showMinLengthHint()) {
+          <p class="px-3 py-2 text-xs text-secondary">
+            Saisissez au moins {{ minSearchLength() }} caractères
+          </p>
+        }
+
+        @if (autocompleteError(); as errorMessage) {
+          <p class="px-3 py-2 text-xs text-error" role="alert">{{ errorMessage }}</p>
+        }
+
+        @if (isLoading()) {
+          <div class="flex gap-2 px-3 py-2" role="status" aria-live="polite">
+            @for (item of [1, 2, 3]; track item) {
+              <span class="loading loading-dots loading-xs text-primary"></span>
+            }
+          </div>
+        }
+
+        @if (
+          !isLoading() &&
+          !showMinLengthHint() &&
+          !autocompleteError() &&
+          autocompleteItems().length === 0
+          ) {
+          <p class="py-3 text-center text-secondary text-sm font-medium">
+            Aucune donnée trouvée
+          </p>
+        }
+
+        @if (!isLoading() && autocompleteItems().length > 0) {
+          <ul class="flex flex-col gap-0.5 px-1">
+            @for (item of autocompleteItems(); track trackItem(item); let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  [id]="'autocomplete-option-' + i"
+                  [attr.data-option-index]="i"
+                  class="lookup-item-btn flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
+                  [class.bg-base-200]="isActiveOption(i)"
+                  role="option"
+                  [attr.aria-selected]="isActiveOption(i)"
+                  (click)="setSelectedItem(item)"
+                >
+                  @if (showProfile()) {
+                    @if (item.lookup_image) {
+                      <div
+                        class="lookup-avatar shrink-0 overflow-hidden rounded-box border border-base-300 bg-base-100"
+                      >
+                        <img [src]="item.lookup_image" class="size-full object-cover" alt="" />
+                      </div>
+                    } @else {
+                      <div
+                        class="lookup-avatar shrink-0 flex items-center justify-center rounded-box border border-base-300 bg-base-100 text-secondary"
+                        aria-hidden="true"
+                      >
+                        <hugeicons-icon [icon]="Image01Icon" [size]="20" [strokeWidth]="1.5" />
+                      </div>
+                    }
+                  }
+
+                  <span class="flex flex-col min-w-0">
+                    <span class="font-medium truncate">{{ item.lookup_title }}</span>
+                    @if (item.lookup_subtitle) {
+                      <span class="text-xs text-secondary truncate">{{ item.lookup_subtitle }}</span>
+                    }
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (loadingMore()) {
+          <div class="flex justify-center py-2" role="status" aria-live="polite">
+            <span class="loading loading-spinner loading-xs text-primary"></span>
+          </div>
+        }
+
+        @if (
+          !isLoading() &&
+          !loadingMore() &&
+          hasMoreAutocomplete() &&
+          autocompleteItems().length > 0
+          ) {
+          <p class="text-center text-xs text-secondary py-1">Faites défiler pour charger plus</p>
+        }
+      </div>
+    }
+  }
+</section>

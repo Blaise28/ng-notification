@@ -1,0 +1,42 @@
+<div class="flex items-center gap-x-2">
+  <!-- First group (pins 0-2) -->
+  @for (i of firstGroup(); track i) {
+    <input
+      [attr.type]="inputType()"
+      maxlength="1"
+      [attr.inputmode]="otpInputMode()"
+      [id]="'otp-pin-' + i"
+      [value]="displayValues()[i]"
+      (input)="onInput($event, i)"
+      (keydown)="onKeyDown($event, i)"
+      (paste)="onPaste($event)"
+      (focus)="onFocus(i)"
+      (blur)="onBlur()"
+      class="input text-center text-xl font-medium w-10 h-10 p-0 sm:w-11 sm:h-11 transition-all duration-150 focus:border-primary"
+      [class.input-success]="isFullyFilled()"
+      autocomplete="one-time-code"
+    />
+  }
+
+  <!-- Separator -->
+  <span class="text-xl font-light text-base-content/40 select-none mx-1">—</span>
+
+  <!-- Second group (pins 3-5) -->
+  @for (i of secondGroup(); track i) {
+    <input
+      [attr.type]="inputType()"
+      maxlength="1"
+      [attr.inputmode]="otpInputMode()"
+      [id]="'otp-pin-' + i"
+      [value]="displayValues()[i]"
+      (input)="onInput($event, i)"
+      (keydown)="onKeyDown($event, i)"
+      (paste)="onPaste($event)"
+      (focus)="onFocus(i)"
+      (blur)="onBlur()"
+      class="input text-center text-xl font-medium size-10 p-0 sm:size-11 transition-all duration-150 focus:border-primary"
+      [class.input-success]="isFullyFilled()"
+      autocomplete="one-time-code"
+    />
+  }
+</div>

@@ -1,0 +1,13 @@
+<div class="h-full min-h-0">
+  @if (pdfUrl(); as safeUrl) {
+    <iframe
+      [src]="safeUrl"
+      class="h-full w-full rounded-lg border border-base-300/60"
+      title="Aperçu du document PDF"
+      i18n-title
+      type="application/pdf"
+    ></iframe>
+  } @else {
+    <p class="m-0 text-sm text-base-content/60" role="status" i18n>Aperçu PDF indisponible.</p>
+  }
+</div>
