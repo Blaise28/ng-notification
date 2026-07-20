@@ -16,13 +16,19 @@ export interface ChannelContentModel {
   whatsapp?: { contentSid: string; variables?: Record<string, string> };
 }
 
+export interface TemplateIdsModel {
+  email?: string;
+  sms?: string;
+  whatsapp?: string;
+}
+
 export interface SendToClientsBodyModel {
   channels: NotificationChannel[];
   clientIds?: string[];
   filter?: { type?: ClientType };
   broadcastAll?: boolean;
-  organizationId?: string;
   templateId?: string;
+  templateIds?: TemplateIdsModel;
   variables?: Record<string, string>;
   content?: ChannelContentModel;
 }
@@ -43,7 +49,6 @@ export interface SentNotificationRecipientModel {
 
 export interface SentNotificationModel {
   id: string;
-  organizationId?: string | null;
   templateId?: string | null;
   channels: string[];
   mode: SentNotificationMode;
@@ -64,7 +69,6 @@ export interface SentNotificationDetailModel extends SentNotificationModel {
 
 export interface ListSentNotificationsQueryModel extends PaginatedQueryModel {
   channel?: NotificationChannel;
-  organizationId?: string;
   clientId?: string;
 }
 

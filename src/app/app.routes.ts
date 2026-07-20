@@ -29,14 +29,13 @@ export const routes: Routes = [
         loadChildren: () => import('@components/clients/client.routes').then((m) => m.clientRoutes),
       },
       {
-        path: 'organizations',
-        loadChildren: () =>
-          import('@components/organizations/organization.routes').then((m) => m.organizationRoutes),
-      },
-      {
         path: 'templates',
         loadChildren: () =>
           import('@components/templates/template.routes').then((m) => m.templateRoutes),
+      },
+      {
+        path: 'media',
+        loadChildren: () => import('@components/media/media.routes').then((m) => m.mediaRoutes),
       },
       {
         path: 'notifications',

@@ -1,0 +1,45 @@
+<div class="card bg-base-200">
+  <div class="card-body gap-3">
+    <h2 class="card-title text-sm">{{ title() }}</h2>
+
+    @switch (channel()) {
+      @case ('email') {
+        <p class="text-sm font-medium">
+          Sujet : {{ previewSubject() || '(sans sujet)' }}
+        </p>
+        <iframe
+          title="Aperçu e-mail"
+          class="w-full min-h-[420px] rounded-lg border border-base-300 bg-white"
+          sandbox=""
+          [srcdoc]="emailSrcdoc()"
+        ></iframe>
+      }
+      @case ('sms') {
+        <div class="mx-auto w-full max-w-xs rounded-[2rem] border-4 border-base-300 bg-base-100 p-4 shadow-inner">
+          <div class="mx-auto mb-3 h-1.5 w-16 rounded-full bg-base-300" aria-hidden="true"></div>
+          <div class="rounded-2xl bg-primary text-primary-content px-3 py-2 text-sm whitespace-pre-wrap min-h-16">
+            {{ previewSms() || '(vide)' }}
+          </div>
+          <p class="text-xs text-base-content/50 text-center mt-3">Aperçu SMS</p>
+        </div>
+      }
+      @case ('whatsapp') {
+        <div class="rounded-xl border border-base-300 bg-[#efeae2] p-4">
+          <div class="max-w-sm rounded-lg bg-white shadow-sm px-3 py-2 text-sm">
+            @if (whatsappContentSid().trim()) {
+              <p class="font-medium mb-1">Modèle WhatsApp</p>
+              <p class="text-xs text-base-content/70 break-all">
+                SID : {{ whatsappContentSid() }}
+              </p>
+              <p class="text-xs text-base-content/60 mt-2">
+                Le contenu final dépend du modèle Twilio Content.
+              </p>
+            } @else {
+              <p class="text-base-content/60">(aucun SID)</p>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

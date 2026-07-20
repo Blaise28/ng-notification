@@ -6,10 +6,10 @@ import { HugeiconsIconComponent, IconSvgObject } from '@hugeicons/angular';
 import {
   ArrowLeft02Icon,
   ArrowRight01Icon,
-  Building02Icon,
   Calendar03Icon,
   Clock01Icon,
   DashboardSquare01Icon,
+  Image02Icon,
   Megaphone02Icon,
   Note01Icon,
   Notification02Icon,
@@ -53,8 +53,8 @@ export class AsideMenu {
       menus: [
         { label: 'Tableau de bord', url: '', icon: DashboardSquare01Icon },
         { label: 'Clients', url: '/clients', icon: UserGroupIcon },
-        { label: 'Organisations', url: '/organizations', icon: Building02Icon },
         { label: 'Modèles', url: '/templates', icon: Note01Icon },
+        { label: 'Galerie', url: '/media', icon: Image02Icon },
         {
           label: 'Notifications',
           icon: Notification02Icon,

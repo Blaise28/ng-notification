@@ -6,15 +6,18 @@ import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap 
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
 import { NotificationService } from '@services/notifications/notification.service';
-import { OrganizationService } from '@services/organizations/organization.service';
 import { TemplateService } from '@services/templates/template.service';
 import { ClientModel, ClientType } from '@components/clients/client.models';
-import { OrganizationModel } from '@components/organizations/organization.models';
-import { TemplateModel } from '@components/templates/template.models';
+import {
+  TEMPLATE_VARIABLE_LABELS,
+  TemplateModel,
+  TemplateVariableToken,
+} from '@components/templates/template.models';
 import {
   ChannelContentModel,
   NotificationChannel,
   SendToClientsBodyModel,
+  TemplateIdsModel,
 } from '../notification.models';
 
 type TargetMode = 'clients' | 'filter' | 'broadcast';
@@ -31,7 +34,6 @@ export class NotificationCompose {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly clientService = inject(ClientService);
-  private readonly organizationService = inject(OrganizationService);
   private readonly templateService = inject(TemplateService);
   private readonly notificationService = inject(NotificationService);
   private readonly clientSearch$ = new Subject<string>();
@@ -39,7 +41,6 @@ export class NotificationCompose {
 
   protected readonly clients = signal<ClientModel[]>([]);
   protected readonly clientsLoading = signal(false);
-  protected readonly organizations = signal<OrganizationModel[]>([]);
   protected readonly templates = signal<TemplateModel[]>([]);
 
   protected readonly targetMode = signal<TargetMode>('clients');
@@ -48,7 +49,6 @@ export class NotificationCompose {
   protected readonly filterType = signal<ClientType | ''>('');
   protected readonly broadcastConfirmed = signal(false);
 
-  /** Search results, with already-selected clients kept visible even if outside the current page. */
   protected readonly displayedClients = computed(() => {
     const results = this.clients();
     const selectedIds = this.selectedClientIds();
@@ -62,32 +62,38 @@ export class NotificationCompose {
 
   protected readonly selectedChannels = signal<NotificationChannel[]>([]);
   protected readonly contentSource = signal<ContentSource>('template');
-  protected readonly organizationId = signal('');
-  protected readonly templateId = signal('');
+  protected readonly templateIds = signal<TemplateIdsModel>({});
+  protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
 
-  protected readonly filteredTemplates = computed(() => {
-    const organizationId = this.organizationId();
-    return this.templates().filter(
-      (template) =>
-        !organizationId || !template.organizationId || template.organizationId === organizationId,
-    );
+  protected readonly templatesByChannel = computed(() => {
+    const map: Record<NotificationChannel, TemplateModel[]> = {
+      email: [],
+      sms: [],
+      whatsapp: [],
+    };
+    for (const template of this.templates()) {
+      map[template.channel].push(template);
+    }
+    return map;
   });
 
-  protected readonly selectedTemplate = computed(
-    () => this.templates().find((template) => template.id === this.templateId()) ?? null,
-  );
+  protected readonly selectedTemplates = computed(() => {
+    const ids = this.templateIds();
+    const all = this.templates();
+    return this.selectedChannels()
+      .map((channel) => {
+        const id = ids[channel];
+        return id ? (all.find((template) => template.id === id) ?? null) : null;
+      })
+      .filter((template): template is TemplateModel => !!template);
+  });
 
   protected readonly templateVariableTokens = computed(() => {
-    const template = this.selectedTemplate();
-    if (!template) {
-      return [];
-    }
-    const source = [template.subject, template.htmlBody, template.textBody, template.smsBody]
-      .filter((value): value is string => !!value)
-      .join(' ');
     const tokens = new Set<string>();
-    for (const match of source.matchAll(/\{\{\s*(\w+)\s*\}\}/g)) {
-      tokens.add(match[1]);
+    for (const template of this.selectedTemplates()) {
+      for (const token of template.variables ?? []) {
+        tokens.add(token);
+      }
     }
     return Array.from(tokens);
   });
@@ -127,14 +133,6 @@ export class NotificationCompose {
 
     this.clientSearch$.next('');
 
-    this.organizationService
-      .list({ limit: 100 })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => this.organizations.set(response.objects),
-        error: () => undefined,
-      });
-
     this.templateService
       .list({ limit: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -165,13 +163,67 @@ export class NotificationCompose {
   }
 
   toggleChannel(channel: NotificationChannel): void {
-    this.selectedChannels.update((channels) =>
-      channels.includes(channel) ? channels.filter((c) => c !== channel) : [...channels, channel],
-    );
+    const nextChannels = this.selectedChannels().includes(channel)
+      ? this.selectedChannels().filter((c) => c !== channel)
+      : [...this.selectedChannels(), channel];
+    this.selectedChannels.set(nextChannels);
+    this.templateIds.update((current) => {
+      const next: TemplateIdsModel = {};
+      for (const ch of nextChannels) {
+        if (current[ch]) {
+          next[ch] = current[ch];
+        }
+      }
+      return next;
+    });
+  }
+
+  setTemplateForChannel(channel: NotificationChannel, templateId: string): void {
+    this.templateIds.update((current) => ({
+      ...current,
+      [channel]: templateId || undefined,
+    }));
+    this.prefillVariablesFromClients();
   }
 
   setVariable(token: string, value: string): void {
     this.variables.update((current) => ({ ...current, [token]: value }));
+  }
+
+  labelFor(token: string): string {
+    return this.variableLabels[token as TemplateVariableToken] ?? token;
+  }
+
+  private prefillVariablesFromClients(): void {
+    const tokens = this.templateVariableTokens();
+    if (tokens.length === 0) {
+      return;
+    }
+    const selectedIds = this.selectedClientIds();
+    if (selectedIds.length !== 1) {
+      return;
+    }
+    const client = this.selectedClientsById()[selectedIds[0]];
+    if (!client) {
+      return;
+    }
+    const fromClient: Record<string, string> = {
+      displayName: client.displayName,
+      firstName: client.firstName ?? '',
+      lastName: client.lastName ?? '',
+      companyName: client.companyName ?? '',
+      phone: client.phoneE164,
+      email: client.email ?? '',
+    };
+    this.variables.update((current) => {
+      const next = { ...current };
+      for (const token of tokens) {
+        if (!next[token]) {
+          next[token] = fromClient[token] ?? '';
+        }
+      }
+      return next;
+    });
   }
 
   submit(event: SubmitEvent): void {
@@ -215,8 +267,12 @@ export class NotificationCompose {
     if (this.targetMode() === 'broadcast' && !this.broadcastConfirmed()) {
       return 'Confirmez la diffusion à tous les clients.';
     }
-    if (this.contentSource() === 'template' && !this.templateId()) {
-      return 'Sélectionnez un modèle.';
+    if (this.contentSource() === 'template') {
+      for (const channel of this.selectedChannels()) {
+        if (!this.templateIds()[channel]) {
+          return `Sélectionnez un modèle pour le canal ${channel}.`;
+        }
+      }
     }
     if (this.contentSource() === 'custom') {
       if (
@@ -254,16 +310,26 @@ export class NotificationCompose {
   }
 
   private buildBody(): SendToClientsBodyModel {
+    const usedVariables = Object.fromEntries(
+      Object.entries(this.variables()).filter(
+        ([key, value]) => this.templateVariableTokens().includes(key) && value.trim() !== '',
+      ),
+    );
+
     return {
       channels: this.selectedChannels(),
       clientIds: this.targetMode() === 'clients' ? this.selectedClientIds() : undefined,
       filter: this.targetMode() === 'filter' ? { type: this.filterType() || undefined } : undefined,
       broadcastAll: this.targetMode() === 'broadcast' ? true : undefined,
-      organizationId: this.organizationId() || undefined,
-      templateId: this.contentSource() === 'template' ? this.templateId() || undefined : undefined,
+      templateIds:
+        this.contentSource() === 'template'
+          ? Object.fromEntries(
+              this.selectedChannels().map((channel) => [channel, this.templateIds()[channel]!]),
+            )
+          : undefined,
       variables:
-        this.contentSource() === 'template' && Object.keys(this.variables()).length > 0
-          ? this.variables()
+        this.contentSource() === 'template' && Object.keys(usedVariables).length > 0
+          ? usedVariables
           : undefined,
       content: this.contentSource() === 'custom' ? this.buildContent() : undefined,
     };

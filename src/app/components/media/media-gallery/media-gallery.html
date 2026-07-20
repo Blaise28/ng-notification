@@ -1,0 +1,51 @@
+<section class="p-6 max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
+    <h1 tabindex="-1" class="text-xl font-bold text-primary">Galerie d'images</h1>
+    <label class="btn btn-primary">
+      @if (uploading()) {
+        <span class="loading loading-sm"></span>
+      } @else {
+        Ajouter une image
+      }
+      <input
+        type="file"
+        class="hidden"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        [disabled]="uploading()"
+        (change)="onFileSelected($event)"
+      />
+    </label>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+  } @else if (assets().length === 0) {
+    <p class="text-sm text-base-content/60">Aucune image pour le moment.</p>
+  } @else {
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      @for (asset of assets(); track asset.id) {
+        <article class="border border-base-300 rounded-lg overflow-hidden bg-base-200">
+          <img
+            [src]="asset.url"
+            [alt]="asset.originalName"
+            class="w-full h-36 object-cover"
+          />
+          <div class="p-3 flex flex-col gap-2">
+            <p class="text-xs truncate" [title]="asset.originalName">{{ asset.originalName }}</p>
+            <button
+              type="button"
+              class="btn btn-error btn-xs"
+              (click)="confirmDelete(asset)"
+            >
+              Supprimer
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

@@ -1,4 +1,4 @@
-<section class="p-6 max-w-2xl mx-auto">
+<section class="p-6 max-w-3xl mx-auto">
   @if (errorMessage(); as message) {
     <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
   }
@@ -25,10 +25,6 @@
       <div class="card-body">
         <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <dt class="text-secondary">Organisation</dt>
-            <dd class="font-medium">{{ organizationName() }}</dd>
-          </div>
-          <div>
             <dt class="text-secondary">Canal</dt>
             <dd class="font-medium uppercase">{{ currentTemplate.channel }}</dd>
           </div>
@@ -40,43 +36,34 @@
             <dt class="text-secondary">Par défaut</dt>
             <dd class="font-medium">{{ currentTemplate.isDefault ? 'Oui' : 'Non' }}</dd>
           </div>
+          <div>
+            <dt class="text-secondary">Variables</dt>
+            <dd class="font-medium">
+              @if (currentTemplate.variables.length === 0) {
+                Aucune
+              } @else {
+                @for (token of currentTemplate.variables; track token) {
+                  <code class="me-1">{{ labelFor(token) }}</code>
+                }
+              }
+            </dd>
+          </div>
         </dl>
       </div>
     </div>
 
-    @if (currentTemplate.subject || currentTemplate.htmlBody || currentTemplate.textBody) {
-      <div class="card bg-base-200 mb-4">
-        <div class="card-body">
-          <h2 class="card-title text-sm">E-mail</h2>
-          @if (currentTemplate.subject) {
-            <p class="text-sm font-medium">{{ currentTemplate.subject }}</p>
-          }
-          @if (currentTemplate.htmlBody) {
-            <div class="text-sm whitespace-pre-wrap border-t border-base-300 pt-2 mt-2">
-              {{ currentTemplate.htmlBody }}
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    @if (currentTemplate.smsBody) {
-      <div class="card bg-base-200 mb-4">
-        <div class="card-body">
-          <h2 class="card-title text-sm">SMS</h2>
-          <p class="text-sm whitespace-pre-wrap">{{ currentTemplate.smsBody }}</p>
-        </div>
-      </div>
-    }
-
-    @if (currentTemplate.whatsappContentSid) {
-      <div class="card bg-base-200 mb-4">
-        <div class="card-body">
-          <h2 class="card-title text-sm">WhatsApp</h2>
-          <p class="text-sm">SID : {{ currentTemplate.whatsappContentSid }}</p>
-        </div>
-      </div>
-    }
+    <div class="mb-4">
+      <app-template-preview
+        [channel]="currentTemplate.channel"
+        [subject]="currentTemplate.subject ?? ''"
+        [htmlBody]="currentTemplate.htmlBody ?? ''"
+        [css]="currentTemplate.css ?? ''"
+        [smsBody]="currentTemplate.smsBody ?? ''"
+        [whatsappContentSid]="currentTemplate.whatsappContentSid ?? ''"
+        [variables]="previewVariables()"
+        title="Aperçu du modèle"
+      />
+    </div>
 
     <a routerLink="/templates" class="btn btn-ghost mt-2">Retour à la liste</a>
   }

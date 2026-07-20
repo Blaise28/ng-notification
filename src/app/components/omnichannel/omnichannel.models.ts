@@ -11,7 +11,6 @@ export interface OmnichannelContentModel {
 
 export interface SendOmnichannelBodyModel {
   channels: OmnichannelChannel[];
-  organizationId?: string;
   templateId?: string;
   variables?: Record<string, string>;
   content?: OmnichannelContentModel;
@@ -22,7 +21,6 @@ export interface SendOmnichannelBodyModel {
 
 export interface BroadcastOmnichannelBodyModel {
   channels: OmnichannelChannel[];
-  organizationId?: string;
   templateId?: string;
   variables?: Record<string, string>;
   content?: OmnichannelContentModel;
@@ -32,7 +30,6 @@ export interface BroadcastOmnichannelBodyModel {
 
 export interface OmnichannelJobModel {
   id: string;
-  organizationId?: string | null;
   templateId?: string | null;
   channels: string[];
   status: OmnichannelJobStatus;

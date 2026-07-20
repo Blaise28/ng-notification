@@ -12,20 +12,6 @@
   } @else {
     <form (submit)="submit($event)" class="flex flex-col gap-4">
       <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Organisation</legend>
-        @if (isEdit()) {
-          <p class="input w-full items-center bg-base-200">{{ selectedOrganizationName() }}</p>
-        } @else {
-          <select [formField]="templateForm.organizationId" class="select w-full">
-            <option value="">Aucune (optionnel)</option>
-            @for (organization of organizations(); track organization.id) {
-              <option [value]="organization.id">{{ organization.name }}</option>
-            }
-          </select>
-        }
-      </fieldset>
-
-      <fieldset class="fieldset">
         <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
         <input
           type="text"
@@ -53,20 +39,53 @@
           <option value="email">E-mail</option>
           <option value="sms">SMS</option>
           <option value="whatsapp">WhatsApp</option>
-          <option value="multi">Multi-canal</option>
         </select>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Variables du modèle</legend>
+        <div class="flex flex-wrap gap-3">
+          @for (token of variableTokens; track token) {
+            <label class="label gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm"
+                [checked]="selectedVariables().includes(token)"
+                (change)="toggleVariable(token)"
+              />
+              <span class="text-sm">{{ variableLabels[token] }}</span>
+              <button
+                type="button"
+                class="btn btn-ghost btn-xs"
+                (click)="insertVariable(token)"
+                [disabled]="!selectedVariables().includes(token)"
+              >
+                Insérer
+              </button>
+            </label>
+          }
+        </div>
       </fieldset>
 
       @let channel = templateForm.channel().value();
 
-      @if (channel === 'email' || channel === 'multi') {
+      @if (channel === 'email') {
         <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Sujet (e-mail)</legend>
+          <legend class="fieldset-legend text-sm text-primary/90">Sujet (e-mail) <code>*</code></legend>
           <input type="text" [formField]="templateForm.subject" class="input w-full" />
         </fieldset>
         <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Corps HTML</legend>
-          <textarea [formField]="templateForm.htmlBody" class="textarea w-full" rows="5"></textarea>
+          <div class="flex items-center justify-between gap-2">
+            <legend class="fieldset-legend text-sm text-primary/90">Corps HTML <code>*</code></legend>
+            <button type="button" class="btn btn-ghost btn-xs" (click)="showGallery.set(true)">
+              Insérer depuis la galerie
+            </button>
+          </div>
+          <textarea [formField]="templateForm.htmlBody" class="textarea w-full" rows="6"></textarea>
+        </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">CSS</legend>
+          <textarea [formField]="templateForm.css" class="textarea w-full font-mono text-xs" rows="4"></textarea>
         </fieldset>
         <fieldset class="fieldset">
           <legend class="fieldset-legend text-sm text-primary/90">Corps texte brut</legend>
@@ -74,17 +93,17 @@
         </fieldset>
       }
 
-      @if (channel === 'sms' || channel === 'multi') {
+      @if (channel === 'sms') {
         <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Corps SMS</legend>
+          <legend class="fieldset-legend text-sm text-primary/90">Corps SMS <code>*</code></legend>
           <textarea [formField]="templateForm.smsBody" class="textarea w-full" rows="3"></textarea>
         </fieldset>
       }
 
-      @if (channel === 'whatsapp' || channel === 'multi') {
+      @if (channel === 'whatsapp') {
         <fieldset class="fieldset">
           <legend class="fieldset-legend text-sm text-primary/90">
-            SID du modèle de contenu WhatsApp
+            SID du modèle de contenu WhatsApp <code>*</code>
           </legend>
           <input type="text" [formField]="templateForm.whatsappContentSid" class="input w-full" />
         </fieldset>
@@ -97,26 +116,25 @@
         </label>
       </fieldset>
 
-      <div class="card bg-base-200">
-        <div class="card-body">
-          <h2 class="card-title text-sm">Aperçu (données d'exemple)</h2>
-          <p class="text-xs text-base-content/60 mb-2">
-            Variables disponibles :
-            @for (token of variableTokens; track token) {
-              <code class="mx-0.5">{{ '{{' + token + '}}' }}</code>
-            }
-          </p>
-          @if (channel === 'email' || channel === 'multi') {
-            <p class="text-sm font-medium">{{ previewSubject() || '(sans sujet)' }}</p>
-            <div class="text-sm whitespace-pre-wrap border-t border-base-300 pt-2 mt-2">
-              {{ previewHtmlBody() || '(vide)' }}
-            </div>
+      @if (selectedVariables().length > 0) {
+        <p class="text-xs text-base-content/60 -mb-2">
+          Variables utilisées dans l’aperçu :
+          @for (token of selectedVariables(); track token) {
+            <code class="mx-0.5">{{ '{{' + token + '}}' }}</code>
           }
-          @if (channel === 'sms' || channel === 'multi') {
-            <p class="text-sm whitespace-pre-wrap">{{ previewSmsBody() || '(vide)' }}</p>
-          }
-        </div>
-      </div>
+        </p>
+      }
+
+      <app-template-preview
+        [channel]="templateForm.channel().value()"
+        [subject]="templateForm.subject().value()"
+        [htmlBody]="templateForm.htmlBody().value()"
+        [css]="templateForm.css().value()"
+        [smsBody]="templateForm.smsBody().value()"
+        [whatsappContentSid]="templateForm.whatsappContentSid().value()"
+        [variables]="previewVariables()"
+        title="Aperçu en direct"
+      />
 
       <div class="flex gap-3 mt-4">
         <button
@@ -132,5 +150,9 @@
         <a routerLink="/templates" class="btn btn-ghost">Annuler</a>
       </div>
     </form>
+  }
+
+  @if (showGallery()) {
+    <app-media-picker (selected)="onGallerySelect($event)" (cancelled)="showGallery.set(false)" />
   }
 </section>

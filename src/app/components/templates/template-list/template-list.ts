@@ -30,7 +30,6 @@ export class TemplateList {
         email: 'E-mail',
         sms: 'SMS',
         whatsapp: 'WhatsApp',
-        multi: 'Multi',
       },
     },
     {

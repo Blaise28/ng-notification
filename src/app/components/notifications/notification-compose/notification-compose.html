@@ -9,7 +9,7 @@
     <fieldset class="fieldset card bg-base-200 p-4">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Destinataires</legend>
 
-      <div class="flex gap-4 mb-3">
+      <div class="flex gap-4 mb-3 flex-wrap">
         <label class="label gap-2">
           <input
             type="radio"
@@ -125,7 +125,7 @@
 
     <fieldset class="fieldset card bg-base-200 p-4">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Canaux <code>*</code></legend>
-      <div class="flex gap-4">
+      <div class="flex gap-4 flex-wrap">
         <label class="label gap-2">
           <input
             type="checkbox"
@@ -159,7 +159,7 @@
     <fieldset class="fieldset card bg-base-200 p-4">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
 
-      <div class="flex gap-4 mb-3">
+      <div class="flex gap-4 mb-3 flex-wrap">
         <label class="label gap-2">
           <input
             type="radio"
@@ -182,56 +182,49 @@
         </label>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-        <div>
-          <label class="fieldset-legend text-sm" for="organization-select">Organisation</label>
-          <select
-            id="organization-select"
-            class="select w-full"
-            [value]="organizationId()"
-            (change)="organizationId.set($any($event.target).value)"
-          >
-            <option value="">Aucune</option>
-            @for (organization of organizations(); track organization.id) {
-              <option [value]="organization.id">{{ organization.name }}</option>
-            }
-          </select>
+      @if (contentSource() === 'template') {
+        <div class="flex flex-col gap-3 mb-3">
+          @for (channel of selectedChannels(); track channel) {
+            <div>
+              <label class="fieldset-legend text-sm" [attr.for]="'template-' + channel">
+                Modèle {{ channel }}
+              </label>
+              <select
+                class="select w-full"
+                [id]="'template-' + channel"
+                [value]="templateIds()[channel] ?? ''"
+                (change)="setTemplateForChannel(channel, $any($event.target).value)"
+              >
+                <option value="">Sélectionner…</option>
+                @for (template of templatesByChannel()[channel]; track template.id) {
+                  <option [value]="template.id">{{ template.name }}</option>
+                }
+              </select>
+            </div>
+          }
+          @if (selectedChannels().length === 0) {
+            <p class="text-sm text-base-content/60">Sélectionnez d'abord un canal.</p>
+          }
         </div>
 
-        @if (contentSource() === 'template') {
-          <div>
-            <label class="fieldset-legend text-sm" for="template-select">Modèle</label>
-            <select
-              id="template-select"
-              class="select w-full"
-              [value]="templateId()"
-              (change)="templateId.set($any($event.target).value)"
-            >
-              <option value="">Sélectionner…</option>
-              @for (template of filteredTemplates(); track template.id) {
-                <option [value]="template.id">{{ template.name }} ({{ template.channel }})</option>
+        @if (templateVariableTokens().length > 0) {
+          <div class="mb-3">
+            <p class="text-sm text-secondary mb-2">Variables des modèles</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (token of templateVariableTokens(); track token) {
+                <label class="fieldset">
+                  <span class="fieldset-legend text-xs">{{ labelFor(token) }}</span>
+                  <input
+                    type="text"
+                    class="input input-sm w-full"
+                    [value]="variables()[token] ?? ''"
+                    (input)="setVariable(token, $any($event.target).value)"
+                  />
+                </label>
               }
-            </select>
+            </div>
           </div>
         }
-      </div>
-
-      @if (contentSource() === 'template' && templateVariableTokens().length > 0) {
-        <div class="mb-3">
-          <p class="text-sm text-secondary mb-2">Variables du modèle</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            @for (token of templateVariableTokens(); track token) {
-              <label class="fieldset">
-                <span class="fieldset-legend text-xs">{{ token }}</span>
-                <input
-                  type="text"
-                  class="input input-sm w-full"
-                  (input)="setVariable(token, $any($event.target).value)"
-                />
-              </label>
-            }
-          </div>
-        </div>
       }
 
       @if (contentSource() === 'custom') {
