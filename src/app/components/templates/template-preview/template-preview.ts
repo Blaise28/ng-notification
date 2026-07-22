@@ -2,11 +2,13 @@ import { Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import type { TemplateChannel } from '../template.models';
+import { TEMPLATE_VARIABLE_LABELS, TemplateVariableToken } from '../template.models';
 import {
   buildEmailPreviewDocument,
   interpolateTemplate,
   TEMPLATE_PREVIEW_SAMPLE_VARS,
 } from '../template-preview.utils';
+import { countSmsSegments } from '../template-variables.utils';
 
 @Component({
   selector: 'app-template-preview',
@@ -20,8 +22,11 @@ export class TemplatePreview {
   readonly htmlBody = input('');
   readonly css = input('');
   readonly smsBody = input('');
-  readonly whatsappContentSid = input('');
+  readonly whatsappTemplateName = input('');
+  readonly whatsappTemplateLanguage = input('fr');
+  readonly whatsappVariableKeys = input<string[]>([]);
   readonly variables = input<Record<string, string>>(TEMPLATE_PREVIEW_SAMPLE_VARS);
+  readonly branded = input(false);
   readonly title = input('Aperçu');
 
   protected readonly previewSubject = computed(() =>
@@ -32,13 +37,29 @@ export class TemplatePreview {
     interpolateTemplate(this.smsBody(), this.variables()),
   );
 
+  protected readonly smsStats = computed(() => countSmsSegments(this.previewSms()));
+
+  protected readonly whatsappMappings = computed(() =>
+    this.whatsappVariableKeys().map((key, index) => ({
+      position: index + 1,
+      key,
+      label: this.labelFor(key),
+      sample: this.variables()[key] ?? '',
+    })),
+  );
+
   protected readonly emailSrcdoc = computed((): SafeHtml => {
     const doc = buildEmailPreviewDocument({
       subject: this.subject(),
       htmlBody: this.htmlBody(),
       css: this.css(),
       variables: this.variables(),
+      branded: this.branded(),
     });
     return this.sanitizer.bypassSecurityTrustHtml(doc);
   });
+
+  labelFor(token: string): string {
+    return TEMPLATE_VARIABLE_LABELS[token as TemplateVariableToken] ?? token;
+  }
 }

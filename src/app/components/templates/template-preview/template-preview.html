@@ -20,22 +20,36 @@
           <div class="rounded-2xl bg-primary text-primary-content px-3 py-2 text-sm whitespace-pre-wrap min-h-16">
             {{ previewSms() || '(vide)' }}
           </div>
-          <p class="text-xs text-base-content/50 text-center mt-3">Aperçu SMS</p>
+          <p class="text-xs text-base-content/50 text-center mt-3">
+            {{ smsStats().length }} car. · {{ smsStats().segments }} segment(s)
+          </p>
         </div>
       }
       @case ('whatsapp') {
         <div class="rounded-xl border border-base-300 bg-[#efeae2] p-4">
           <div class="max-w-sm rounded-lg bg-white shadow-sm px-3 py-2 text-sm">
-            @if (whatsappContentSid().trim()) {
-              <p class="font-medium mb-1">Modèle WhatsApp</p>
+            @if (whatsappTemplateName().trim()) {
+              <p class="font-medium mb-1">Modèle Meta WhatsApp</p>
               <p class="text-xs text-base-content/70 break-all">
-                SID : {{ whatsappContentSid() }}
+                Nom : {{ whatsappTemplateName() }}
               </p>
-              <p class="text-xs text-base-content/60 mt-2">
-                Le contenu final dépend du modèle Twilio Content.
+              <p class="text-xs text-base-content/70">
+                Langue : {{ whatsappTemplateLanguage() }}
               </p>
+              @if (whatsappMappings().length > 0) {
+                <ul class="mt-2 text-xs text-base-content/80 flex flex-col gap-1">
+                  @for (mapping of whatsappMappings(); track mapping.position) {
+                    <li>
+                      Param {{ mapping.position }} → {{ mapping.label }}
+                      @if (mapping.sample) {
+                        <span class="text-base-content/60">({{ mapping.sample }})</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
             } @else {
-              <p class="text-base-content/60">(aucun SID)</p>
+              <p class="text-base-content/60">(aucun modèle Meta)</p>
             }
           </div>
         </div>

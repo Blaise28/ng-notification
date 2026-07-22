@@ -1,4 +1,4 @@
-<section class="p-6 max-w-3xl mx-auto">
+<section class="p-6 max-w-6xl mx-auto">
   @if (errorMessage(); as message) {
     <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
   }
@@ -6,9 +6,20 @@
   @if (loading()) {
     <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
   } @else if (template(); as currentTemplate) {
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
       <h1 tabindex="-1" class="text-xl font-bold text-primary">{{ currentTemplate.name }}</h1>
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          [disabled]="duplicateLoading()"
+          (click)="duplicateTemplate()"
+        >
+          Dupliquer
+          @if (duplicateLoading()) {
+            <span class="loading loading-xs ms-1"></span>
+          }
+        </button>
         <a
           [routerLink]="['/templates', currentTemplate.id, 'edit']"
           class="btn btn-secondary btn-sm"
@@ -21,50 +32,93 @@
       </div>
     </div>
 
-    <div class="card bg-base-200 mb-4">
-      <div class="card-body">
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <dt class="text-secondary">Canal</dt>
-            <dd class="font-medium uppercase">{{ currentTemplate.channel }}</dd>
-          </div>
-          <div>
-            <dt class="text-secondary">Slug</dt>
-            <dd class="font-medium">{{ currentTemplate.slug }}</dd>
-          </div>
-          <div>
-            <dt class="text-secondary">Par défaut</dt>
-            <dd class="font-medium">{{ currentTemplate.isDefault ? 'Oui' : 'Non' }}</dd>
-          </div>
-          <div>
-            <dt class="text-secondary">Variables</dt>
-            <dd class="font-medium">
-              @if (currentTemplate.variables.length === 0) {
-                Aucune
-              } @else {
-                @for (token of currentTemplate.variables; track token) {
-                  <code class="me-1">{{ labelFor(token) }}</code>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="card bg-base-200">
+        <div class="card-body">
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt class="text-secondary">Canal</dt>
+              <dd class="font-medium uppercase">{{ currentTemplate.channel }}</dd>
+            </div>
+            <div>
+              <dt class="text-secondary">Slug</dt>
+              <dd class="font-medium">{{ currentTemplate.slug }}</dd>
+            </div>
+            <div>
+              <dt class="text-secondary">Par défaut</dt>
+              <dd>
+                @if (currentTemplate.isDefault) {
+                  <span class="badge badge-primary">Oui</span>
+                } @else {
+                  Non
                 }
-              }
-            </dd>
-          </div>
-        </dl>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-secondary">Variables</dt>
+              <dd class="font-medium">
+                @if (currentTemplate.variables.length === 0) {
+                  Aucune
+                } @else {
+                  @for (token of currentTemplate.variables; track token) {
+                    <code class="me-1">{{ labelFor(token) }}</code>
+                  }
+                }
+              </dd>
+            </div>
+            @if (currentTemplate.channel === 'whatsapp') {
+              <div class="sm:col-span-2">
+                <dt class="text-secondary">Modèle Meta WhatsApp</dt>
+                <dd class="font-medium">{{ currentTemplate.whatsappTemplateName ?? '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-secondary">Langue</dt>
+                <dd class="font-medium">{{ whatsappLanguageLabel() || currentTemplate.whatsappTemplateLanguage || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-secondary">Variables ordonnées</dt>
+                <dd class="font-medium">
+                  @if ((currentTemplate.whatsappVariableKeys ?? []).length === 0) {
+                    Aucune
+                  } @else {
+                    @for (key of currentTemplate.whatsappVariableKeys; track key; let i = $index) {
+                      <span class="badge badge-ghost me-1">{{ i + 1 }}. {{ labelFor(key) }}</span>
+                    }
+                  }
+                </dd>
+              </div>
+            }
+          </dl>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <label class="label cursor-pointer justify-start gap-2">
+          <input
+            type="checkbox"
+            class="toggle toggle-sm"
+            [checked]="brandedPreview()"
+            (change)="brandedPreview.set($any($event.target).checked)"
+          />
+          <span class="text-sm">Aperçu avec branding Nightbird</span>
+        </label>
+
+        <app-template-preview
+          [channel]="currentTemplate.channel"
+          [subject]="currentTemplate.subject ?? ''"
+          [htmlBody]="currentTemplate.htmlBody ?? ''"
+          [css]="currentTemplate.css ?? ''"
+          [smsBody]="currentTemplate.smsBody ?? ''"
+          [whatsappTemplateName]="currentTemplate.whatsappTemplateName ?? ''"
+          [whatsappTemplateLanguage]="currentTemplate.whatsappTemplateLanguage ?? 'fr'"
+          [whatsappVariableKeys]="currentTemplate.whatsappVariableKeys ?? []"
+          [variables]="previewVariables()"
+          [branded]="brandedPreview()"
+          title="Aperçu du modèle"
+        />
       </div>
     </div>
 
-    <div class="mb-4">
-      <app-template-preview
-        [channel]="currentTemplate.channel"
-        [subject]="currentTemplate.subject ?? ''"
-        [htmlBody]="currentTemplate.htmlBody ?? ''"
-        [css]="currentTemplate.css ?? ''"
-        [smsBody]="currentTemplate.smsBody ?? ''"
-        [whatsappContentSid]="currentTemplate.whatsappContentSid ?? ''"
-        [variables]="previewVariables()"
-        title="Aperçu du modèle"
-      />
-    </div>
-
-    <a routerLink="/templates" class="btn btn-ghost mt-2">Retour à la liste</a>
+    <a routerLink="/templates" class="btn btn-ghost mt-4">Retour à la liste</a>
   }
 </section>

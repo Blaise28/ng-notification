@@ -225,6 +225,36 @@
             </div>
           </div>
         }
+
+        @if (selectedTemplates().length > 0) {
+          <div class="mb-3">
+            <label class="label cursor-pointer justify-start gap-2 mb-2">
+              <input
+                type="checkbox"
+                class="toggle toggle-sm"
+                [checked]="brandedPreview()"
+                (change)="brandedPreview.set($any($event.target).checked)"
+              />
+              <span class="text-sm">Aperçu avec branding Nightbird</span>
+            </label>
+            @for (template of selectedTemplates(); track template.id) {
+              <app-template-preview
+                class="mb-3 block"
+                [channel]="template.channel"
+                [subject]="template.subject ?? ''"
+                [htmlBody]="template.htmlBody ?? ''"
+                [css]="template.css ?? ''"
+                [smsBody]="template.smsBody ?? ''"
+                [whatsappTemplateName]="template.whatsappTemplateName ?? ''"
+                [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr'"
+                [whatsappVariableKeys]="template.whatsappVariableKeys ?? []"
+                [variables]="previewVariables()"
+                [branded]="brandedPreview()"
+                [title]="'Aperçu — ' + template.name"
+              />
+            }
+          </div>
+        }
       }
 
       @if (contentSource() === 'custom') {
@@ -271,10 +301,17 @@
             <p class="text-sm font-medium mb-2">WhatsApp</p>
             <input
               type="text"
+              class="input w-full mb-2"
+              placeholder="Nom du modèle Meta"
+              [value]="whatsappTemplateName()"
+              (input)="whatsappTemplateName.set($any($event.target).value)"
+            />
+            <input
+              type="text"
               class="input w-full"
-              placeholder="SID du modèle de contenu"
-              [value]="whatsappContentSid()"
-              (input)="whatsappContentSid.set($any($event.target).value)"
+              placeholder="Langue (ex. fr, en_US)"
+              [value]="whatsappTemplateLanguage()"
+              (input)="whatsappTemplateLanguage.set($any($event.target).value)"
             />
           </div>
         }

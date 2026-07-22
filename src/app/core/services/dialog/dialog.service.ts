@@ -1,22 +1,88 @@
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
-export interface ToastMessage {
+export interface ToastOptions {
+  id: string;
   type: ToastType;
   message: string;
+  title?: string;
+  duration?: number;
 }
 
-@Injectable({ providedIn: 'root' })
-export class DialogService {
-  readonly toast = signal<ToastMessage | null>(null);
+export type ConfirmDialogVariant = 'warning' | 'error' | 'info' | 'success';
 
-  showToast(toast: ToastMessage): void {
-    this.toast.set(toast);
-    window.setTimeout(() => {
-      if (this.toast()?.message === toast.message) {
-        this.toast.set(null);
-      }
-    }, 4000);
+export interface ConfirmDialogOptions {
+  type: ConfirmDialogVariant;
+  description: string;
+  title?: string;
+  onConfirm?: () => void | Promise<void>;
+  onCancel?: () => void;
+}
+
+@Service()
+export class DialogService {
+  private toasts = signal<ToastOptions[]>([]);
+  private confirmDialog = signal<ConfirmDialogOptions | null>(null);
+
+  showToast(toast: { type: ToastType; message: string; title?: string; duration?: number }) {
+    this.add(toast);
+  }
+
+  showConfirmDialog(options: ConfirmDialogOptions) {
+    this.confirmDialog.set(options);
+  }
+
+  async confirmAction(onConfirm?: () => void | Promise<void>) {
+    const dialog = this.confirmDialog();
+    this.closeConfirmDialog();
+    if (dialog?.onConfirm) {
+      await dialog.onConfirm();
+    }
+    if (onConfirm) {
+      await onConfirm();
+    }
+  }
+
+  cancelAction(onCancel?: () => void) {
+    const dialog = this.confirmDialog();
+    this.closeConfirmDialog();
+    if (dialog?.onCancel) {
+      dialog.onCancel();
+    }
+    if (onCancel) {
+      onCancel();
+    }
+  }
+
+  closeConfirmDialog() {
+    this.confirmDialog.set(null);
+  }
+
+  private add(toast: Omit<ToastOptions, 'id'>): string {
+    const id = crypto.randomUUID();
+    this.toasts.update((t) => [...t, { ...toast, id }]);
+
+    const duration = toast.duration ?? 6000;
+    if (duration > 0) {
+      setTimeout(() => this.dismiss(id), duration);
+    }
+    return id;
+  }
+
+  dismiss(id: string) {
+    this.toasts.update((t) => t.filter((toast) => toast.id !== id));
+  }
+
+  clear() {
+    this.toasts.set([]);
+  }
+
+  getToast() {
+    return this.toasts.asReadonly();
+  }
+
+  getConfirmDialog() {
+    return this.confirmDialog.asReadonly();
   }
 }

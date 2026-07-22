@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
+import { DialogService } from '@services/dialog/dialog.service';
 import { ClientModel } from '../client.models';
 
 @Component({
@@ -16,6 +17,7 @@ export class ClientDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly clientService = inject(ClientService);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly clientId = this.route.snapshot.paramMap.get('id')!;
   protected readonly client = signal<ClientModel | null>(null);
@@ -40,19 +42,36 @@ export class ClientDetail {
 
   confirmDelete(): void {
     const client = this.client();
-    if (!client || !confirm(`Supprimer le client « ${client.displayName} » ?`)) {
+    if (!client) {
       return;
     }
-    this.clientService
-      .remove(client.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: async () => {
-          await this.router.navigate(['/clients']);
-        },
-        error: (err: unknown) => {
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
-        },
-      });
+    this.dialogService.showConfirmDialog({
+      type: 'error',
+      title: 'Supprimer le client',
+      description: `Supprimer le client « ${client.displayName} » ?`,
+      onConfirm: () => {
+        this.clientService
+          .remove(client.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: async () => {
+              this.dialogService.showToast({
+                type: 'success',
+                message: 'Client supprimé',
+              });
+              await this.router.navigate(['/clients']);
+            },
+            error: (err: unknown) => {
+              this.errorMessage.set(
+                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              );
+              this.dialogService.showToast({
+                type: 'error',
+                message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              });
+            },
+          });
+      },
+    });
   }
 }

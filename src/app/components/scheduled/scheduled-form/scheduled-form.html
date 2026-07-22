@@ -1,198 +1,323 @@
-<section class="p-6 max-w-2xl mx-auto">
+<section class="p-6 max-w-6xl mx-auto">
   <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">Nouvelle planification</h1>
 
   @if (errorMessage(); as message) {
     <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
   }
 
-  <form (submit)="submit($event)" class="flex flex-col gap-4">
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
-      <select
-        class="select w-full"
-        [value]="channel()"
-        (change)="channel.set($any($event.target).value)"
-      >
-        <option value="email">E-mail</option>
-        <option value="sms">SMS</option>
-        <option value="whatsapp">WhatsApp</option>
-        <option value="multi">Multi-canal</option>
-      </select>
-    </fieldset>
-
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend text-sm text-primary/90">
-        Date et heure d'envoi <code>*</code>
-      </legend>
-      <input
-        type="datetime-local"
-        class="input w-full"
-        [min]="minSendAt"
-        [value]="sendAt()"
-        (input)="sendAt.set($any($event.target).value)"
-      />
-    </fieldset>
-
-    <fieldset class="fieldset card bg-base-200 p-4">
-      <legend class="fieldset-legend text-sm text-primary/90 px-2">Cible <code>*</code></legend>
-      <div class="flex gap-4 mb-3">
-        <label class="label gap-2">
-          <input
-            type="radio"
-            name="target-type"
-            class="radio radio-sm"
-            [checked]="targetType() === 'all'"
-            (change)="targetType.set('all')"
-          />
-          Tous les clients
-        </label>
-        <label class="label gap-2">
-          <input
-            type="radio"
-            name="target-type"
-            class="radio radio-sm"
-            [checked]="targetType() === 'clientId'"
-            (change)="targetType.set('clientId')"
-          />
-          Un client
-        </label>
-        <label class="label gap-2">
-          <input
-            type="radio"
-            name="target-type"
-            class="radio radio-sm"
-            [checked]="targetType() === 'filter'"
-            (change)="targetType.set('filter')"
-          />
-          Filtrer par type
-        </label>
-      </div>
-
-      @if (targetType() === 'clientId') {
+  <form (submit)="submit($event)" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
         <select
           class="select w-full"
-          [value]="targetClientId()"
-          (change)="targetClientId.set($any($event.target).value)"
+          [value]="channel()"
+          (change)="onChannelChange($any($event.target).value)"
         >
-          <option value="">Sélectionner…</option>
-          @for (client of clients(); track client.id) {
-            <option [value]="client.id">{{ client.displayName }}</option>
-          }
+          <option value="email">E-mail</option>
+          <option value="sms">SMS</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="multi">Multi-canal</option>
         </select>
-      }
+      </fieldset>
 
-      @if (targetType() === 'filter') {
-        <select
-          class="select w-full"
-          [value]="targetFilterType()"
-          (change)="targetFilterType.set($any($event.target).value)"
-        >
-          <option value="">Sélectionner…</option>
-          <option value="individual">Particulier</option>
-          <option value="business">Entreprise</option>
-        </select>
-      }
-    </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">
+          Date et heure d'envoi <code>*</code>
+        </legend>
+        <input
+          type="datetime-local"
+          class="input w-full"
+          [min]="minSendAt"
+          [value]="sendAt()"
+          (input)="sendAt.set($any($event.target).value)"
+        />
+      </fieldset>
 
-    <fieldset class="fieldset card bg-base-200 p-4">
-      <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
-
-      @if (channel() === 'multi') {
-        <div class="flex gap-4 mb-3">
+      <fieldset class="fieldset card bg-base-200 p-4">
+        <legend class="fieldset-legend text-sm text-primary/90 px-2">Cible <code>*</code></legend>
+        <div class="flex gap-4 mb-3 flex-wrap">
           <label class="label gap-2">
             <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              [checked]="multiChannels().includes('email')"
-              (change)="toggleMultiChannel('email')"
+              type="radio"
+              name="target-type"
+              class="radio radio-sm"
+              [checked]="targetType() === 'all'"
+              (change)="targetType.set('all')"
             />
-            E-mail
+            Tous les clients
           </label>
           <label class="label gap-2">
             <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              [checked]="multiChannels().includes('sms')"
-              (change)="toggleMultiChannel('sms')"
+              type="radio"
+              name="target-type"
+              class="radio radio-sm"
+              [checked]="targetType() === 'clientId'"
+              (change)="targetType.set('clientId')"
             />
-            SMS
+            Un client
           </label>
           <label class="label gap-2">
             <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              [checked]="multiChannels().includes('whatsapp')"
-              (change)="toggleMultiChannel('whatsapp')"
+              type="radio"
+              name="target-type"
+              class="radio radio-sm"
+              [checked]="targetType() === 'filter'"
+              (change)="targetType.set('filter')"
             />
-            WhatsApp
+            Filtrer par type
           </label>
         </div>
-      }
 
-      @if (channel() === 'email' || (channel() === 'multi' && multiChannels().includes('email'))) {
-        <div class="mb-3">
-          <p class="text-sm font-medium mb-2">E-mail</p>
-          <input
-            type="text"
-            class="input w-full mb-2"
-            placeholder="Sujet"
-            [value]="emailSubject()"
-            (input)="emailSubject.set($any($event.target).value)"
-          />
-          <textarea
-            class="textarea w-full mb-2"
-            rows="4"
-            placeholder="Contenu HTML"
-            [value]="emailHtml()"
-            (input)="emailHtml.set($any($event.target).value)"
-          ></textarea>
-          <textarea
-            class="textarea w-full"
-            rows="2"
-            placeholder="Contenu texte (optionnel)"
-            [value]="emailText()"
-            (input)="emailText.set($any($event.target).value)"
-          ></textarea>
-        </div>
-      }
-
-      @if (channel() === 'sms' || (channel() === 'multi' && multiChannels().includes('sms'))) {
-        <div class="mb-3">
-          <p class="text-sm font-medium mb-2">SMS</p>
-          <textarea
-            class="textarea w-full"
-            rows="3"
-            placeholder="Contenu du SMS"
-            [value]="smsBody()"
-            (input)="smsBody.set($any($event.target).value)"
-          ></textarea>
-        </div>
-      }
-
-      @if (
-        channel() === 'whatsapp' || (channel() === 'multi' && multiChannels().includes('whatsapp'))
-      ) {
-        <div>
-          <p class="text-sm font-medium mb-2">WhatsApp</p>
-          <input
-            type="text"
-            class="input w-full"
-            placeholder="SID du modèle de contenu"
-            [value]="whatsappContentSid()"
-            (input)="whatsappContentSid.set($any($event.target).value)"
-          />
-        </div>
-      }
-    </fieldset>
-
-    <div class="flex gap-3">
-      <button type="submit" class="btn btn-primary" [disabled]="submitLoading()">
-        Planifier
-        @if (submitLoading()) {
-          <span class="loading loading-sm ms-2"></span>
+        @if (targetType() === 'clientId') {
+          <select
+            class="select w-full"
+            [value]="targetClientId()"
+            (change)="targetClientId.set($any($event.target).value)"
+          >
+            <option value="">Sélectionner…</option>
+            @for (client of clients(); track client.id) {
+              <option [value]="client.id">{{ client.displayName }}</option>
+            }
+          </select>
         }
-      </button>
-      <a routerLink="/scheduled" class="btn btn-ghost">Annuler</a>
+
+        @if (targetType() === 'filter') {
+          <select
+            class="select w-full"
+            [value]="targetFilterType()"
+            (change)="targetFilterType.set($any($event.target).value)"
+          >
+            <option value="">Sélectionner…</option>
+            <option value="individual">Particulier</option>
+            <option value="business">Entreprise</option>
+          </select>
+        }
+      </fieldset>
+
+      <fieldset class="fieldset card bg-base-200 p-4">
+        <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
+
+        <div class="flex gap-4 mb-3 flex-wrap">
+          <label class="label gap-2">
+            <input
+              type="radio"
+              name="content-source"
+              class="radio radio-sm"
+              [checked]="contentSource() === 'template'"
+              (change)="contentSource.set('template')"
+            />
+            Utiliser un modèle
+          </label>
+          <label class="label gap-2">
+            <input
+              type="radio"
+              name="content-source"
+              class="radio radio-sm"
+              [checked]="contentSource() === 'custom'"
+              (change)="contentSource.set('custom')"
+            />
+            Contenu personnalisé
+          </label>
+        </div>
+
+        @if (contentSource() === 'template') {
+          @if (channel() === 'multi') {
+            <div class="flex gap-4 mb-3 flex-wrap">
+              <label class="label gap-2">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="multiChannels().includes('email')"
+                  (change)="toggleMultiChannel('email')"
+                />
+                E-mail
+              </label>
+              <label class="label gap-2">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="multiChannels().includes('sms')"
+                  (change)="toggleMultiChannel('sms')"
+                />
+                SMS
+              </label>
+              <label class="label gap-2">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="multiChannels().includes('whatsapp')"
+                  (change)="toggleMultiChannel('whatsapp')"
+                />
+                WhatsApp
+              </label>
+            </div>
+          }
+
+          <label class="fieldset-legend text-sm" for="scheduled-template">Modèle</label>
+          <select
+            id="scheduled-template"
+            class="select w-full mb-3"
+            [value]="templateId()"
+            (change)="setTemplateId($any($event.target).value)"
+          >
+            <option value="">Sélectionner…</option>
+            @for (template of templatesForChannel(); track template.id) {
+              <option [value]="template.id">{{ template.name }}</option>
+            }
+          </select>
+
+          @if (templateVariableTokens().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (token of templateVariableTokens(); track token) {
+                <label class="fieldset">
+                  <span class="fieldset-legend text-xs">{{ labelFor(token) }}</span>
+                  <input
+                    type="text"
+                    class="input input-sm w-full"
+                    [value]="variables()[token] ?? ''"
+                    (input)="setVariable(token, $any($event.target).value)"
+                  />
+                </label>
+              }
+            </div>
+          }
+        }
+
+        @if (contentSource() === 'custom') {
+          @if (channel() === 'multi') {
+            <div class="flex gap-4 mb-3 flex-wrap">
+              <label class="label gap-2">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="multiChannels().includes('email')"
+                  (change)="toggleMultiChannel('email')"
+                />
+                E-mail
+              </label>
+              <label class="label gap-2">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="multiChannels().includes('sms')"
+                  (change)="toggleMultiChannel('sms')"
+                />
+                SMS
+              </label>
+              <label class="label gap-2">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="multiChannels().includes('whatsapp')"
+                  (change)="toggleMultiChannel('whatsapp')"
+                />
+                WhatsApp
+              </label>
+            </div>
+          }
+
+          @if (channel() === 'email' || (channel() === 'multi' && multiChannels().includes('email'))) {
+            <div class="mb-3">
+              <p class="text-sm font-medium mb-2">E-mail</p>
+              <input
+                type="text"
+                class="input w-full mb-2"
+                placeholder="Sujet"
+                [value]="emailSubject()"
+                (input)="emailSubject.set($any($event.target).value)"
+              />
+              <textarea
+                class="textarea w-full mb-2"
+                rows="4"
+                placeholder="Contenu HTML"
+                [value]="emailHtml()"
+                (input)="emailHtml.set($any($event.target).value)"
+              ></textarea>
+              <textarea
+                class="textarea w-full"
+                rows="2"
+                placeholder="Contenu texte (optionnel)"
+                [value]="emailText()"
+                (input)="emailText.set($any($event.target).value)"
+              ></textarea>
+            </div>
+          }
+
+          @if (channel() === 'sms' || (channel() === 'multi' && multiChannels().includes('sms'))) {
+            <div class="mb-3">
+              <p class="text-sm font-medium mb-2">SMS</p>
+              <textarea
+                class="textarea w-full"
+                rows="3"
+                placeholder="Contenu du SMS"
+                [value]="smsBody()"
+                (input)="smsBody.set($any($event.target).value)"
+              ></textarea>
+            </div>
+          }
+
+          @if (
+            channel() === 'whatsapp' || (channel() === 'multi' && multiChannels().includes('whatsapp'))
+          ) {
+            <div>
+              <p class="text-sm font-medium mb-2">WhatsApp</p>
+              <input
+                type="text"
+                class="input w-full mb-2"
+                placeholder="Nom du modèle Meta"
+                [value]="whatsappTemplateName()"
+                (input)="whatsappTemplateName.set($any($event.target).value)"
+              />
+              <input
+                type="text"
+                class="input w-full"
+                placeholder="Langue (ex. fr, en_US)"
+                [value]="whatsappTemplateLanguage()"
+                (input)="whatsappTemplateLanguage.set($any($event.target).value)"
+              />
+            </div>
+          }
+        }
+      </fieldset>
+
+      <div class="flex gap-3">
+        <button type="submit" class="btn btn-primary" [disabled]="submitLoading()">
+          Planifier
+          @if (submitLoading()) {
+            <span class="loading loading-sm ms-2"></span>
+          }
+        </button>
+        <a routerLink="/scheduled" class="btn btn-ghost">Annuler</a>
+      </div>
     </div>
+
+    @if (contentSource() === 'template' && selectedTemplate(); as template) {
+      <div class="xl:sticky xl:top-4 xl:self-start flex flex-col gap-3">
+        <label class="label cursor-pointer justify-start gap-2">
+          <input
+            type="checkbox"
+            class="toggle toggle-sm"
+            [checked]="brandedPreview()"
+            (change)="brandedPreview.set($any($event.target).checked)"
+          />
+          <span class="text-sm">Aperçu avec branding Nightbird</span>
+        </label>
+
+        <app-template-preview
+          [channel]="template.channel"
+          [subject]="template.subject ?? ''"
+          [htmlBody]="template.htmlBody ?? ''"
+          [css]="template.css ?? ''"
+          [smsBody]="template.smsBody ?? ''"
+          [whatsappTemplateName]="template.whatsappTemplateName ?? ''"
+          [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr'"
+          [whatsappVariableKeys]="template.whatsappVariableKeys ?? []"
+          [variables]="previewVariables()"
+          [branded]="brandedPreview()"
+          title="Aperçu du modèle"
+        />
+      </div>
+    }
   </form>
 </section>

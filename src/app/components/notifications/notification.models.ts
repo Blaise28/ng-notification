@@ -13,7 +13,7 @@ export type RecipientStatus = 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED' | 'SKIP
 export interface ChannelContentModel {
   email?: { subject: string; html: string; text?: string };
   sms?: { body: string };
-  whatsapp?: { contentSid: string; variables?: Record<string, string> };
+  whatsapp?: { templateName: string; language?: string; variables?: Record<string, string> };
 }
 
 export interface TemplateIdsModel {

@@ -8,6 +8,8 @@ import { ClientService } from '@services/clients/client.service';
 import { NotificationService } from '@services/notifications/notification.service';
 import { TemplateService } from '@services/templates/template.service';
 import { ClientModel, ClientType } from '@components/clients/client.models';
+import { TemplatePreview } from '@components/templates/template-preview/template-preview';
+import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '@components/templates/template-preview.utils';
 import {
   TEMPLATE_VARIABLE_LABELS,
   TemplateModel,
@@ -27,7 +29,7 @@ const CLIENT_SEARCH_LIMIT = 50;
 
 @Component({
   selector: 'app-notification-compose',
-  imports: [RouterLink],
+  imports: [RouterLink, TemplatePreview],
   templateUrl: './notification-compose.html',
 })
 export class NotificationCompose {
@@ -64,6 +66,7 @@ export class NotificationCompose {
   protected readonly contentSource = signal<ContentSource>('template');
   protected readonly templateIds = signal<TemplateIdsModel>({});
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
+  protected readonly brandedPreview = signal(true);
 
   protected readonly templatesByChannel = computed(() => {
     const map: Record<NotificationChannel, TemplateModel[]> = {
@@ -94,6 +97,11 @@ export class NotificationCompose {
       for (const token of template.variables ?? []) {
         tokens.add(token);
       }
+      if (template.channel === 'whatsapp') {
+        for (const token of template.whatsappVariableKeys ?? []) {
+          tokens.add(token);
+        }
+      }
     }
     return Array.from(tokens);
   });
@@ -104,7 +112,18 @@ export class NotificationCompose {
   protected readonly emailHtml = signal('');
   protected readonly emailText = signal('');
   protected readonly smsBody = signal('');
-  protected readonly whatsappContentSid = signal('');
+  protected readonly whatsappTemplateName = signal('');
+  protected readonly whatsappTemplateLanguage = signal('fr');
+
+  protected readonly previewVariables = computed(() => {
+    const vars: Record<string, string> = { ...TEMPLATE_PREVIEW_SAMPLE_VARS };
+    for (const [key, value] of Object.entries(this.variables())) {
+      if (value.trim()) {
+        vars[key] = value;
+      }
+    }
+    return vars;
+  });
 
   protected readonly submitLoading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -160,22 +179,32 @@ export class NotificationCompose {
       }
       return { ...current, [client.id]: client };
     });
+    this.prefillVariablesFromClients();
   }
 
   toggleChannel(channel: NotificationChannel): void {
-    const nextChannels = this.selectedChannels().includes(channel)
+    const isRemoving = this.selectedChannels().includes(channel);
+    const nextChannels = isRemoving
       ? this.selectedChannels().filter((c) => c !== channel)
       : [...this.selectedChannels(), channel];
     this.selectedChannels.set(nextChannels);
-    this.templateIds.update((current) => {
-      const next: TemplateIdsModel = {};
-      for (const ch of nextChannels) {
-        if (current[ch]) {
-          next[ch] = current[ch];
-        }
+
+    if (!isRemoving) {
+      const defaultTemplate = this.templatesByChannel()[channel].find((t) => t.isDefault);
+      if (defaultTemplate) {
+        this.templateIds.update((current) => ({
+          ...current,
+          [channel]: defaultTemplate.id,
+        }));
+        this.prefillVariablesFromClients();
       }
-      return next;
-    });
+    } else {
+      this.templateIds.update((current) => {
+        const next: TemplateIdsModel = { ...current };
+        delete next[channel];
+        return next;
+      });
+    }
   }
 
   setTemplateForChannel(channel: NotificationChannel, templateId: string): void {
@@ -284,8 +313,8 @@ export class NotificationCompose {
       if (this.selectedChannels().includes('sms') && !this.smsBody().trim()) {
         return 'Le contenu du SMS est requis.';
       }
-      if (this.selectedChannels().includes('whatsapp') && !this.whatsappContentSid().trim()) {
-        return 'Le SID du modèle WhatsApp est requis.';
+      if (this.selectedChannels().includes('whatsapp') && !this.whatsappTemplateName().trim()) {
+        return 'Le nom du modèle WhatsApp Meta est requis.';
       }
     }
     return null;
@@ -304,17 +333,25 @@ export class NotificationCompose {
       content.sms = { body: this.smsBody().trim() };
     }
     if (this.selectedChannels().includes('whatsapp')) {
-      content.whatsapp = { contentSid: this.whatsappContentSid().trim() };
+      content.whatsapp = {
+        templateName: this.whatsappTemplateName().trim(),
+        language: this.whatsappTemplateLanguage().trim() || undefined,
+        variables: this.buildUsedVariables(),
+      };
     }
     return content;
   }
 
-  private buildBody(): SendToClientsBodyModel {
-    const usedVariables = Object.fromEntries(
+  private buildUsedVariables(): Record<string, string> {
+    return Object.fromEntries(
       Object.entries(this.variables()).filter(
         ([key, value]) => this.templateVariableTokens().includes(key) && value.trim() !== '',
       ),
     );
+  }
+
+  private buildBody(): SendToClientsBodyModel {
+    const usedVariables = this.buildUsedVariables();
 
     return {
       channels: this.selectedChannels(),
@@ -327,10 +364,7 @@ export class NotificationCompose {
               this.selectedChannels().map((channel) => [channel, this.templateIds()[channel]!]),
             )
           : undefined,
-      variables:
-        this.contentSource() === 'template' && Object.keys(usedVariables).length > 0
-          ? usedVariables
-          : undefined,
+      variables: Object.keys(usedVariables).length > 0 ? usedVariables : undefined,
       content: this.contentSource() === 'custom' ? this.buildContent() : undefined,
     };
   }

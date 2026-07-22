@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MediaAssetModel } from '@components/media/media.models';
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { MediaService } from '@services/media/media.service';
 
 @Component({
@@ -12,6 +13,7 @@ import { MediaService } from '@services/media/media.service';
 export class MediaGallery {
   private readonly destroyRef = inject(DestroyRef);
   private readonly mediaService = inject(MediaService);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly assets = signal<MediaAssetModel[]>([]);
   protected readonly loading = signal(true);
@@ -64,17 +66,33 @@ export class MediaGallery {
   }
 
   confirmDelete(asset: MediaAssetModel): void {
-    if (!confirm(`Supprimer « ${asset.originalName} » ?`)) {
-      return;
-    }
-    this.mediaService
-      .remove(asset.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => this.reload(),
-        error: (err: unknown) => {
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
-        },
-      });
+    this.dialogService.showConfirmDialog({
+      type: 'error',
+      title: 'Supprimer le média',
+      description: `Supprimer « ${asset.originalName} » ?`,
+      onConfirm: () => {
+        this.mediaService
+          .remove(asset.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.reload();
+              this.dialogService.showToast({
+                type: 'success',
+                message: 'Média supprimé',
+              });
+            },
+            error: (err: unknown) => {
+              this.errorMessage.set(
+                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              );
+              this.dialogService.showToast({
+                type: 'error',
+                message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              });
+            },
+          });
+      },
+    });
   }
 }

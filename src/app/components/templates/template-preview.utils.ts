@@ -1,3 +1,5 @@
+import { renderBrandedEmailHtml } from './email-branding.utils';
+
 export const TEMPLATE_PREVIEW_SAMPLE_VARS: Record<string, string> = {
   displayName: 'Camille Dupont',
   firstName: 'Camille',
@@ -28,11 +30,22 @@ export function buildEmailPreviewDocument(options: {
   htmlBody: string;
   css?: string | null;
   variables?: Record<string, string>;
+  branded?: boolean;
 }): string {
   const vars = options.variables ?? TEMPLATE_PREVIEW_SAMPLE_VARS;
   const subject = interpolateTemplate(options.subject, vars);
   const innerHtml = interpolateTemplate(options.htmlBody, vars);
   const css = options.css?.trim();
+
+  if (options.branded) {
+    return renderBrandedEmailHtml({
+      subject,
+      innerHtml,
+      css,
+      previewText: subject,
+    });
+  }
+
   const styleBlock = css ? `<style type="text/css">${css}</style>` : '';
 
   return `<!DOCTYPE html>

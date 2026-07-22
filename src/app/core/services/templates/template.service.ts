@@ -4,8 +4,12 @@ import {
   CreateTemplateBodyModel,
   DeleteTemplateResponse,
   ListTemplatesQueryModel,
+  PreviewTemplateBodyModel,
+  TemplateChannel,
+  TemplatePreviewResponse,
   TemplateResponse,
   TemplatesListResponse,
+  TemplateVariableCatalogResponse,
   UpdateTemplateBodyModel,
 } from '@components/templates/template.models';
 import { Api } from '@services/api/api';
@@ -27,6 +31,26 @@ export class TemplateService {
 
   getById(id: string) {
     return this.api.get<TemplateResponse>(`/api/v1/templates/${id}`);
+  }
+
+  getBySlug(slug: string) {
+    return this.api.get<TemplateResponse>(`/api/v1/templates/by-slug/${slug}`);
+  }
+
+  getDefault(channel: TemplateChannel) {
+    return this.api.get<TemplateResponse>(`/api/v1/templates/default/${channel}`);
+  }
+
+  getVariableCatalog() {
+    return this.api.get<TemplateVariableCatalogResponse>('/api/v1/templates/variables');
+  }
+
+  preview(id: string, body: PreviewTemplateBodyModel) {
+    return this.api.post<TemplatePreviewResponse>(`/api/v1/templates/${id}/preview`, body);
+  }
+
+  duplicate(id: string) {
+    return this.api.post<TemplateResponse>(`/api/v1/templates/${id}/duplicate`, {});
   }
 
   update(id: string, body: UpdateTemplateBodyModel) {

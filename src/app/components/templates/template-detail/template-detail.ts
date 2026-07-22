@@ -3,10 +3,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { TemplateService } from '@services/templates/template.service';
 import { TemplatePreview } from '../template-preview/template-preview';
 import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '../template-preview.utils';
-import { TEMPLATE_VARIABLE_LABELS, TemplateModel, TemplateVariableToken } from '../template.models';
+import {
+  TEMPLATE_VARIABLE_LABELS,
+  TemplateModel,
+  TemplateVariableToken,
+  WHATSAPP_LANGUAGE_OPTIONS,
+} from '../template.models';
 
 @Component({
   selector: 'app-template-detail',
@@ -18,12 +24,16 @@ export class TemplateDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly templateService = inject(TemplateService);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly templateId = this.route.snapshot.paramMap.get('id')!;
   protected readonly template = signal<TemplateModel | null>(null);
   protected readonly loading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly duplicateLoading = signal(false);
+  protected readonly brandedPreview = signal(false);
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
+  protected readonly whatsappLanguages = WHATSAPP_LANGUAGE_OPTIONS;
 
   protected readonly previewVariables = computed(() => {
     const template = this.template();
@@ -35,6 +45,17 @@ export class TemplateDetail {
       vars[token] = TEMPLATE_PREVIEW_SAMPLE_VARS[token] ?? '';
     }
     return vars;
+  });
+
+  protected readonly whatsappLanguageLabel = computed(() => {
+    const template = this.template();
+    if (!template?.whatsappTemplateLanguage) {
+      return '';
+    }
+    return (
+      this.whatsappLanguages.find((lang) => lang.value === template.whatsappTemplateLanguage)
+        ?.label ?? template.whatsappTemplateLanguage
+    );
   });
 
   constructor() {
@@ -57,21 +78,55 @@ export class TemplateDetail {
     return this.variableLabels[token as TemplateVariableToken] ?? token;
   }
 
-  confirmDelete(): void {
-    const template = this.template();
-    if (!template || !confirm(`Supprimer le modèle « ${template.name} » ?`)) {
-      return;
-    }
+  async duplicateTemplate(): Promise<void> {
+    this.duplicateLoading.set(true);
     this.templateService
-      .remove(template.id)
+      .duplicate(this.templateId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: async () => {
-          await this.router.navigate(['/templates']);
+        next: async (response) => {
+          this.duplicateLoading.set(false);
+          await this.router.navigate(['/templates', response.object.id, 'edit']);
         },
         error: (err: unknown) => {
+          this.duplicateLoading.set(false);
           this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
         },
       });
+  }
+
+  confirmDelete(): void {
+    const template = this.template();
+    if (!template) {
+      return;
+    }
+    this.dialogService.showConfirmDialog({
+      type: 'error',
+      title: 'Supprimer le modèle',
+      description: `Supprimer le modèle « ${template.name} » ?`,
+      onConfirm: () => {
+        this.templateService
+          .remove(template.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: async () => {
+              this.dialogService.showToast({
+                type: 'success',
+                message: 'Modèle supprimé',
+              });
+              await this.router.navigate(['/templates']);
+            },
+            error: (err: unknown) => {
+              this.errorMessage.set(
+                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              );
+              this.dialogService.showToast({
+                type: 'error',
+                message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              });
+            },
+          });
+      },
+    });
   }
 }

@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { ListAction, ListHeaderModel } from '@globals/models/list.models';
 import { List } from '@globals/components/list/list';
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { ScheduledService } from '@services/scheduled/scheduled.service';
 import { ScheduledNotificationModel } from '../scheduled.models';
 
@@ -17,6 +18,7 @@ type ScheduledTab = 'upcoming' | 'past';
 export class ScheduledList {
   private readonly destroyRef = inject(DestroyRef);
   private readonly scheduledService = inject(ScheduledService);
+  private readonly dialogService = inject(DialogService);
   private readonly list = viewChild(List);
 
   protected readonly activeTab = signal<ScheduledTab>('upcoming');
@@ -48,17 +50,33 @@ export class ScheduledList {
   }
 
   private confirmCancel(item: ScheduledNotificationModel): void {
-    if (!confirm('Annuler cet envoi programmé ?')) {
-      return;
-    }
-    this.scheduledService
-      .cancel(item.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => this.list()?.reloadList(),
-        error: (err: unknown) => {
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
-        },
-      });
+    this.dialogService.showConfirmDialog({
+      type: 'warning',
+      title: 'Annuler la planification',
+      description: 'Annuler cet envoi programmé ?',
+      onConfirm: () => {
+        this.scheduledService
+          .cancel(item.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.list()?.reloadList();
+              this.dialogService.showToast({
+                type: 'success',
+                message: 'Planification annulée',
+              });
+            },
+            error: (err: unknown) => {
+              this.errorMessage.set(
+                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              );
+              this.dialogService.showToast({
+                type: 'error',
+                message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              });
+            },
+          });
+      },
+    });
   }
 }

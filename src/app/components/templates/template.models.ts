@@ -26,6 +26,14 @@ export const TEMPLATE_VARIABLE_LABELS: Record<TemplateVariableToken, string> = {
   email: 'E-mail',
 };
 
+export const WHATSAPP_LANGUAGE_OPTIONS = [
+  { value: 'fr', label: 'Français (fr)' },
+  { value: 'en_US', label: 'Anglais US (en_US)' },
+  { value: 'en_GB', label: 'Anglais UK (en_GB)' },
+  { value: 'es', label: 'Espagnol (es)' },
+  { value: 'de', label: 'Allemand (de)' },
+] as const;
+
 export interface CreateTemplateBodyModel {
   name: string;
   slug: string;
@@ -35,7 +43,9 @@ export interface CreateTemplateBodyModel {
   textBody?: string;
   css?: string;
   smsBody?: string;
-  whatsappContentSid?: string;
+  whatsappTemplateName?: string;
+  whatsappTemplateLanguage?: string;
+  whatsappVariableKeys?: string[];
   variables?: string[];
   isDefault?: boolean;
 }
@@ -44,6 +54,7 @@ export type UpdateTemplateBodyModel = Partial<CreateTemplateBodyModel>;
 
 export interface ListTemplatesQueryModel extends PaginatedQueryModel {
   channel?: TemplateChannel;
+  search?: string;
 }
 
 export interface TemplateModel {
@@ -56,13 +67,55 @@ export interface TemplateModel {
   textBody?: string | null;
   css?: string | null;
   smsBody?: string | null;
-  whatsappContentSid?: string | null;
+  whatsappTemplateName?: string | null;
+  whatsappTemplateLanguage?: string | null;
+  whatsappVariableKeys?: string[];
   variables: string[];
   isDefault: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface TemplateVariableCatalogEntry {
+  key: string;
+  description: string;
+}
+
+export interface TemplateVariableCatalogModel {
+  catalog: TemplateVariableCatalogEntry[];
+  customAllowed: boolean;
+}
+
+export interface PreviewTemplateBodyModel {
+  variables: Record<string, string>;
+  extra?: Record<string, string>;
+  branded?: boolean;
+}
+
+export interface ResolvedEmailPreview {
+  subject: string;
+  html: string;
+  text?: string;
+}
+
+export interface ResolvedSmsPreview {
+  body: string;
+}
+
+export interface ResolvedWhatsappPreview {
+  templateName: string;
+  language: string;
+  variables?: Record<string, string>;
+}
+
+export interface ResolvedTemplateContentModel {
+  email?: ResolvedEmailPreview;
+  sms?: ResolvedSmsPreview;
+  whatsapp?: ResolvedWhatsappPreview;
+}
+
 export type TemplateResponse = SingleResponseModel<TemplateModel>;
 export type TemplatesListResponse = ListResponseModel<TemplateModel>;
 export type DeleteTemplateResponse = SingleResponseModel<{ id: string }>;
+export type TemplateVariableCatalogResponse = SingleResponseModel<TemplateVariableCatalogModel>;
+export type TemplatePreviewResponse = SingleResponseModel<ResolvedTemplateContentModel>;

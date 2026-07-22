@@ -1,0 +1,77 @@
+<div class="flex flex-col gap-3 border border-base-300 rounded-lg p-3 bg-base-100">
+  <div class="flex flex-wrap items-center gap-2 justify-between">
+    <div class="join">
+      <button
+        type="button"
+        class="btn btn-xs join-item"
+        [class.btn-primary]="mode() === 'visual'"
+        [disabled]="visualUnsupported()"
+        (click)="setMode('visual')"
+      >
+        Visuel
+      </button>
+      <button
+        type="button"
+        class="btn btn-xs join-item"
+        [class.btn-primary]="mode() === 'code'"
+        (click)="setMode('code')"
+      >
+        Code
+      </button>
+    </div>
+    <div class="flex flex-wrap gap-1">
+      <select
+        class="select select-xs"
+        aria-label="Insérer une variable"
+        (change)="insertVariable($any($event.target).value); $any($event.target).value = ''"
+      >
+        <option value="">Variable…</option>
+        @for (token of variableTokens(); track token) {
+          <option [value]="token">{{ labelFor(token) }}</option>
+        }
+      </select>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="insertBlock('cta')">CTA</button>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="insertBlock('divider')">Séparateur</button>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="insertBlock('info')">Encadré</button>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="onInsertImageClick()">Image</button>
+    </div>
+  </div>
+
+  @if (visualUnsupported()) {
+    <div role="status" class="alert alert-warning text-xs py-2">
+      Le HTML contient des éléments avancés. Utilisez le mode Code pour les modifier.
+    </div>
+  }
+
+  @if (mode() === 'visual') {
+    <div
+      #visualHost
+      class="min-h-48 rounded-lg border border-base-300 p-3 prose prose-sm max-w-none bg-white text-base-content"
+      aria-label="Éditeur visuel e-mail"
+    ></div>
+  } @else {
+    <div class="join mb-1">
+      <button
+        type="button"
+        class="btn btn-xs join-item"
+        [class.btn-primary]="codeTab() === 'html'"
+        (click)="setCodeTab('html')"
+      >
+        HTML
+      </button>
+      <button
+        type="button"
+        class="btn btn-xs join-item"
+        [class.btn-primary]="codeTab() === 'css'"
+        (click)="setCodeTab('css')"
+      >
+        CSS
+      </button>
+    </div>
+    <div
+      #codeHost
+      class="min-h-48 rounded-lg border border-base-300 overflow-hidden text-sm"
+      aria-label="Éditeur code e-mail"
+    ></div>
+  }
+</div>

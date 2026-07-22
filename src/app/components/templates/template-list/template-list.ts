@@ -5,8 +5,9 @@ import { Router } from '@angular/router';
 import type { ListAction, ListHeaderModel } from '@globals/models/list.models';
 import { List } from '@globals/components/list/list';
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { TemplateService } from '@services/templates/template.service';
-import { TemplateModel } from '../template.models';
+import { TemplateChannel, TemplateModel } from '../template.models';
 
 @Component({
   selector: 'app-template-list',
@@ -16,8 +17,12 @@ import { TemplateModel } from '../template.models';
 export class TemplateList {
   private readonly destroyRef = inject(DestroyRef);
   private readonly templateService = inject(TemplateService);
+  private readonly dialogService = inject(DialogService);
   private readonly router = inject(Router);
   private readonly list = viewChild(List);
+
+  protected readonly channelFilter = signal<TemplateChannel | ''>('');
+  protected readonly listUrl = signal('/api/v1/templates');
 
   protected readonly headers: ListHeaderModel[] = [
     { label: 'Nom', field: ['name'] },
@@ -36,7 +41,7 @@ export class TemplateList {
       label: 'Défaut',
       field: ['isDefault'],
       format: 'boolean',
-      boolean: { type: 'badge', trueLabel: 'Oui', falseLabel: 'Non' },
+      boolean: { type: 'badge', trueLabel: 'Défaut', falseLabel: '—' },
     },
   ];
 
@@ -48,6 +53,10 @@ export class TemplateList {
       },
     },
     {
+      name: 'Dupliquer',
+      callback: (line) => this.duplicateTemplate(line as TemplateModel),
+    },
+    {
       name: 'Supprimer',
       callback: (line) => this.confirmDelete(line as TemplateModel),
     },
@@ -55,18 +64,55 @@ export class TemplateList {
 
   protected readonly errorMessage = signal<string | null>(null);
 
-  private confirmDelete(template: TemplateModel): void {
-    if (!confirm(`Supprimer le modèle « ${template.name} » ?`)) {
-      return;
-    }
+  setChannelFilter(channel: TemplateChannel | ''): void {
+    this.channelFilter.set(channel);
+    const base = '/api/v1/templates';
+    this.listUrl.set(channel ? `${base}?channel=${channel}` : base);
+    this.list()?.reloadList();
+  }
+
+  private duplicateTemplate(template: TemplateModel): void {
     this.templateService
-      .remove(template.id)
+      .duplicate(template.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.list()?.reloadList(),
+        next: async (response) => {
+          await this.router.navigate(['/templates', response.object.id, 'edit']);
+        },
         error: (err: unknown) => {
           this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
         },
       });
+  }
+
+  private confirmDelete(template: TemplateModel): void {
+    this.dialogService.showConfirmDialog({
+      type: 'error',
+      title: 'Supprimer le modèle',
+      description: `Supprimer le modèle « ${template.name} » ?`,
+      onConfirm: () => {
+        this.templateService
+          .remove(template.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.list()?.reloadList();
+              this.dialogService.showToast({
+                type: 'success',
+                message: 'Modèle supprimé',
+              });
+            },
+            error: (err: unknown) => {
+              this.errorMessage.set(
+                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              );
+              this.dialogService.showToast({
+                type: 'error',
+                message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              });
+            },
+          });
+      },
+    });
   }
 }

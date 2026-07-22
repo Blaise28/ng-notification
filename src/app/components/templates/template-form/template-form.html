@@ -1,4 +1,4 @@
-<section class="p-6 max-w-3xl mx-auto">
+<section class="p-6 max-w-6xl mx-auto">
   <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
     {{ isEdit() ? 'Modifier le modèle' : 'Nouveau modèle' }}
   </h1>
@@ -10,144 +10,219 @@
   @if (loading()) {
     <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
   } @else {
-    <form (submit)="submit($event)" class="flex flex-col gap-4">
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
-        <input
-          type="text"
-          class="input w-full"
-          [value]="templateForm.name().value()"
-          (input)="onNameInput($any($event.target).value)"
-          required
-        />
-      </fieldset>
+    <form (submit)="submit($event)" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="flex flex-col gap-4">
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
+          <input
+            type="text"
+            class="input w-full"
+            [value]="templateForm.name().value()"
+            (input)="onNameInput($any($event.target).value)"
+            required
+          />
+        </fieldset>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Slug <code>*</code></legend>
-        <input
-          type="text"
-          class="input w-full"
-          [value]="templateForm.slug().value()"
-          (input)="onSlugInput($any($event.target).value)"
-          required
-        />
-      </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Slug <code>*</code></legend>
+          <input
+            type="text"
+            class="input w-full"
+            [value]="templateForm.slug().value()"
+            (input)="onSlugInput($any($event.target).value)"
+            required
+          />
+        </fieldset>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
-        <select [formField]="templateForm.channel" class="select w-full">
-          <option value="email">E-mail</option>
-          <option value="sms">SMS</option>
-          <option value="whatsapp">WhatsApp</option>
-        </select>
-      </fieldset>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
+          <select [formField]="templateForm.channel" class="select w-full">
+            <option value="email">E-mail</option>
+            <option value="sms">SMS</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select>
+        </fieldset>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Variables du modèle</legend>
-        <div class="flex flex-wrap gap-3">
-          @for (token of variableTokens; track token) {
-            <label class="label gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                class="checkbox checkbox-sm"
-                [checked]="selectedVariables().includes(token)"
-                (change)="toggleVariable(token)"
-              />
-              <span class="text-sm">{{ variableLabels[token] }}</span>
+        @if (!isEdit() && channelStarters().length > 0) {
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline btn-sm" (click)="showStarters.set(!showStarters())">
+              Partir d'un modèle
+            </button>
+          </div>
+          @if (showStarters()) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              @for (starter of channelStarters(); track starter.id) {
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm justify-start h-auto py-2"
+                  (click)="applyStarter(starter)"
+                >
+                  <span class="flex flex-col items-start gap-0.5">
+                    <span class="font-medium">{{ starter.label }}</span>
+                    <span class="text-xs text-base-content/60">{{ starter.description }}</span>
+                  </span>
+                </button>
+              }
+            </div>
+          }
+        }
+
+        @let channel = templateForm.channel().value();
+
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend text-sm text-primary/90">Variables détectées</legend>
+          @if (detectedVariables().length === 0) {
+            <p class="text-sm text-base-content/60">Aucune variable dans le contenu.</p>
+          } @else {
+            <div class="flex flex-wrap gap-2">
+              @for (token of detectedVariables(); track token) {
+                <code class="badge badge-ghost">{{ labelFor(token) }}</code>
+              }
+            </div>
+          }
+          <div class="flex flex-wrap gap-2 mt-2">
+            @for (token of variableTokens; track token) {
               <button
                 type="button"
                 class="btn btn-ghost btn-xs"
-                (click)="insertVariable(token)"
-                [disabled]="!selectedVariables().includes(token)"
+                (click)="insertVariable(token, channel === 'sms' ? 'sms' : channel === 'whatsapp' ? 'whatsapp' : 'subject')"
               >
-                Insérer
+                + {{ variableLabels[token] }}
               </button>
-            </label>
-          }
-        </div>
-      </fieldset>
-
-      @let channel = templateForm.channel().value();
-
-      @if (channel === 'email') {
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Sujet (e-mail) <code>*</code></legend>
-          <input type="text" [formField]="templateForm.subject" class="input w-full" />
-        </fieldset>
-        <fieldset class="fieldset">
-          <div class="flex items-center justify-between gap-2">
-            <legend class="fieldset-legend text-sm text-primary/90">Corps HTML <code>*</code></legend>
-            <button type="button" class="btn btn-ghost btn-xs" (click)="showGallery.set(true)">
-              Insérer depuis la galerie
-            </button>
+            }
           </div>
-          <textarea [formField]="templateForm.htmlBody" class="textarea w-full" rows="6"></textarea>
         </fieldset>
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">CSS</legend>
-          <textarea [formField]="templateForm.css" class="textarea w-full font-mono text-xs" rows="4"></textarea>
-        </fieldset>
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Corps texte brut</legend>
-          <textarea [formField]="templateForm.textBody" class="textarea w-full" rows="3"></textarea>
-        </fieldset>
-      }
 
-      @if (channel === 'sms') {
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Corps SMS <code>*</code></legend>
-          <textarea [formField]="templateForm.smsBody" class="textarea w-full" rows="3"></textarea>
-        </fieldset>
-      }
+        @if (channel === 'email') {
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Sujet (e-mail) <code>*</code></legend>
+            <input type="text" [formField]="templateForm.subject" class="input w-full" />
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Corps HTML <code>*</code></legend>
+            <app-template-email-editor
+              [htmlBody]="templateForm.htmlBody().value()"
+              (htmlBodyChange)="templateForm.htmlBody().value.set($event)"
+              [css]="templateForm.css().value()"
+              (cssChange)="templateForm.css().value.set($event)"
+              (insertImage)="showGallery.set(true)"
+            />
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Corps texte brut</legend>
+            <textarea [formField]="templateForm.textBody" class="textarea w-full" rows="3"></textarea>
+          </fieldset>
+        }
 
-      @if (channel === 'whatsapp') {
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">
-            SID du modèle de contenu WhatsApp <code>*</code>
-          </legend>
-          <input type="text" [formField]="templateForm.whatsappContentSid" class="input w-full" />
-        </fieldset>
-      }
+        @if (channel === 'sms') {
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Corps SMS <code>*</code></legend>
+            <textarea [formField]="templateForm.smsBody" class="textarea w-full font-mono text-sm" rows="4"></textarea>
+            @if (templateForm.smsBody().value()) {
+              <p class="text-xs mt-2 font-mono text-base-content/70 whitespace-pre-wrap break-words">
+                @for (part of templateForm.smsBody().value().split(/(\{\{\s*\w+\s*\}\})/g); track $index) {
+                  @if (part.match(/\{\{\s*\w+\s*\}\}/)) {
+                    <mark class="bg-primary/20 text-primary rounded px-0.5">{{ part }}</mark>
+                  } @else {
+                    {{ part }}
+                  }
+                }
+              </p>
+            }
+            <p class="text-xs mt-1" [class.text-warning]="smsStats().length > 160">
+              {{ smsStats().length }} caractères · {{ smsStats().segments }} segment(s)
+            </p>
+          </fieldset>
+        }
 
-      <fieldset class="fieldset">
-        <label class="label gap-2">
-          <input type="checkbox" [formField]="templateForm.isDefault" class="checkbox" />
-          Modèle par défaut pour ce canal
+        @if (channel === 'whatsapp') {
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">
+              Nom du modèle Meta WhatsApp <code>*</code>
+            </legend>
+            <input type="text" [formField]="templateForm.whatsappTemplateName" class="input w-full" />
+            <p class="text-xs text-base-content/60 mt-1">
+              Le modèle doit être approuvé dans Meta Business Manager.
+            </p>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Langue</legend>
+            <select [formField]="templateForm.whatsappTemplateLanguage" class="select w-full">
+              @for (lang of whatsappLanguages; track lang.value) {
+                <option [value]="lang.value">{{ lang.label }}</option>
+              }
+            </select>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">
+              Variables ordonnées (params Meta 1, 2, …) <code>*</code>
+            </legend>
+            @if (whatsappVariableKeys().length === 0) {
+              <p class="text-sm text-base-content/60">Ajoutez des variables ci-dessus.</p>
+            } @else {
+              <ul class="flex flex-col gap-2">
+                @for (key of whatsappVariableKeys(); track key; let i = $index) {
+                  <li class="flex items-center gap-2 text-sm">
+                    <span class="badge badge-neutral">{{ i + 1 }}</span>
+                    <code>{{ labelFor(key) }}</code>
+                    <div class="flex gap-1 ms-auto">
+                      <button type="button" class="btn btn-ghost btn-xs" (click)="moveWhatsappVariable(i, -1)" [disabled]="i === 0">↑</button>
+                      <button type="button" class="btn btn-ghost btn-xs" (click)="moveWhatsappVariable(i, 1)" [disabled]="i === whatsappVariableKeys().length - 1">↓</button>
+                      <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeWhatsappVariable(key)">×</button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </fieldset>
+        }
+
+        <fieldset class="fieldset">
+          <label class="label gap-2">
+            <input type="checkbox" [formField]="templateForm.isDefault" class="checkbox" />
+            Modèle par défaut pour ce canal
+          </label>
+        </fieldset>
+
+        <div class="flex gap-3 mt-2">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="templateForm().invalid() || submitLoading() || !!channelValidationError()"
+          >
+            Enregistrer
+            @if (submitLoading()) {
+              <span class="loading loading-sm ms-2"></span>
+            }
+          </button>
+          <a routerLink="/templates" class="btn btn-ghost">Annuler</a>
+        </div>
+      </div>
+
+      <div class="xl:sticky xl:top-4 xl:self-start flex flex-col gap-3">
+        <label class="label cursor-pointer justify-start gap-2">
+          <input
+            type="checkbox"
+            class="toggle toggle-sm"
+            [checked]="brandedPreview()"
+            (change)="brandedPreview.set($any($event.target).checked)"
+          />
+          <span class="text-sm">Aperçu avec branding Nightbird</span>
         </label>
-      </fieldset>
 
-      @if (selectedVariables().length > 0) {
-        <p class="text-xs text-base-content/60 -mb-2">
-          Variables utilisées dans l’aperçu :
-          @for (token of selectedVariables(); track token) {
-            <code class="mx-0.5">{{ '{{' + token + '}}' }}</code>
-          }
-        </p>
-      }
-
-      <app-template-preview
-        [channel]="templateForm.channel().value()"
-        [subject]="templateForm.subject().value()"
-        [htmlBody]="templateForm.htmlBody().value()"
-        [css]="templateForm.css().value()"
-        [smsBody]="templateForm.smsBody().value()"
-        [whatsappContentSid]="templateForm.whatsappContentSid().value()"
-        [variables]="previewVariables()"
-        title="Aperçu en direct"
-      />
-
-      <div class="flex gap-3 mt-4">
-        <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="templateForm().invalid() || submitLoading()"
-        >
-          Enregistrer
-          @if (submitLoading()) {
-            <span class="loading loading-sm ms-2"></span>
-          }
-        </button>
-        <a routerLink="/templates" class="btn btn-ghost">Annuler</a>
+        <app-template-preview
+          [channel]="templateForm.channel().value()"
+          [subject]="templateForm.subject().value()"
+          [htmlBody]="templateForm.htmlBody().value()"
+          [css]="templateForm.css().value()"
+          [smsBody]="templateForm.smsBody().value()"
+          [whatsappTemplateName]="templateForm.whatsappTemplateName().value()"
+          [whatsappTemplateLanguage]="templateForm.whatsappTemplateLanguage().value()"
+          [whatsappVariableKeys]="whatsappVariableKeys()"
+          [variables]="previewVariables()"
+          [branded]="brandedPreview()"
+          title="Aperçu en direct"
+        />
       </div>
     </form>
   }

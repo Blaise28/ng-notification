@@ -3,9 +3,44 @@
     <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
   }
 
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="channelFilter() === ''"
+      (click)="setChannelFilter('')"
+    >
+      Tous
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="channelFilter() === 'email'"
+      (click)="setChannelFilter('email')"
+    >
+      E-mail
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="channelFilter() === 'sms'"
+      (click)="setChannelFilter('sms')"
+    >
+      SMS
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="channelFilter() === 'whatsapp'"
+      (click)="setChannelFilter('whatsapp')"
+    >
+      WhatsApp
+    </button>
+  </div>
+
   <app-list
     listTitle="Modèles"
-    url="/api/v1/templates"
+    [url]="listUrl()"
     [headers]="headers"
     [action]="actions"
     [showAddButton]="true"
