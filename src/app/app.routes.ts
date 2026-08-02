@@ -14,16 +14,15 @@ export const routes: Routes = [
     component: Login,
   },
   {
-    path: 'register',
-    canActivate: [noAuthGuard],
-    component: Register,
-  },
-  {
     path: '',
     canActivate: [authGuard],
     component: Layout,
     children: [
       { path: '', component: Home },
+      {
+        path: 'register',
+        component: Register,
+      },
       {
         path: 'clients',
         loadChildren: () => import('@components/clients/client.routes').then((m) => m.clientRoutes),

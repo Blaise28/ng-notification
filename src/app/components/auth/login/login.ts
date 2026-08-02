@@ -1,5 +1,5 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -14,7 +14,7 @@ import { ThemeStore } from '@stores/theme/theme.store';
 
 @Component({
   selector: 'app-login',
-  imports: [ThemeController, RouterLink, FormField, Password],
+  imports: [ThemeController, FormField, Password],
   templateUrl: './login.html',
 })
 export class Login {
