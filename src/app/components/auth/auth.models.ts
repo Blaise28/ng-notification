@@ -12,13 +12,6 @@ export interface LoginBodyModel {
   password: string;
 }
 
-export interface RegisterBodyModel {
-  email: string;
-  password: string;
-  name: string;
-  role: UserRole;
-}
-
 export interface AuthPayloadModel {
   accessToken: string;
   user: UserModel;

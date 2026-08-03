@@ -13,16 +13,19 @@ import {
   Megaphone02Icon,
   Note01Icon,
   Notification02Icon,
+  UserAccountIcon,
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 
 import { ThemeStore } from '@stores/theme/theme.store';
+import { UserStore } from '@stores/user/user.store';
 
 interface AsideMenuItem {
   label: string;
   url?: string;
   icon: IconSvgObject;
   children?: AsideMenuItem[];
+  adminOnly?: boolean;
 }
 
 interface AsideMenuSection {
@@ -39,9 +42,11 @@ interface AsideMenuSection {
 })
 export class AsideMenu {
   private readonly themeStore = inject(ThemeStore);
+  private readonly userStore = inject(UserStore);
   private readonly router = inject(Router);
 
   protected readonly isDark = computed(() => this.themeStore.isDark());
+  protected readonly isAdmin = computed(() => this.userStore.user()?.role === 'admin');
   protected readonly activeSubmenu = signal<AsideMenuItem | null>(null);
   private lastTrigger: HTMLElement | null = null;
 
@@ -59,11 +64,21 @@ export class AsideMenu {
           label: 'Notifications',
           icon: Notification02Icon,
           children: [
-            { label: 'Envoyer', url: '/notifications/compose', icon: Megaphone02Icon },
+            {
+              label: 'Envoyer',
+              url: '/notifications/compose',
+              icon: Megaphone02Icon,
+            },
             { label: 'Historique', url: '/notifications', icon: Clock01Icon },
           ],
         },
         { label: 'Programmées', url: '/scheduled', icon: Calendar03Icon },
+        {
+          label: 'Operateurs',
+          url: '/users',
+          icon: UserAccountIcon,
+          adminOnly: true,
+        },
       ],
     },
   ];

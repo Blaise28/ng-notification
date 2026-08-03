@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
 import { Login } from '@components/auth/login/login';
-import { Register } from '@components/auth/register/register';
 import { Home } from '@components/home/home';
 import { authGuard } from '@guards/auth.guard';
 import { noAuthGuard } from '@guards/no-auth.guard';
@@ -20,8 +19,8 @@ export const routes: Routes = [
     children: [
       { path: '', component: Home },
       {
-        path: 'register',
-        component: Register,
+        path: 'users',
+        loadChildren: () => import('@components/users/user.routes').then((m) => m.userRoutes),
       },
       {
         path: 'clients',

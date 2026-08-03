@@ -1,0 +1,67 @@
+<section class="p-6 max-w-2xl mx-auto">
+  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
+    Ajouter un opérateur
+  </h1>
+
+  @if (errorMessage(); as message) {
+  <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+  }
+
+  <form (submit)="submit($event)" class="flex flex-col gap-4">
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend text-sm text-primary/90">
+        Nom <code>*</code>
+      </legend>
+      <input
+        type="text"
+        [formField]="userForm.name"
+        class="input w-full"
+        placeholder="Jean Dupont"
+      />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend text-sm text-primary/90">
+        E-mail <code>*</code>
+      </legend>
+      <input
+        type="email"
+        [formField]="userForm.email"
+        class="input w-full"
+        placeholder="vous@exemple.com"
+        autocomplete="email"
+      />
+    </fieldset>
+
+    <app-password
+      [field]="userForm.password"
+      label="Mot de passe"
+      [required]="true"
+      mode="create"
+      autocomplete="new-password"
+    />
+
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend text-sm text-primary/90">
+        Rôle <code>*</code>
+      </legend>
+      <select [formField]="userForm.role" class="select w-full">
+        <option value="operator">Opérateur</option>
+        <option value="admin">Administrateur</option>
+      </select>
+    </fieldset>
+
+    <div class="flex gap-3 mt-4">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="userForm().invalid() || submitLoading()"
+      >
+        Créer le compte @if (submitLoading()) {
+        <span class="loading loading-sm ms-2"></span>
+        }
+      </button>
+      <a routerLink="/users" class="btn btn-ghost">Annuler</a>
+    </div>
+  </form>
+</section>

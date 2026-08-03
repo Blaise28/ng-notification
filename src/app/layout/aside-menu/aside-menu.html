@@ -1,4 +1,6 @@
-<aside class="border-e border-base-300 w-70 h-full bg-base-200 flex flex-col p-3">
+<aside
+  class="border-e border-base-300 w-70 h-full bg-base-200 flex flex-col p-3"
+>
   <section class="flex-none px-2 py-3">
     <a routerLink="/" class="text-lg font-bold text-primary">Notification</a>
   </section>
@@ -9,46 +11,58 @@
       [class.-translate-x-1/2]="activeSubmenu()"
     >
       <!-- Main menu lane -->
-      <div class="w-1/2 h-full py-2 overflow-y-auto" [attr.inert]="activeSubmenu() ? '' : null">
+      <div
+        class="w-1/2 h-full py-2 overflow-y-auto"
+        [attr.inert]="activeSubmenu() ? '' : null"
+      >
         @for (section of menuSections; track $index) {
-          <ul class="menu menu-md gap-1 p-0 w-full" role="menu">
-            @for (menu of section.menus; track menu.label) {
-              <li role="none">
-                @if (menu.children) {
-                  <button
-                    #submenuTrigger
-                    type="button"
-                    role="menuitem"
-                    [attr.aria-expanded]="activeSubmenu() === menu"
-                    (click)="selectSubmenu(menu, submenuTrigger)"
-                    class="rounded-lg flex items-center justify-between gap-2 p-2 w-full text-left focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <div class="flex items-center gap-2">
-                      <hugeicons-icon [icon]="menu.icon" [size]="18" [strokeWidth]="1.7" />
-                      <span>{{ menu.label }}</span>
-                    </div>
-                    <hugeicons-icon
-                      [icon]="ArrowRight01Icon"
-                      [size]="20"
-                      [strokeWidth]="1.5"
-                      class="text-primary"
-                    />
-                  </button>
-                } @else {
-                  <a
-                    [routerLink]="menu.url"
-                    role="menuitem"
-                    routerLinkActive="bg-base-300 font-medium"
-                    [routerLinkActiveOptions]="{ exact: true }"
-                    class="rounded-lg flex items-center gap-2 p-2 focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <hugeicons-icon [icon]="menu.icon" [size]="18" [strokeWidth]="1.7" />
-                    <span>{{ menu.label }}</span>
-                  </a>
-                }
-              </li>
+        <ul class="menu menu-md gap-1 p-0 w-full" role="menu">
+          @for (menu of section.menus; track menu.label) { @if (!menu.adminOnly
+          || isAdmin()) {
+          <li role="none">
+            @if (menu.children) {
+            <button
+              #submenuTrigger
+              type="button"
+              role="menuitem"
+              [attr.aria-expanded]="activeSubmenu() === menu"
+              (click)="selectSubmenu(menu, submenuTrigger)"
+              class="rounded-lg flex items-center justify-between gap-2 p-2 w-full text-left focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <div class="flex items-center gap-2">
+                <hugeicons-icon
+                  [icon]="menu.icon"
+                  [size]="18"
+                  [strokeWidth]="1.7"
+                />
+                <span>{{ menu.label }}</span>
+              </div>
+              <hugeicons-icon
+                [icon]="ArrowRight01Icon"
+                [size]="20"
+                [strokeWidth]="1.5"
+                class="text-primary"
+              />
+            </button>
+            } @else {
+            <a
+              [routerLink]="menu.url"
+              role="menuitem"
+              routerLinkActive="bg-base-300 font-medium"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="rounded-lg flex items-center gap-2 p-2 focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <hugeicons-icon
+                [icon]="menu.icon"
+                [size]="18"
+                [strokeWidth]="1.7"
+              />
+              <span>{{ menu.label }}</span>
+            </a>
             }
-          </ul>
+          </li>
+          } }
+        </ul>
         }
       </div>
 
@@ -58,32 +72,42 @@
         [attr.inert]="activeSubmenu() ? null : ''"
       >
         @if (activeSubmenu(); as submenu) {
-          <button
-            type="button"
-            (click)="goBack()"
-            aria-label="Retour au menu principal"
-            class="flex items-center gap-2 uppercase font-bold tracking-tight transition-opacity hover:text-primary mb-4 px-2"
+        <button
+          type="button"
+          (click)="goBack()"
+          aria-label="Retour au menu principal"
+          class="flex items-center gap-2 uppercase font-bold tracking-tight transition-opacity hover:text-primary mb-4 px-2"
+        >
+          <hugeicons-icon
+            [icon]="ArrowLeft02Icon"
+            [size]="20"
+            [strokeWidth]="2.5"
+          />
+          <small class="font-semibold uppercase tracking-wider"
+            >{{ submenu.label }}</small
           >
-            <hugeicons-icon [icon]="ArrowLeft02Icon" [size]="20" [strokeWidth]="2.5" />
-            <small class="font-semibold uppercase tracking-wider">{{ submenu.label }}</small>
-          </button>
+        </button>
 
-          <ul class="menu menu-md gap-1 p-0 w-full" role="menu">
-            @for (child of submenu.children; track child.url) {
-              <li role="none">
-                <a
-                  [routerLink]="child.url"
-                  role="menuitem"
-                  routerLinkActive="bg-base-300 font-medium text-primary"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  class="rounded-lg flex items-center gap-3 py-2 px-3 focus-visible:outline-2 focus-visible:outline-primary"
-                >
-                  <hugeicons-icon [icon]="child.icon" [size]="18" [strokeWidth]="1.7" />
-                  <span>{{ child.label }}</span>
-                </a>
-              </li>
-            }
-          </ul>
+        <ul class="menu menu-md gap-1 p-0 w-full" role="menu">
+          @for (child of submenu.children; track child.url) {
+          <li role="none">
+            <a
+              [routerLink]="child.url"
+              role="menuitem"
+              routerLinkActive="bg-base-300 font-medium text-primary"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="rounded-lg flex items-center gap-3 py-2 px-3 focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <hugeicons-icon
+                [icon]="child.icon"
+                [size]="18"
+                [strokeWidth]="1.7"
+              />
+              <span>{{ child.label }}</span>
+            </a>
+          </li>
+          }
+        </ul>
         }
       </div>
     </div>

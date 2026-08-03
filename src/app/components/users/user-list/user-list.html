@@ -1,0 +1,12 @@
+<section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)]">
+  <app-list
+    listTitle="Utilisateurs"
+    url="/api/v1/auth/users/"
+    [headers]="headers"
+    [showAddButton]="true"
+    [addButtonLink]="{ url: '/users/new' }"
+    [showFilters]="false"
+    [showOverview]="false"
+    [showPageSizeSelector]="true"
+  />
+</section>

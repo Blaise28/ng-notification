@@ -4,7 +4,6 @@ import {
   AuthSuccessResponse,
   LoginBodyModel,
   MeSuccessResponse,
-  RegisterBodyModel,
 } from '@components/auth/auth.models';
 import { Api } from '@services/api/api';
 
@@ -16,11 +15,7 @@ export class AuthService {
     return this.api.post<AuthSuccessResponse>('/api/v1/auth/login', body);
   }
 
-  register(body: RegisterBodyModel) {
-    return this.api.post<AuthSuccessResponse>('/api/v1/auth/register', body);
-  }
-
   me() {
-    return this.api.get<MeSuccessResponse>('/api/v1/auth/me');
+    return this.api.get<MeSuccessResponse>('/api/v1/auth/populate');
   }
 }
