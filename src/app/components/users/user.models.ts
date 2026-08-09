@@ -13,7 +13,14 @@ export interface UserListItemModel {
   email: string;
   name: string;
   role: UserRole;
+  isActive: boolean;
   createdAt: string;
+}
+
+export interface UpdateUserBodyModel {
+  name?: string;
+  role?: UserRole;
+  isActive?: boolean;
 }
 
 export type UserResponse = SingleResponseModel<UserListItemModel>;

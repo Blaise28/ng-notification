@@ -3,6 +3,7 @@
     listTitle="Utilisateurs"
     url="/api/v1/auth/users/"
     [headers]="headers"
+    [action]="actions"
     [showAddButton]="true"
     [addButtonLink]="{ url: '/users/new' }"
     [showFilters]="false"
@@ -10,3 +11,72 @@
     [showPageSizeSelector]="true"
   />
 </section>
+
+<dialog
+  class="modal"
+  [open]="editDialogOpen()"
+  role="dialog"
+  aria-labelledby="edit-user-title"
+>
+  <div class="modal-box max-w-md" role="document">
+    <h3 id="edit-user-title" class="font-semibold text-lg mb-4">
+      Modifier l'utilisateur
+    </h3>
+
+    @if (errorMessage(); as message) {
+    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
+    }
+
+    <form (submit)="submitEdit($event)" class="flex flex-col gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">
+          Nom <code>*</code>
+        </legend>
+        <input type="text" [formField]="editForm.name" class="input w-full" />
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-sm text-primary/90">
+          Rôle <code>*</code>
+        </legend>
+        <select [formField]="editForm.role" class="select input w-full">
+          <option value="operator">Opérateur</option>
+          <option value="admin">Administrateur</option>
+        </select>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <label class="label gap-2">
+          <input
+            type="checkbox"
+            [formField]="editForm.isActive"
+            class="checkbox checkbox-primary text-primary text-2xl"
+          />
+          Actif
+        </label>
+      </fieldset>
+
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-ghost" (click)="closeEditDialog()">
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="editForm().invalid() || submitLoading()"
+        >
+          Enregistrer @if (submitLoading()) {
+          <span class="loading loading-sm ms-2"></span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop pointer-events-none">
+    <button
+      type="submit"
+      aria-label="Fermer la boîte de dialogue"
+      (click)="closeEditDialog()"
+    ></button>
+  </form>
+</dialog>
