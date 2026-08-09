@@ -61,7 +61,6 @@ export class UserList {
   protected readonly editDialogOpen = signal(false);
   protected readonly editingUserId = signal<string | null>(null);
   protected readonly submitLoading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly editForm = form(
     signal<EditUserFormValue>({ name: '', role: 'operator', isActive: true }),
@@ -71,7 +70,6 @@ export class UserList {
   );
 
   openEditDialog(user: UserListItemModel): void {
-    this.errorMessage.set(null);
     this.editingUserId.set(user.id);
     this.editForm().value.set({
       name: user.name,
@@ -93,7 +91,6 @@ export class UserList {
       return;
     }
 
-    this.errorMessage.set(null);
     this.submitLoading.set(true);
 
     this.userService
@@ -109,7 +106,6 @@ export class UserList {
         error: (err: unknown) => {
           this.submitLoading.set(false);
           const message = err instanceof ApiError ? err.message : 'Une erreur est survenue.';
-          this.errorMessage.set(message);
           this.dialogService.showToast({ type: 'error', message });
         },
       });

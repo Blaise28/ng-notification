@@ -23,10 +23,6 @@
       Modifier l'utilisateur
     </h3>
 
-    @if (errorMessage(); as message) {
-    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
-    }
-
     <form (submit)="submitEdit($event)" class="flex flex-col gap-4">
       <fieldset class="fieldset">
         <legend class="fieldset-legend text-sm text-primary/90">
@@ -50,7 +46,7 @@
           <input
             type="checkbox"
             [formField]="editForm.isActive"
-            class="checkbox checkbox-primary text-primary text-2xl"
+            class="checkbox checkbox-success text-2xl"
           />
           Actif
         </label>

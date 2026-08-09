@@ -18,7 +18,6 @@ export class MediaGallery {
   protected readonly assets = signal<MediaAssetModel[]>([]);
   protected readonly loading = signal(true);
   protected readonly uploading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.reload();
@@ -36,7 +35,10 @@ export class MediaGallery {
         },
         error: (err: unknown) => {
           this.loading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }
@@ -48,7 +50,6 @@ export class MediaGallery {
       return;
     }
     this.uploading.set(true);
-    this.errorMessage.set(null);
     this.mediaService
       .upload(file)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -60,7 +61,10 @@ export class MediaGallery {
         },
         error: (err: unknown) => {
           this.uploading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }
@@ -83,9 +87,6 @@ export class MediaGallery {
               });
             },
             error: (err: unknown) => {
-              this.errorMessage.set(
-                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-              );
               this.dialogService.showToast({
                 type: 'error',
                 message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',

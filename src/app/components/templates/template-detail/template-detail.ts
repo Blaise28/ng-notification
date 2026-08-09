@@ -29,7 +29,6 @@ export class TemplateDetail {
   protected readonly templateId = this.route.snapshot.paramMap.get('id')!;
   protected readonly template = signal<TemplateModel | null>(null);
   protected readonly loading = signal(true);
-  protected readonly errorMessage = signal<string | null>(null);
   protected readonly duplicateLoading = signal(false);
   protected readonly brandedPreview = signal(false);
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
@@ -69,7 +68,10 @@ export class TemplateDetail {
         },
         error: (err: unknown) => {
           this.loading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }
@@ -90,7 +92,10 @@ export class TemplateDetail {
         },
         error: (err: unknown) => {
           this.duplicateLoading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }
@@ -117,9 +122,6 @@ export class TemplateDetail {
               await this.router.navigate(['/templates']);
             },
             error: (err: unknown) => {
-              this.errorMessage.set(
-                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-              );
               this.dialogService.showToast({
                 type: 'error',
                 message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',

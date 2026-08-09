@@ -5,6 +5,7 @@ import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap 
 
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
+import { DialogService } from '@services/dialog/dialog.service';
 import { NotificationService } from '@services/notifications/notification.service';
 import { TemplateService } from '@services/templates/template.service';
 import { ClientModel, ClientType } from '@components/clients/client.models';
@@ -38,6 +39,7 @@ export class NotificationCompose {
   private readonly clientService = inject(ClientService);
   private readonly templateService = inject(TemplateService);
   private readonly notificationService = inject(NotificationService);
+  private readonly dialogService = inject(DialogService);
   private readonly clientSearch$ = new Subject<string>();
   private readonly selectedClientsById = signal<Record<string, ClientModel>>({});
 
@@ -126,7 +128,6 @@ export class NotificationCompose {
   });
 
   protected readonly submitLoading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.clientSearch$
@@ -260,11 +261,10 @@ export class NotificationCompose {
 
     const validationError = this.validate();
     if (validationError) {
-      this.errorMessage.set(validationError);
+      this.dialogService.showToast({ type: 'error', message: validationError });
       return;
     }
 
-    this.errorMessage.set(null);
     this.submitLoading.set(true);
 
     const body = this.buildBody();
@@ -278,7 +278,10 @@ export class NotificationCompose {
         },
         error: (err: unknown) => {
           this.submitLoading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }

@@ -1,10 +1,6 @@
 <section class="p-6 max-w-3xl mx-auto">
   <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">Envoyer une notification</h1>
 
-  @if (errorMessage(); as message) {
-    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
-  }
-
   <form (submit)="submit($event)" class="flex flex-col gap-6">
     <fieldset class="fieldset card bg-base-200 p-4">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Destinataires</legend>

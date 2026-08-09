@@ -62,8 +62,6 @@ export class TemplateList {
     },
   ];
 
-  protected readonly errorMessage = signal<string | null>(null);
-
   setChannelFilter(channel: TemplateChannel | ''): void {
     this.channelFilter.set(channel);
     const base = '/api/v1/templates';
@@ -80,7 +78,10 @@ export class TemplateList {
           await this.router.navigate(['/templates', response.object.id, 'edit']);
         },
         error: (err: unknown) => {
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }
@@ -103,9 +104,6 @@ export class TemplateList {
               });
             },
             error: (err: unknown) => {
-              this.errorMessage.set(
-                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-              );
               this.dialogService.showToast({
                 type: 'error',
                 message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',

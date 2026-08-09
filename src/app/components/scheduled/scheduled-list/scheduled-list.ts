@@ -43,8 +43,6 @@ export class ScheduledList {
     },
   ];
 
-  protected readonly errorMessage = signal<string | null>(null);
-
   setTab(tab: ScheduledTab): void {
     this.activeTab.set(tab);
   }
@@ -67,9 +65,6 @@ export class ScheduledList {
               });
             },
             error: (err: unknown) => {
-              this.errorMessage.set(
-                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-              );
               this.dialogService.showToast({
                 type: 'error',
                 message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',

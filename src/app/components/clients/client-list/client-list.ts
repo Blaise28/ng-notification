@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
@@ -46,8 +46,6 @@ export class ClientList {
     },
   ];
 
-  protected readonly errorMessage = signal<string | null>(null);
-
   private confirmDelete(client: ClientModel): void {
     this.dialogService.showConfirmDialog({
       type: 'error',
@@ -66,9 +64,6 @@ export class ClientList {
               });
             },
             error: (err: unknown) => {
-              this.errorMessage.set(
-                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-              );
               this.dialogService.showToast({
                 type: 'error',
                 message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',

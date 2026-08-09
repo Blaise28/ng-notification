@@ -8,10 +8,6 @@
         <p class="text-secondary text-sm">Connectez-vous pour accéder à Notification.</p>
       </div>
 
-      @if (errorMessage(); as message) {
-        <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
-      }
-
       <form (submit)="signInWithEmail($event)">
         <fieldset class="fieldset w-full">
           <legend class="fieldset-legend font-medium text-sm text-primary/90">

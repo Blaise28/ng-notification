@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { NotificationService } from '@services/notifications/notification.service';
 import { SentNotificationDetailModel } from '../notification.models';
 
@@ -16,11 +17,11 @@ export class NotificationDetail {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly notificationService = inject(NotificationService);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly notificationId = this.route.snapshot.paramMap.get('id')!;
   protected readonly notification = signal<SentNotificationDetailModel | null>(null);
   protected readonly loading = signal(true);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.notificationService
@@ -33,7 +34,10 @@ export class NotificationDetail {
         },
         error: (err: unknown) => {
           this.loading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }

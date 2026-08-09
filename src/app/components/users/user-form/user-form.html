@@ -3,10 +3,6 @@
     Ajouter un opérateur
   </h1>
 
-  @if (errorMessage(); as message) {
-  <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
-  }
-
   <form (submit)="submit($event)" class="flex flex-col gap-4">
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-sm text-primary/90">

@@ -22,7 +22,6 @@ export class ClientDetail {
   protected readonly clientId = this.route.snapshot.paramMap.get('id')!;
   protected readonly client = signal<ClientModel | null>(null);
   protected readonly loading = signal(true);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.clientService
@@ -35,7 +34,10 @@ export class ClientDetail {
         },
         error: (err: unknown) => {
           this.loading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }
@@ -62,9 +64,6 @@ export class ClientDetail {
               await this.router.navigate(['/clients']);
             },
             error: (err: unknown) => {
-              this.errorMessage.set(
-                err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-              );
               this.dialogService.showToast({
                 type: 'error',
                 message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',

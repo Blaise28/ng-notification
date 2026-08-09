@@ -43,11 +43,9 @@ export class UserForm {
   );
 
   protected readonly submitLoading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   submit(event: SubmitEvent): void {
     event.preventDefault();
-    this.errorMessage.set(null);
     this.submitLoading.set(true);
 
     this.userService
@@ -65,7 +63,6 @@ export class UserForm {
         error: (err: unknown) => {
           this.submitLoading.set(false);
           const message = err instanceof ApiError ? err.message : 'Une erreur est survenue.';
-          this.errorMessage.set(message);
           this.dialogService.showToast({ type: 'error', message });
         },
       });

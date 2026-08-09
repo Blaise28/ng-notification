@@ -6,6 +6,7 @@ import { form, FormField, required } from '@angular/forms/signals';
 import { PhoneNumberFieldComponent } from '@globals/components/phone-number-field/phone-number-field.component';
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
+import { DialogService } from '@services/dialog/dialog.service';
 import { ClientType, CreateClientBodyModel } from '../client.models';
 
 interface ClientFormValue {
@@ -50,6 +51,7 @@ export class ClientForm {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly clientService = inject(ClientService);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly clientId = signal(this.route.snapshot.paramMap.get('id'));
   protected readonly isEdit = computed(() => this.clientId() !== null);
@@ -64,7 +66,6 @@ export class ClientForm {
 
   protected readonly loading = signal(false);
   protected readonly submitLoading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     const id = this.clientId();
@@ -95,9 +96,10 @@ export class ClientForm {
           },
           error: (err: unknown) => {
             this.loading.set(false);
-            this.errorMessage.set(
-              err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-            );
+            this.dialogService.showToast({
+              type: 'error',
+              message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+            });
           },
         });
     }
@@ -112,19 +114,27 @@ export class ClientForm {
 
     const value = this.clientForm().value();
     if (value.type === 'individual' && (!value.firstName.trim() || !value.lastName.trim())) {
-      this.errorMessage.set('Le prénom et le nom sont requis pour un client particulier.');
+      this.dialogService.showToast({
+        type: 'error',
+        message: 'Le prénom et le nom sont requis pour un client particulier.',
+      });
       return;
     }
     if (value.type === 'business' && !value.companyName.trim()) {
-      this.errorMessage.set("Le nom de l'entreprise est requis pour un client entreprise.");
+      this.dialogService.showToast({
+        type: 'error',
+        message: "Le nom de l'entreprise est requis pour un client entreprise.",
+      });
       return;
     }
     if (!value.phoneE164.trim()) {
-      this.errorMessage.set('Un numéro de téléphone valide est requis.');
+      this.dialogService.showToast({
+        type: 'error',
+        message: 'Un numéro de téléphone valide est requis.',
+      });
       return;
     }
 
-    this.errorMessage.set(null);
     this.submitLoading.set(true);
 
     const body = toBody(value);
@@ -138,7 +148,10 @@ export class ClientForm {
       },
       error: (err: unknown) => {
         this.submitLoading.set(false);
-        this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+        this.dialogService.showToast({
+          type: 'error',
+          message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+        });
       },
     });
   }

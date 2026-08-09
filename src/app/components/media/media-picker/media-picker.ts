@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MediaAssetModel } from '@components/media/media.models';
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { MediaService } from '@services/media/media.service';
 
 @Component({
@@ -11,9 +12,6 @@ import { MediaService } from '@services/media/media.service';
     <div class="modal modal-open" role="dialog" aria-modal="true" aria-label="Choisir une image">
       <div class="modal-box max-w-3xl">
         <h2 class="font-bold text-lg mb-3">Galerie</h2>
-        @if (errorMessage(); as message) {
-          <div role="alert" class="alert alert-error text-sm mb-3">{{ message }}</div>
-        }
         @if (loading()) {
           <div class="flex justify-center py-8"><span class="loading loading-spinner"></span></div>
         } @else if (assets().length === 0) {
@@ -48,13 +46,13 @@ import { MediaService } from '@services/media/media.service';
 export class MediaPicker {
   private readonly destroyRef = inject(DestroyRef);
   private readonly mediaService = inject(MediaService);
+  private readonly dialogService = inject(DialogService);
 
   readonly selected = output<MediaAssetModel>();
   readonly cancelled = output<void>();
 
   protected readonly assets = signal<MediaAssetModel[]>([]);
   protected readonly loading = signal(true);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.mediaService
@@ -67,7 +65,10 @@ export class MediaPicker {
         },
         error: (err: unknown) => {
           this.loading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }

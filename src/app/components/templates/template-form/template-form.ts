@@ -6,6 +6,7 @@ import { form, FormField, required } from '@angular/forms/signals';
 import { MediaPicker } from '@components/media/media-picker/media-picker';
 import { MediaAssetModel } from '@components/media/media.models';
 import { ApiError } from '@services/api/api-error';
+import { DialogService } from '@services/dialog/dialog.service';
 import { TemplateService } from '@services/templates/template.service';
 import { slugify } from '@utils/slugify';
 import { TemplateEmailEditor } from '../template-email-editor/template-email-editor';
@@ -61,6 +62,7 @@ export class TemplateForm {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly templateService = inject(TemplateService);
+  private readonly dialogService = inject(DialogService);
   private slugTouched = false;
 
   private readonly emailEditor = viewChild(TemplateEmailEditor);
@@ -148,7 +150,6 @@ export class TemplateForm {
 
   protected readonly loading = signal(false);
   protected readonly submitLoading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.templateService
@@ -184,9 +185,10 @@ export class TemplateForm {
           },
           error: (err: unknown) => {
             this.loading.set(false);
-            this.errorMessage.set(
-              err instanceof ApiError ? err.message : 'Une erreur est survenue.',
-            );
+            this.dialogService.showToast({
+              type: 'error',
+              message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+            });
           },
         });
     }
@@ -267,11 +269,10 @@ export class TemplateForm {
     event.preventDefault();
     const validationError = this.channelValidationError();
     if (validationError) {
-      this.errorMessage.set(validationError);
+      this.dialogService.showToast({ type: 'error', message: validationError });
       return;
     }
 
-    this.errorMessage.set(null);
     this.submitLoading.set(true);
 
     const value = this.templateForm().value();
@@ -288,7 +289,10 @@ export class TemplateForm {
       },
       error: (err: unknown) => {
         this.submitLoading.set(false);
-        this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+        this.dialogService.showToast({
+          type: 'error',
+          message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+        });
       },
     });
   }

@@ -1,8 +1,4 @@
 <section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)]">
-  @if (errorMessage(); as message) {
-    <div role="alert" class="alert alert-error text-sm mb-4">{{ message }}</div>
-  }
-
   <app-list
     listTitle="Clients"
     url="/api/v1/clients"

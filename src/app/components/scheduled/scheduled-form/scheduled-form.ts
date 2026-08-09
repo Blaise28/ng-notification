@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 
 import { ApiError } from '@services/api/api-error';
 import { ClientService } from '@services/clients/client.service';
+import { DialogService } from '@services/dialog/dialog.service';
 import { ScheduledService } from '@services/scheduled/scheduled.service';
 import { TemplateService } from '@services/templates/template.service';
 import { ClientModel, ClientType } from '@components/clients/client.models';
@@ -34,6 +35,7 @@ export class ScheduledForm {
   private readonly clientService = inject(ClientService);
   private readonly scheduledService = inject(ScheduledService);
   private readonly templateService = inject(TemplateService);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly clients = signal<ClientModel[]>([]);
   protected readonly templates = signal<TemplateModel[]>([]);
@@ -96,7 +98,6 @@ export class ScheduledForm {
   });
 
   protected readonly submitLoading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.clientService
@@ -149,11 +150,10 @@ export class ScheduledForm {
 
     const validationError = this.validate();
     if (validationError) {
-      this.errorMessage.set(validationError);
+      this.dialogService.showToast({ type: 'error', message: validationError });
       return;
     }
 
-    this.errorMessage.set(null);
     this.submitLoading.set(true);
 
     const body = this.buildBody();
@@ -167,7 +167,10 @@ export class ScheduledForm {
         },
         error: (err: unknown) => {
           this.submitLoading.set(false);
-          this.errorMessage.set(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
         },
       });
   }

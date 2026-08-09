@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Password } from '@globals/components/password/password';
 import { ApiError } from '@services/api/api-error';
 import { AuthService } from '@services/auth/auth.service';
+import { DialogService } from '@services/dialog/dialog.service';
 import { ThemeController } from '@layout/theme-controller/theme-controller';
 import { safeInternalRedirectPath } from '@utils/safe-redirect-url';
 import { LoginBodyModel } from '../auth.models';
@@ -22,6 +23,7 @@ export class Login {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private dialogService = inject(DialogService);
   private userStore = inject(UserStore);
   private themeStore = inject(ThemeStore);
 
@@ -40,11 +42,9 @@ export class Login {
   );
 
   submitLoginLoading = signal(false);
-  errorMessage = signal<string | null>(null);
 
   signInWithEmail(event: SubmitEvent) {
     event.preventDefault();
-    this.errorMessage.set(null);
     this.submitLoginLoading.set(true);
     this.authService
       .login(this.loginForm().value())
@@ -65,7 +65,7 @@ export class Login {
           this.submitLoginLoading.set(false);
           this.loginForm.password().value.set('');
           const message = err instanceof ApiError ? err.message : 'Une erreur est survenue.';
-          this.errorMessage.set(message);
+          this.dialogService.showToast({ type: 'error', message });
         },
       });
   }
