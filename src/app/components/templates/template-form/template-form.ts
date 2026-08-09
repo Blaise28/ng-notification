@@ -82,7 +82,6 @@ export class TemplateForm {
     signal<TemplateFormValue>({ ...EMPTY_FORM_VALUE }),
     (schema) => {
       required(schema.name);
-      required(schema.slug);
       required(schema.channel);
     },
   );

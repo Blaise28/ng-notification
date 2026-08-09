@@ -79,7 +79,15 @@ body {
 }
 
 @utility input {
-  @apply rounded-sm bg-base-200 border border-secondary focus-within:outline-none transition-colors duration-200 ease-in-out h-12.5 w-full placeholder:text-secondary placeholder:text-xs;
+  @apply bg-base-200 border border-secondary focus-within:outline-none transition-colors duration-200 ease-in-out h-12.5 w-full placeholder:text-secondary placeholder:text-xs rounded-md;
+}
+
+@utility select {
+  @apply bg-base-200 border border-secondary focus-within:outline-none transition-colors duration-200 ease-in-out h-12.5 w-full placeholder:text-secondary placeholder:text-xs rounded-md;
+}
+
+@utility textarea {
+  @apply bg-base-200 border border-secondary focus-within:outline-none transition-colors duration-200 ease-in-out h-12.5 w-full placeholder:text-secondary placeholder:text-xs rounded-md;
 }
 
 @utility btn {
