@@ -31,6 +31,18 @@ export class ClientList {
     },
     { label: 'Téléphone', field: ['phoneE164'] },
     { label: 'E-mail', field: ['email'] },
+    {
+      label: 'Actif',
+      field: ['isActive'],
+      format: 'boolean',
+      boolean: {
+        type: 'badge',
+        trueLabel: 'Actif',
+        falseLabel: 'Inactif',
+        trueBadgeClass: 'badge-success badge-soft',
+        falseBadgeClass: 'badge-error badge-soft',
+      },
+    },
   ];
 
   protected readonly actions: ListAction[] = [
@@ -41,26 +53,30 @@ export class ClientList {
       },
     },
     {
-      name: 'Supprimer',
-      callback: (line) => this.confirmDelete(line as ClientModel),
+      name: 'Activer',
+      callback: (line) => this.manageActiveAction('active', line as ClientModel),
+    },
+    {
+      name: 'Désactiver',
+      callback: (line) => this.manageActiveAction('deactive', line as ClientModel),
     },
   ];
 
-  private confirmDelete(client: ClientModel): void {
+  private manageActiveAction(type: 'active' | 'deactive', client: ClientModel): void {
     this.dialogService.showConfirmDialog({
       type: 'error',
-      title: 'Supprimer le client',
-      description: `Supprimer le client « ${client.displayName} » ?`,
+      title: `${type === 'active' ? `Activer` : `Désactiver`} le client`,
+      description: `${type === 'active' ? `Activer` : `Désactiver`} le client « ${client.displayName} » ?`,
       onConfirm: () => {
         this.clientService
-          .remove(client.id)
+          .update(client.id, { isActive: type === 'active' ? true : false })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {
               this.list()?.reloadList();
               this.dialogService.showToast({
                 type: 'success',
-                message: 'Client supprimé',
+                message: 'Client désactivé',
               });
             },
             error: (err: unknown) => {

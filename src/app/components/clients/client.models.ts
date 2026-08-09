@@ -19,6 +19,7 @@ export interface CreateClientBodyModel {
   optInSms?: boolean;
   optInWhatsapp?: boolean;
   optInEmail?: boolean;
+  isActive?: boolean;
   externalRef?: string;
   metadata?: Record<string, unknown>;
 }
@@ -46,6 +47,7 @@ export interface ClientModel {
   optInSms: boolean;
   optInWhatsapp: boolean;
   optInEmail: boolean;
+  isActive: boolean;
   externalRef?: string | null;
   metadata: Record<string, unknown>;
   displayName: string;
