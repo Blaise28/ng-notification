@@ -4,7 +4,6 @@ import {
   buildEmailPreviewDocument,
   countSmsSegments,
   extractVariablesFromContent,
-  getStartersForChannel,
   interpolateTemplate,
   TEMPLATE_PREVIEW_SAMPLE_VARS,
 } from './template.utils';
@@ -40,14 +39,5 @@ describe('template.utils', () => {
     expect(doc).toContain('<style type="text/css">main { color: red; }</style>');
     expect(doc).toContain('<body>');
     expect(doc).toContain('<main><p>Welcome Camille</p></main>');
-  });
-
-  it('returns starters by channel', () => {
-    const emailStarters = getStartersForChannel('email');
-    const smsStarters = getStartersForChannel('sms');
-
-    expect(emailStarters.length).toBeGreaterThan(0);
-    expect(emailStarters.every((starter) => starter.channel === 'email')).toBe(true);
-    expect(smsStarters.some((starter) => starter.id === 'sms-short')).toBe(true);
   });
 });

@@ -110,6 +110,7 @@ export class TemplateEmailEditor implements AfterViewInit, OnDestroy {
         extensions: [
           basicSetup,
           language,
+          EditorView.lineWrapping,
           EditorView.updateListener.of((update) => {
             if (!update.docChanged) {
               return;

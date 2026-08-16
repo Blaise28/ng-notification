@@ -31,36 +31,21 @@
 
         <fieldset class="fieldset">
           <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
-          <select [formField]="templateForm.channel" class="select w-full">
-            <option value="email">E-mail</option>
-            <option value="sms">SMS</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
-        </fieldset>
-
-        @if (!isEdit() && channelStarters().length > 0) {
-          <div class="flex flex-wrap gap-2">
-            <button type="button" class="btn btn-outline btn-sm" (click)="showStarters.set(!showStarters())">
-              Partir d'un modèle
-            </button>
+          <div class="flex flex-wrap gap-4">
+            <label class="label cursor-pointer gap-2">
+              <input type="radio" value="email" [formField]="templateForm.channel" class="radio radio-sm radio-primary" />
+              E-mail
+            </label>
+            <label class="label cursor-pointer gap-2">
+              <input type="radio" value="sms" [formField]="templateForm.channel" class="radio radio-sm radio-primary" />
+              SMS
+            </label>
+            <label class="label cursor-pointer gap-2">
+              <input type="radio" value="whatsapp" [formField]="templateForm.channel" class="radio radio-sm radio-primary" />
+              WhatsApp
+            </label>
           </div>
-          @if (showStarters()) {
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              @for (starter of channelStarters(); track starter.id) {
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-sm justify-start h-auto py-2"
-                  (click)="applyStarter(starter)"
-                >
-                  <span class="flex flex-col items-start gap-0.5">
-                    <span class="font-medium">{{ starter.label }}</span>
-                    <span class="text-xs text-base-content/60">{{ starter.description }}</span>
-                  </span>
-                </button>
-              }
-            </div>
-          }
-        }
+        </fieldset>
 
         @let channel = templateForm.channel().value();
 

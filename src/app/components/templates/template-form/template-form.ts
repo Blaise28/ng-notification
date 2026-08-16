@@ -14,9 +14,7 @@ import { TemplatePreview } from '../template-preview/template-preview';
 import {
   countSmsSegments,
   extractVariablesFromContent,
-  getStartersForChannel,
   TEMPLATE_PREVIEW_SAMPLE_VARS,
-  TemplateStarter,
 } from '../template.utils';
 import {
   CreateTemplateBodyModel,
@@ -79,7 +77,6 @@ export class TemplateForm {
   protected readonly whatsappLanguages = WHATSAPP_LANGUAGE_OPTIONS;
   protected readonly whatsappVariableKeys = signal<string[]>([]);
   protected readonly showGallery = signal(false);
-  protected readonly showStarters = signal(false);
 
   protected readonly templateForm = form(
     signal<TemplateFormValue>({ ...EMPTY_FORM_VALUE }),
@@ -117,10 +114,6 @@ export class TemplateForm {
     const body = this.templateForm.smsBody().value();
     return countSmsSegments(body);
   });
-
-  protected readonly channelStarters = computed(() =>
-    getStartersForChannel(this.templateForm.channel().value()),
-  );
 
   protected readonly channelValidationError = computed(() => {
     const value = this.templateForm().value();
@@ -238,22 +231,6 @@ export class TemplateForm {
     const img = `<img src="${asset.url}" alt="${asset.originalName}" style="max-width:100%;height:auto;" />`;
     this.emailEditor()?.appendHtml(img);
     this.showGallery.set(false);
-  }
-
-  applyStarter(starter: TemplateStarter): void {
-    if (starter.subject) {
-      this.templateForm.subject().value.set(starter.subject);
-    }
-    if (starter.htmlBody) {
-      this.templateForm.htmlBody().value.set(starter.htmlBody);
-    }
-    if (starter.css) {
-      this.templateForm.css().value.set(starter.css);
-    }
-    if (starter.smsBody) {
-      this.templateForm.smsBody().value.set(starter.smsBody);
-    }
-    this.showStarters.set(false);
   }
 
   labelFor(token: string): string {
