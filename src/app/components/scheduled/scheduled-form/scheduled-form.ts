@@ -10,7 +10,7 @@ import { TemplateService } from '@services/templates/template.service';
 import { ClientModel, ClientType } from '@components/clients/client.models';
 import { NotificationChannel } from '@components/notifications/notification.models';
 import { TemplatePreview } from '@components/templates/template-preview/template-preview';
-import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '@components/templates/template-preview.utils';
+import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '@components/templates/template.utils';
 import {
   TEMPLATE_VARIABLE_LABELS,
   TemplateModel,
@@ -52,14 +52,13 @@ export class ScheduledForm {
   protected readonly templateId = signal('');
   protected readonly variables = signal<Record<string, string>>({});
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
-  protected readonly brandedPreview = signal(true);
 
   protected readonly emailSubject = signal('');
   protected readonly emailHtml = signal('');
   protected readonly emailText = signal('');
   protected readonly smsBody = signal('');
   protected readonly whatsappTemplateName = signal('');
-  protected readonly whatsappTemplateLanguage = signal('fr');
+  protected readonly whatsappTemplateLanguage = signal('fr_FR');
   protected readonly multiChannels = signal<NotificationChannel[]>([]);
 
   protected readonly templatesForChannel = computed(() => {

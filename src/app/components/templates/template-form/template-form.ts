@@ -11,9 +11,13 @@ import { TemplateService } from '@services/templates/template.service';
 import { slugify } from '@utils/slugify';
 import { TemplateEmailEditor } from '../template-email-editor/template-email-editor';
 import { TemplatePreview } from '../template-preview/template-preview';
-import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '../template-preview.utils';
-import { getStartersForChannel, TemplateStarter } from '../template-starters';
-import { extractVariablesFromContent } from '../template-variables.utils';
+import {
+  countSmsSegments,
+  extractVariablesFromContent,
+  getStartersForChannel,
+  TEMPLATE_PREVIEW_SAMPLE_VARS,
+  TemplateStarter,
+} from '../template.utils';
 import {
   CreateTemplateBodyModel,
   TEMPLATE_VARIABLE_LABELS,
@@ -48,7 +52,7 @@ const EMPTY_FORM_VALUE: TemplateFormValue = {
   css: '',
   smsBody: '',
   whatsappTemplateName: '',
-  whatsappTemplateLanguage: 'fr',
+  whatsappTemplateLanguage: 'fr_FR',
   isDefault: false,
 };
 
@@ -76,7 +80,6 @@ export class TemplateForm {
   protected readonly whatsappVariableKeys = signal<string[]>([]);
   protected readonly showGallery = signal(false);
   protected readonly showStarters = signal(false);
-  protected readonly brandedPreview = signal(false);
 
   protected readonly templateForm = form(
     signal<TemplateFormValue>({ ...EMPTY_FORM_VALUE }),
@@ -112,9 +115,7 @@ export class TemplateForm {
 
   protected readonly smsStats = computed(() => {
     const body = this.templateForm.smsBody().value();
-    const length = body.length;
-    const segments = length <= 160 ? (length === 0 ? 0 : 1) : Math.ceil(length / 153);
-    return { length, segments };
+    return countSmsSegments(body);
   });
 
   protected readonly channelStarters = computed(() =>
@@ -151,11 +152,6 @@ export class TemplateForm {
   protected readonly submitLoading = signal(false);
 
   constructor() {
-    this.templateService
-      .getVariableCatalog()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ error: () => undefined });
-
     const id = this.templateId();
     if (id) {
       this.slugTouched = true;
@@ -178,7 +174,7 @@ export class TemplateForm {
               css: template.css ?? '',
               smsBody: template.smsBody ?? '',
               whatsappTemplateName: template.whatsappTemplateName ?? '',
-              whatsappTemplateLanguage: template.whatsappTemplateLanguage ?? 'fr',
+              whatsappTemplateLanguage: template.whatsappTemplateLanguage ?? 'fr_FR',
               isDefault: template.isDefault,
             });
           },

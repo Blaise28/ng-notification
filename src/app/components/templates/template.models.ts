@@ -27,7 +27,7 @@ export const TEMPLATE_VARIABLE_LABELS: Record<TemplateVariableToken, string> = {
 };
 
 export const WHATSAPP_LANGUAGE_OPTIONS = [
-  { value: 'fr', label: 'Français (fr)' },
+  { value: 'fr_FR', label: 'Français (fr_FR)' },
   { value: 'en_US', label: 'Anglais US (en_US)' },
   { value: 'en_GB', label: 'Anglais UK (en_GB)' },
   { value: 'es', label: 'Espagnol (es)' },
@@ -76,46 +76,6 @@ export interface TemplateModel {
   updatedAt: string;
 }
 
-export interface TemplateVariableCatalogEntry {
-  key: string;
-  description: string;
-}
-
-export interface TemplateVariableCatalogModel {
-  catalog: TemplateVariableCatalogEntry[];
-  customAllowed: boolean;
-}
-
-export interface PreviewTemplateBodyModel {
-  variables: Record<string, string>;
-  extra?: Record<string, string>;
-  branded?: boolean;
-}
-
-export interface ResolvedEmailPreview {
-  subject: string;
-  html: string;
-  text?: string;
-}
-
-export interface ResolvedSmsPreview {
-  body: string;
-}
-
-export interface ResolvedWhatsappPreview {
-  templateName: string;
-  language: string;
-  variables?: Record<string, string>;
-}
-
-export interface ResolvedTemplateContentModel {
-  email?: ResolvedEmailPreview;
-  sms?: ResolvedSmsPreview;
-  whatsapp?: ResolvedWhatsappPreview;
-}
-
 export type TemplateResponse = SingleResponseModel<TemplateModel>;
 export type TemplatesListResponse = ListResponseModel<TemplateModel>;
 export type DeleteTemplateResponse = SingleResponseModel<{ id: string }>;
-export type TemplateVariableCatalogResponse = SingleResponseModel<TemplateVariableCatalogModel>;
-export type TemplatePreviewResponse = SingleResponseModel<ResolvedTemplateContentModel>;

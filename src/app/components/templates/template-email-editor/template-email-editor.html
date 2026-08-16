@@ -4,19 +4,18 @@
       <button
         type="button"
         class="btn btn-xs join-item"
-        [class.btn-primary]="mode() === 'visual'"
-        [disabled]="visualUnsupported()"
-        (click)="setMode('visual')"
+        [class.btn-primary]="codeTab() === 'html'"
+        (click)="setCodeTab('html')"
       >
-        Visuel
+        HTML
       </button>
       <button
         type="button"
         class="btn btn-xs join-item"
-        [class.btn-primary]="mode() === 'code'"
-        (click)="setMode('code')"
+        [class.btn-primary]="codeTab() === 'css'"
+        (click)="setCodeTab('css')"
       >
-        Code
+        CSS
       </button>
     </div>
     <div class="flex flex-wrap gap-1">
@@ -37,41 +36,9 @@
     </div>
   </div>
 
-  @if (visualUnsupported()) {
-    <div role="status" class="alert alert-warning text-xs py-2">
-      Le HTML contient des éléments avancés. Utilisez le mode Code pour les modifier.
-    </div>
-  }
-
-  @if (mode() === 'visual') {
-    <div
-      #visualHost
-      class="min-h-48 rounded-lg border border-base-300 p-3 prose prose-sm max-w-none bg-white text-base-content"
-      aria-label="Éditeur visuel e-mail"
-    ></div>
-  } @else {
-    <div class="join mb-1">
-      <button
-        type="button"
-        class="btn btn-xs join-item"
-        [class.btn-primary]="codeTab() === 'html'"
-        (click)="setCodeTab('html')"
-      >
-        HTML
-      </button>
-      <button
-        type="button"
-        class="btn btn-xs join-item"
-        [class.btn-primary]="codeTab() === 'css'"
-        (click)="setCodeTab('css')"
-      >
-        CSS
-      </button>
-    </div>
-    <div
-      #codeHost
-      class="min-h-48 rounded-lg border border-base-300 overflow-hidden text-sm"
-      aria-label="Éditeur code e-mail"
-    ></div>
-  }
+  <div
+    #codeHost
+    class="min-h-64 rounded-lg border border-base-300 overflow-hidden text-sm"
+    [attr.aria-label]="codeTab() === 'html' ? 'Éditeur HTML e-mail' : 'Éditeur CSS e-mail'"
+  ></div>
 </div>

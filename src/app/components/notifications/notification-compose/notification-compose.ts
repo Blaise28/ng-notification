@@ -10,7 +10,7 @@ import { NotificationService } from '@services/notifications/notification.servic
 import { TemplateService } from '@services/templates/template.service';
 import { ClientModel, ClientType } from '@components/clients/client.models';
 import { TemplatePreview } from '@components/templates/template-preview/template-preview';
-import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '@components/templates/template-preview.utils';
+import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '@components/templates/template.utils';
 import {
   TEMPLATE_VARIABLE_LABELS,
   TemplateModel,
@@ -68,7 +68,6 @@ export class NotificationCompose {
   protected readonly contentSource = signal<ContentSource>('template');
   protected readonly templateIds = signal<TemplateIdsModel>({});
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
-  protected readonly brandedPreview = signal(true);
 
   protected readonly templatesByChannel = computed(() => {
     const map: Record<NotificationChannel, TemplateModel[]> = {
@@ -115,7 +114,7 @@ export class NotificationCompose {
   protected readonly emailText = signal('');
   protected readonly smsBody = signal('');
   protected readonly whatsappTemplateName = signal('');
-  protected readonly whatsappTemplateLanguage = signal('fr');
+  protected readonly whatsappTemplateLanguage = signal('fr_FR');
 
   protected readonly previewVariables = computed(() => {
     const vars: Record<string, string> = { ...TEMPLATE_PREVIEW_SAMPLE_VARS };

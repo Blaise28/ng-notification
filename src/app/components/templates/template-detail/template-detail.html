@@ -88,17 +88,7 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-3">
-        <label class="label cursor-pointer justify-start gap-2">
-          <input
-            type="checkbox"
-            class="toggle toggle-sm"
-            [checked]="brandedPreview()"
-            (change)="brandedPreview.set($any($event.target).checked)"
-          />
-          <span class="text-sm">Aperçu avec branding Nightbird</span>
-        </label>
-
+      <div>
         <app-template-preview
           [channel]="currentTemplate.channel"
           [subject]="currentTemplate.subject ?? ''"
@@ -106,10 +96,9 @@
           [css]="currentTemplate.css ?? ''"
           [smsBody]="currentTemplate.smsBody ?? ''"
           [whatsappTemplateName]="currentTemplate.whatsappTemplateName ?? ''"
-          [whatsappTemplateLanguage]="currentTemplate.whatsappTemplateLanguage ?? 'fr'"
+          [whatsappTemplateLanguage]="currentTemplate.whatsappTemplateLanguage ?? 'fr_FR'"
           [whatsappVariableKeys]="currentTemplate.whatsappVariableKeys ?? []"
           [variables]="previewVariables()"
-          [branded]="brandedPreview()"
           title="Aperçu du modèle"
         />
       </div>

@@ -6,7 +6,7 @@ import { ApiError } from '@services/api/api-error';
 import { DialogService } from '@services/dialog/dialog.service';
 import { TemplateService } from '@services/templates/template.service';
 import { TemplatePreview } from '../template-preview/template-preview';
-import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '../template-preview.utils';
+import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '../template.utils';
 import {
   TEMPLATE_VARIABLE_LABELS,
   TemplateModel,
@@ -30,7 +30,6 @@ export class TemplateDetail {
   protected readonly template = signal<TemplateModel | null>(null);
   protected readonly loading = signal(true);
   protected readonly duplicateLoading = signal(false);
-  protected readonly brandedPreview = signal(false);
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
   protected readonly whatsappLanguages = WHATSAPP_LANGUAGE_OPTIONS;
 

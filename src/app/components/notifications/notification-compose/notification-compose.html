@@ -224,15 +224,6 @@
 
         @if (selectedTemplates().length > 0) {
           <div class="mb-3">
-            <label class="label cursor-pointer justify-start gap-2 mb-2">
-              <input
-                type="checkbox"
-                class="toggle toggle-sm"
-                [checked]="brandedPreview()"
-                (change)="brandedPreview.set($any($event.target).checked)"
-              />
-              <span class="text-sm">Aperçu avec branding Nightbird</span>
-            </label>
             @for (template of selectedTemplates(); track template.id) {
               <app-template-preview
                 class="mb-3 block"
@@ -242,10 +233,9 @@
                 [css]="template.css ?? ''"
                 [smsBody]="template.smsBody ?? ''"
                 [whatsappTemplateName]="template.whatsappTemplateName ?? ''"
-                [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr'"
+                [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr_FR'"
                 [whatsappVariableKeys]="template.whatsappVariableKeys ?? []"
                 [variables]="previewVariables()"
-                [branded]="brandedPreview()"
                 [title]="'Aperçu — ' + template.name"
               />
             }
@@ -305,7 +295,7 @@
             <input
               type="text"
               class="input w-full"
-              placeholder="Langue (ex. fr, en_US)"
+              placeholder="Langue (ex. fr_FR, en_US)"
               [value]="whatsappTemplateLanguage()"
               (input)="whatsappTemplateLanguage.set($any($event.target).value)"
             />

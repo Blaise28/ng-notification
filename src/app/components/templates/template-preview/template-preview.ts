@@ -5,10 +5,10 @@ import type { TemplateChannel } from '../template.models';
 import { TEMPLATE_VARIABLE_LABELS, TemplateVariableToken } from '../template.models';
 import {
   buildEmailPreviewDocument,
+  countSmsSegments,
   interpolateTemplate,
   TEMPLATE_PREVIEW_SAMPLE_VARS,
-} from '../template-preview.utils';
-import { countSmsSegments } from '../template-variables.utils';
+} from '../template.utils';
 
 @Component({
   selector: 'app-template-preview',
@@ -23,10 +23,9 @@ export class TemplatePreview {
   readonly css = input('');
   readonly smsBody = input('');
   readonly whatsappTemplateName = input('');
-  readonly whatsappTemplateLanguage = input('fr');
+  readonly whatsappTemplateLanguage = input('fr_FR');
   readonly whatsappVariableKeys = input<string[]>([]);
   readonly variables = input<Record<string, string>>(TEMPLATE_PREVIEW_SAMPLE_VARS);
-  readonly branded = input(false);
   readonly title = input('Aperçu');
 
   protected readonly previewSubject = computed(() =>
@@ -54,7 +53,6 @@ export class TemplatePreview {
       htmlBody: this.htmlBody(),
       css: this.css(),
       variables: this.variables(),
-      branded: this.branded(),
     });
     return this.sanitizer.bypassSecurityTrustHtml(doc);
   });

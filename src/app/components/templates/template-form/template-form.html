@@ -194,17 +194,7 @@
         </div>
       </div>
 
-      <div class="xl:sticky xl:top-4 xl:self-start flex flex-col gap-3">
-        <label class="label cursor-pointer justify-start gap-2">
-          <input
-            type="checkbox"
-            class="toggle toggle-sm"
-            [checked]="brandedPreview()"
-            (change)="brandedPreview.set($any($event.target).checked)"
-          />
-          <span class="text-sm">Aperçu avec branding Nightbird</span>
-        </label>
-
+      <div class="xl:sticky xl:top-4 xl:self-start">
         <app-template-preview
           [channel]="templateForm.channel().value()"
           [subject]="templateForm.subject().value()"
@@ -215,7 +205,6 @@
           [whatsappTemplateLanguage]="templateForm.whatsappTemplateLanguage().value()"
           [whatsappVariableKeys]="whatsappVariableKeys()"
           [variables]="previewVariables()"
-          [branded]="brandedPreview()"
           title="Aperçu en direct"
         />
       </div>
