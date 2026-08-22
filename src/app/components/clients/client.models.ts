@@ -20,7 +20,7 @@ export interface CreateClientBodyModel {
   optInWhatsapp?: boolean;
   optInEmail?: boolean;
   isActive?: boolean;
-  externalRef?: string;
+  subscriptionEndAt?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -31,6 +31,8 @@ export interface ListClientsQueryModel extends PaginatedQueryModel {
   optInSms?: boolean;
   optInWhatsapp?: boolean;
   optInEmail?: boolean;
+  subscriptionEndAtFrom?: string;
+  subscriptionEndAtTo?: string;
 }
 
 export interface ClientModel {
@@ -48,7 +50,7 @@ export interface ClientModel {
   optInWhatsapp: boolean;
   optInEmail: boolean;
   isActive: boolean;
-  externalRef?: string | null;
+  subscriptionEndAt?: string | null;
   metadata: Record<string, unknown>;
   displayName: string;
   createdAt: string;

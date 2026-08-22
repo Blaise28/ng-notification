@@ -19,7 +19,7 @@ interface ClientFormValue {
   phoneE164: string;
   email: string;
   locale: string;
-  externalRef: string;
+  subscriptionEndAt: string;
   optInSms: boolean;
   optInWhatsapp: boolean;
   optInEmail: boolean;
@@ -35,7 +35,7 @@ const EMPTY_FORM_VALUE: ClientFormValue = {
   phoneE164: '',
   email: '',
   locale: 'fr',
-  externalRef: '',
+  subscriptionEndAt: '',
   optInSms: false,
   optInWhatsapp: false,
   optInEmail: false,
@@ -88,7 +88,7 @@ export class ClientForm {
               phoneE164: client.phoneE164,
               email: client.email ?? '',
               locale: client.locale,
-              externalRef: client.externalRef ?? '',
+              subscriptionEndAt: toDateInputValue(client.subscriptionEndAt),
               optInSms: client.optInSms,
               optInWhatsapp: client.optInWhatsapp,
               optInEmail: client.optInEmail,
@@ -168,9 +168,13 @@ function toBody(value: ClientFormValue): CreateClientBodyModel {
     phoneE164: value.phoneE164.trim(),
     email: value.email.trim() || undefined,
     locale: value.locale.trim() || undefined,
-    externalRef: value.externalRef.trim() || undefined,
+    subscriptionEndAt: value.subscriptionEndAt.trim() || undefined,
     optInSms: value.optInSms,
     optInWhatsapp: value.optInWhatsapp,
     optInEmail: value.optInEmail,
   };
+}
+
+function toDateInputValue(value: string | null | undefined): string {
+  return value ? value.slice(0, 10) : '';
 }

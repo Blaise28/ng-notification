@@ -1,14 +1,53 @@
-<section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)]">
-  <app-list
-    listTitle="Clients"
-    url="/api/v1/clients"
-    [headers]="headers"
-    [action]="actions"
-    [showAddButton]="true"
-    [addButtonLink]="{ url: '/clients/new' }"
-    [detailLink]="{ link: '/clients/', field: 'id' }"
-    [showFilters]="false"
-    [showOverview]="false"
-    [showPageSizeSelector]="true"
-  />
+<section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col gap-4">
+  <form
+    (submit)="$event.preventDefault(); applySubscriptionFilter()"
+    class="card bg-base-200 p-4"
+    aria-label="Filtrer par fin d'abonnement"
+  >
+    <div class="flex flex-wrap items-end gap-4">
+      <fieldset class="fieldset">
+        <label class="fieldset-legend text-sm" for="subscription-end-from">
+          Fin d'abonnement (à partir de)
+        </label>
+        <input
+          id="subscription-end-from"
+          type="date"
+          class="input"
+          [value]="subscriptionEndFrom()"
+          (input)="subscriptionEndFrom.set($any($event.target).value)"
+        />
+      </fieldset>
+      <fieldset class="fieldset">
+        <label class="fieldset-legend text-sm" for="subscription-end-to">
+          Fin d'abonnement (jusqu'à)
+        </label>
+        <input
+          id="subscription-end-to"
+          type="date"
+          class="input"
+          [value]="subscriptionEndTo()"
+          (input)="subscriptionEndTo.set($any($event.target).value)"
+        />
+      </fieldset>
+      <button type="submit" class="btn btn-secondary">Filtrer</button>
+      <button type="button" class="btn btn-ghost" (click)="resetSubscriptionFilter()">
+        Réinitialiser
+      </button>
+    </div>
+  </form>
+
+  <div class="flex-1 min-h-0">
+    <app-list
+      listTitle="Clients"
+      [url]="listUrl()"
+      [headers]="headers"
+      [action]="actions"
+      [showAddButton]="true"
+      [addButtonLink]="{ url: '/clients/new' }"
+      [detailLink]="{ link: '/clients/', field: 'id' }"
+      [showFilters]="false"
+      [showOverview]="false"
+      [showPageSizeSelector]="true"
+    />
+  </div>
 </section>

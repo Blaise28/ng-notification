@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, viewChild } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
@@ -21,6 +21,10 @@ export class ClientList {
   private readonly router = inject(Router);
   private readonly list = viewChild(List);
 
+  protected readonly subscriptionEndFrom = signal('');
+  protected readonly subscriptionEndTo = signal('');
+  protected readonly listUrl = signal('/api/v1/clients');
+
   protected readonly headers: ListHeaderModel[] = [
     { label: 'Nom', field: ['displayName'] },
     {
@@ -31,6 +35,7 @@ export class ClientList {
     },
     { label: 'Téléphone', field: ['phoneE164'] },
     { label: 'E-mail', field: ['email'] },
+    { label: 'Fin abonnement', field: ['subscriptionEndAt'], format: 'date' },
     {
       label: 'Actif',
       field: ['isActive'],
@@ -61,6 +66,24 @@ export class ClientList {
       callback: (line) => this.manageActiveAction('deactive', line as ClientModel),
     },
   ];
+
+  applySubscriptionFilter(): void {
+    const params = new URLSearchParams();
+    if (this.subscriptionEndFrom()) {
+      params.set('subscriptionEndAtFrom', this.subscriptionEndFrom());
+    }
+    if (this.subscriptionEndTo()) {
+      params.set('subscriptionEndAtTo', this.subscriptionEndTo());
+    }
+    const query = params.toString();
+    this.listUrl.set(query ? `/api/v1/clients?${query}` : '/api/v1/clients');
+  }
+
+  resetSubscriptionFilter(): void {
+    this.subscriptionEndFrom.set('');
+    this.subscriptionEndTo.set('');
+    this.listUrl.set('/api/v1/clients');
+  }
 
   private manageActiveAction(type: 'active' | 'deactive', client: ClientModel): void {
     this.dialogService.showConfirmDialog({

@@ -47,10 +47,12 @@
               <dd class="font-medium">{{ currentClient.contactPersonName }}</dd>
             </div>
           }
-          @if (currentClient.externalRef) {
+          @if (currentClient.subscriptionEndAt) {
             <div>
-              <dt class="text-secondary">Référence externe</dt>
-              <dd class="font-medium">{{ currentClient.externalRef }}</dd>
+              <dt class="text-secondary">Fin d'abonnement</dt>
+              <dd class="font-medium">
+                {{ currentClient.subscriptionEndAt | date: 'dd/MM/yyyy' }}
+              </dd>
             </div>
           }
         </dl>
