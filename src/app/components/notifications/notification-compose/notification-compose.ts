@@ -13,6 +13,7 @@ import { TemplatePreview } from '@components/templates/template-preview/template
 import { TEMPLATE_PREVIEW_SAMPLE_VARS } from '@components/templates/template.utils';
 import {
   TEMPLATE_VARIABLE_LABELS,
+  TEMPLATE_VARIABLE_TOKENS,
   TemplateModel,
   TemplateVariableToken,
 } from '@components/templates/template.models';
@@ -43,8 +44,11 @@ export class NotificationCompose {
   private readonly clientSearch$ = new Subject<string>();
   private readonly selectedClientsById = signal<Record<string, ClientModel>>({});
 
+  protected readonly clientSearchLimit = CLIENT_SEARCH_LIMIT;
   protected readonly clients = signal<ClientModel[]>([]);
   protected readonly clientsLoading = signal(false);
+  protected readonly clientsLoadingMore = signal(false);
+  protected readonly clientsTotal = signal(0);
   protected readonly templates = signal<TemplateModel[]>([]);
 
   protected readonly targetMode = signal<TargetMode>('clients');
@@ -63,6 +67,15 @@ export class NotificationCompose {
       .map((id) => selectedById[id]);
     return [...selectedOutsideResults, ...results];
   });
+
+  protected readonly selectedClientObjects = computed(() => {
+    const selectedById = this.selectedClientsById();
+    return this.selectedClientIds()
+      .map((id) => selectedById[id])
+      .filter((client): client is ClientModel => !!client);
+  });
+
+  protected readonly hasMoreClients = computed(() => this.clients().length < this.clientsTotal());
 
   protected readonly selectedChannels = signal<NotificationChannel[]>([]);
   protected readonly contentSource = signal<ContentSource>('template');
@@ -107,6 +120,15 @@ export class NotificationCompose {
     return Array.from(tokens);
   });
 
+  /** Tokens with no client-derived source — the same value is sent to every recipient.
+   *  Tokens the backend fills in automatically (displayName, firstName, ...) are not
+   *  shown here at all: the frontend must not offer to override per-recipient data. */
+  protected readonly customVariableTokens = computed(() =>
+    this.templateVariableTokens().filter(
+      (token) => !(TEMPLATE_VARIABLE_TOKENS as readonly string[]).includes(token),
+    ),
+  );
+
   protected readonly variables = signal<Record<string, string>>({});
 
   protected readonly emailSubject = signal('');
@@ -118,6 +140,10 @@ export class NotificationCompose {
 
   protected readonly previewVariables = computed(() => {
     const vars: Record<string, string> = { ...TEMPLATE_PREVIEW_SAMPLE_VARS };
+    const selected = this.selectedClientObjects();
+    if (selected.length === 1) {
+      Object.assign(vars, this.clientVariables(selected[0]));
+    }
     for (const [key, value] of Object.entries(this.variables())) {
       if (value.trim()) {
         vars[key] = value;
@@ -147,6 +173,7 @@ export class NotificationCompose {
       )
       .subscribe((response) => {
         this.clients.set(response.objects);
+        this.clientsTotal.set(response.count);
         this.clientsLoading.set(false);
       });
 
@@ -166,6 +193,50 @@ export class NotificationCompose {
     this.clientSearch$.next(value);
   }
 
+  loadMoreClients(): void {
+    if (this.clientsLoadingMore() || !this.hasMoreClients()) {
+      return;
+    }
+    this.clientsLoadingMore.set(true);
+    const search = this.clientSearch().trim();
+    this.clientService
+      .list({
+        limit: CLIENT_SEARCH_LIMIT,
+        offset: this.clients().length,
+        ...(search ? { search } : {}),
+      })
+      .pipe(
+        catchError(() => of({ objects: [] as ClientModel[], count: this.clientsTotal() })),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        this.clients.update((current) => [...current, ...response.objects]);
+        this.clientsTotal.set(response.count);
+        this.clientsLoadingMore.set(false);
+      });
+  }
+
+  selectAllDisplayed(): void {
+    const selectedIds = new Set(this.selectedClientIds());
+    const toAdd = this.clients().filter((client) => !selectedIds.has(client.id));
+    if (toAdd.length === 0) {
+      return;
+    }
+    this.selectedClientIds.update((ids) => [...ids, ...toAdd.map((client) => client.id)]);
+    this.selectedClientsById.update((current) => {
+      const next = { ...current };
+      for (const client of toAdd) {
+        next[client.id] = client;
+      }
+      return next;
+    });
+  }
+
+  clearSelectedClients(): void {
+    this.selectedClientIds.set([]);
+    this.selectedClientsById.set({});
+  }
+
   toggleClient(client: ClientModel): void {
     const isSelected = this.selectedClientIds().includes(client.id);
     this.selectedClientIds.update((ids) =>
@@ -179,7 +250,6 @@ export class NotificationCompose {
       }
       return { ...current, [client.id]: client };
     });
-    this.prefillVariablesFromClients();
   }
 
   toggleChannel(channel: NotificationChannel): void {
@@ -196,7 +266,6 @@ export class NotificationCompose {
           ...current,
           [channel]: defaultTemplate.id,
         }));
-        this.prefillVariablesFromClients();
       }
     } else {
       this.templateIds.update((current) => {
@@ -212,7 +281,6 @@ export class NotificationCompose {
       ...current,
       [channel]: templateId || undefined,
     }));
-    this.prefillVariablesFromClients();
   }
 
   setVariable(token: string, value: string): void {
@@ -223,20 +291,8 @@ export class NotificationCompose {
     return this.variableLabels[token as TemplateVariableToken] ?? token;
   }
 
-  private prefillVariablesFromClients(): void {
-    const tokens = this.templateVariableTokens();
-    if (tokens.length === 0) {
-      return;
-    }
-    const selectedIds = this.selectedClientIds();
-    if (selectedIds.length !== 1) {
-      return;
-    }
-    const client = this.selectedClientsById()[selectedIds[0]];
-    if (!client) {
-      return;
-    }
-    const fromClient: Record<string, string> = {
+  private clientVariables(client: ClientModel): Record<string, string> {
+    return {
       displayName: client.displayName,
       firstName: client.firstName ?? '',
       lastName: client.lastName ?? '',
@@ -244,15 +300,6 @@ export class NotificationCompose {
       phone: client.phoneE164,
       email: client.email ?? '',
     };
-    this.variables.update((current) => {
-      const next = { ...current };
-      for (const token of tokens) {
-        if (!next[token]) {
-          next[token] = fromClient[token] ?? '';
-        }
-      }
-      return next;
-    });
   }
 
   submit(event: SubmitEvent): void {

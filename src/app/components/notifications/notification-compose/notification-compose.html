@@ -1,36 +1,36 @@
 <section class="p-6 max-w-3xl mx-auto">
   <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">Envoyer une notification</h1>
 
-  <form (submit)="submit($event)" class="flex flex-col gap-6">
-    <fieldset class="fieldset card bg-base-200 p-4">
+  <form (submit)="submit($event)" class="flex flex-col gap-4">
+    <fieldset class="fieldset card bg-base-200 p-3">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Destinataires</legend>
 
-      <div class="flex gap-4 mb-3 flex-wrap">
-        <label class="label gap-2">
+      <div class="flex gap-3 mb-2 flex-wrap">
+        <label class="label gap-1.5 text-sm">
           <input
             type="radio"
             name="target-mode"
-            class="radio radio-sm"
+            class="radio radio-xs"
             [checked]="targetMode() === 'clients'"
             (change)="targetMode.set('clients')"
           />
           Clients sélectionnés
         </label>
-        <label class="label gap-2">
+        <label class="label gap-1.5 text-sm">
           <input
             type="radio"
             name="target-mode"
-            class="radio radio-sm"
+            class="radio radio-xs"
             [checked]="targetMode() === 'filter'"
             (change)="targetMode.set('filter')"
           />
           Filtrer par type
         </label>
-        <label class="label gap-2">
+        <label class="label gap-1.5 text-sm">
           <input
             type="radio"
             name="target-mode"
-            class="radio radio-sm"
+            class="radio radio-xs"
             [checked]="targetMode() === 'broadcast'"
             (change)="targetMode.set('broadcast')"
           />
@@ -39,9 +39,34 @@
       </div>
 
       @if (targetMode() === 'clients') {
+        @if (selectedClientObjects().length > 0) {
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <p class="text-xs text-base-content/60">
+              {{ selectedClientObjects().length }} sélectionné(s)
+            </p>
+            <button type="button" class="btn btn-ghost btn-xs" (click)="clearSelectedClients()">
+              Tout désélectionner
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-2 max-h-20 overflow-y-auto">
+            @for (client of selectedClientObjects(); track client.id) {
+              <button
+                type="button"
+                class="badge badge-primary badge-sm gap-1"
+                (click)="toggleClient(client)"
+                title="Retirer ce client"
+              >
+                {{ client.displayName }}
+                <span aria-hidden="true">✕</span>
+                <span class="sr-only">Retirer {{ client.displayName }}</span>
+              </button>
+            }
+          </div>
+        }
+
         <input
           type="search"
-          class="input w-full mb-2"
+          class="input input-sm w-full mb-1"
           placeholder="Rechercher par nom, e-mail, téléphone…"
           [value]="clientSearch()"
           (input)="onClientSearch($any($event.target).value)"
@@ -49,29 +74,53 @@
           aria-controls="client-search-results"
           [attr.aria-busy]="clientsLoading()"
         />
+
+        @if (!clientSearch().trim() && clientsTotal() > clientSearchLimit) {
+          <p class="text-xs text-info mb-1">
+            {{ clientsTotal() }} clients au total — affinez la recherche pour trouver quelqu'un
+            précis, ou utilisez « Filtrer par type »/« Diffuser à tous » pour cibler un grand
+            nombre de destinataires.
+          </p>
+        }
+
+        <div class="flex items-center justify-between gap-2 mb-1">
+          <p class="text-xs text-base-content/60">
+            @if (!clientsLoading()) {
+              {{ clients().length }}{{ clientsTotal() > clients().length ? ' sur ' + clientsTotal() : '' }} affiché(s)
+            }
+          </p>
+          @if (clients().length > 0) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="selectAllDisplayed()">
+              Tout sélectionner
+            </button>
+          }
+        </div>
+
         <div
           id="client-search-results"
-          class="max-h-48 overflow-y-auto border border-base-300 rounded-lg p-2"
+          class="max-h-40 overflow-y-auto border border-base-300 rounded-lg p-1"
           role="listbox"
           aria-label="Résultats de recherche clients"
           aria-multiselectable="true"
         >
           @if (clientsLoading()) {
-            <p class="text-sm text-base-content/60 px-1 py-2">Recherche…</p>
+            <p class="text-xs text-base-content/60 px-2 py-1.5">Recherche…</p>
           } @else if (displayedClients().length === 0) {
-            <p class="text-sm text-base-content/60 px-1 py-2">Aucun client trouvé</p>
+            <p class="text-xs text-base-content/60 px-2 py-1.5">Aucun client trouvé</p>
           } @else {
             @for (client of displayedClients(); track client.id) {
-              <label class="label gap-2 justify-start">
+              <label
+                class="flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer hover:bg-base-300"
+              >
                 <input
                   type="checkbox"
-                  class="checkbox checkbox-sm"
+                  class="checkbox checkbox-xs"
                   role="option"
                   [attr.aria-selected]="selectedClientIds().includes(client.id)"
                   [checked]="selectedClientIds().includes(client.id)"
                   (change)="toggleClient(client)"
                 />
-                <span class="flex flex-col items-start gap-0.5">
+                <span class="flex flex-col items-start leading-tight">
                   <span>{{ client.displayName }}</span>
                   @if (client.email || client.phoneE164) {
                     <span class="text-xs text-base-content/60">
@@ -83,16 +132,27 @@
             }
           }
         </div>
-        <p class="text-xs text-base-content/60 mt-1">
-          {{ selectedClientIds().length }} client(s) sélectionné(s)
-        </p>
+
+        @if (hasMoreClients() && !clientsLoading()) {
+          <button
+            type="button"
+            class="btn btn-ghost btn-xs w-full mt-1"
+            [disabled]="clientsLoadingMore()"
+            (click)="loadMoreClients()"
+          >
+            Charger plus ({{ clientsTotal() - clients().length }} restant(s))
+            @if (clientsLoadingMore()) {
+              <span class="loading loading-xs ms-1"></span>
+            }
+          </button>
+        }
       }
 
       @if (targetMode() === 'filter') {
         <label class="fieldset-legend text-sm" for="filter-type">Type de client</label>
         <select
           id="filter-type"
-          class="select w-full"
+          class="select select-sm w-full"
           [value]="filterType()"
           (change)="filterType.set($any($event.target).value)"
         >
@@ -103,14 +163,14 @@
       }
 
       @if (targetMode() === 'broadcast') {
-        <div role="alert" class="alert alert-warning text-sm mb-2">
+        <div role="alert" class="alert alert-warning text-xs py-2 mb-2">
           Cette action enverra la notification à <strong>tous</strong> les clients opt-in. Cette
           action est irréversible.
         </div>
-        <label class="label gap-2">
+        <label class="label gap-1.5 text-sm">
           <input
             type="checkbox"
-            class="checkbox checkbox-sm checkbox-warning"
+            class="checkbox checkbox-xs checkbox-warning"
             [checked]="broadcastConfirmed()"
             (change)="broadcastConfirmed.set($any($event.target).checked)"
           />
@@ -119,58 +179,49 @@
       }
     </fieldset>
 
-    <fieldset class="fieldset card bg-base-200 p-4">
+    <fieldset class="fieldset card bg-base-200 p-3">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Canaux <code>*</code></legend>
-      <div class="flex gap-4 flex-wrap">
-        <label class="label gap-2">
+      <div class="flex gap-3 flex-wrap">
+        <label class="label gap-1.5 text-sm">
           <input
             type="checkbox"
-            class="checkbox checkbox-sm"
+            class="checkbox checkbox-xs"
             [checked]="selectedChannels().includes('email')"
             (change)="toggleChannel('email')"
           />
           E-mail
         </label>
-        <label class="label gap-2">
+        <label class="label gap-1.5 text-sm">
           <input
             type="checkbox"
-            class="checkbox checkbox-sm"
+            class="checkbox checkbox-xs"
             [checked]="selectedChannels().includes('sms')"
             (change)="toggleChannel('sms')"
           />
           SMS
         </label>
-        <label class="label gap-2">
-          <input
-            type="checkbox"
-            class="checkbox checkbox-sm"
-            [checked]="selectedChannels().includes('whatsapp')"
-            (change)="toggleChannel('whatsapp')"
-          />
-          WhatsApp
-        </label>
       </div>
     </fieldset>
 
-    <fieldset class="fieldset card bg-base-200 p-4">
+    <fieldset class="fieldset card bg-base-200 p-3">
       <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
 
-      <div class="flex gap-4 mb-3 flex-wrap">
-        <label class="label gap-2">
+      <div class="flex gap-3 mb-2 flex-wrap">
+        <label class="label gap-1.5 text-sm">
           <input
             type="radio"
             name="content-source"
-            class="radio radio-sm"
+            class="radio radio-xs"
             [checked]="contentSource() === 'template'"
             (change)="contentSource.set('template')"
           />
           Utiliser un modèle
         </label>
-        <label class="label gap-2">
+        <label class="label gap-1.5 text-sm">
           <input
             type="radio"
             name="content-source"
-            class="radio radio-sm"
+            class="radio radio-xs"
             [checked]="contentSource() === 'custom'"
             (change)="contentSource.set('custom')"
           />
@@ -186,7 +237,7 @@
                 Modèle {{ channel }}
               </label>
               <select
-                class="select w-full"
+                class="select select-sm w-full"
                 [id]="'template-' + channel"
                 [value]="templateIds()[channel] ?? ''"
                 (change)="setTemplateForChannel(channel, $any($event.target).value)"
@@ -203,11 +254,15 @@
           }
         </div>
 
-        @if (templateVariableTokens().length > 0) {
+        @if (customVariableTokens().length > 0) {
           <div class="mb-3">
-            <p class="text-sm text-secondary mb-2">Variables des modèles</p>
+            <p class="text-sm text-secondary mb-1">Variables personnalisées</p>
+            <p class="text-xs text-base-content/60 mb-2">
+              Aucune valeur destinataire disponible pour ces variables — la même valeur sera
+              envoyée à tous.
+            </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              @for (token of templateVariableTokens(); track token) {
+              @for (token of customVariableTokens(); track token) {
                 <label class="fieldset">
                   <span class="fieldset-legend text-xs">{{ labelFor(token) }}</span>
                   <input
