@@ -5,9 +5,11 @@ import { MediaAssetModel } from '@components/media/media.models';
 import { ApiError } from '@services/api/api-error';
 import { DialogService } from '@services/dialog/dialog.service';
 import { MediaService } from '@services/media/media.service';
+import { ClipboardDirective } from '@globals/directives/clipboard/clipboard.directive';
 
 @Component({
   selector: 'app-media-gallery',
+  imports: [ClipboardDirective],
   templateUrl: './media-gallery.html',
 })
 export class MediaGallery {
