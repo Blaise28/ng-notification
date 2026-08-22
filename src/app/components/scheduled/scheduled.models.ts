@@ -34,6 +34,10 @@ export interface ScheduledNotificationModel {
   id: string;
   channel: ScheduledChannel;
   sendAt: string;
+  nextSendAt?: string | null;
+  recurrenceCron?: string | null;
+  timezone?: string;
+  paused?: boolean;
   payload: Record<string, unknown>;
   targetType: ScheduledTargetType;
   targetValue: Record<string, unknown>;

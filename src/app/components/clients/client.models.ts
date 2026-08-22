@@ -60,3 +60,11 @@ export interface ClientModel {
 export type ClientResponse = SingleResponseModel<ClientModel>;
 export type ClientsListResponse = ListResponseModel<ClientModel>;
 export type DeleteClientResponse = SingleResponseModel<{ id: string }>;
+
+export interface ClientsStatsModel {
+  total: number;
+  active: number;
+  optIn: { email: number; sms: number; whatsapp: number };
+}
+
+export type ClientsStatsResponse = SingleResponseModel<ClientsStatsModel>;

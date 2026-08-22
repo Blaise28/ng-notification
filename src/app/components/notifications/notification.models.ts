@@ -47,6 +47,11 @@ export interface SentNotificationRecipientModel {
   createdAt: string;
 }
 
+export interface NotificationFirstRecipientModel {
+  displayName: string | null;
+  toAddress: string;
+}
+
 export interface SentNotificationModel {
   id: string;
   templateId?: string | null;
@@ -59,6 +64,7 @@ export interface SentNotificationModel {
   channelJobRefs: Record<string, unknown>;
   metadata: Record<string, unknown>;
   sentBy?: string | null;
+  firstRecipient?: NotificationFirstRecipientModel | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -3,6 +3,7 @@ import { inject, Service } from '@angular/core';
 import {
   ClientResponse,
   ClientsListResponse,
+  ClientsStatsResponse,
   CreateClientBodyModel,
   DeleteClientResponse,
   ListClientsQueryModel,
@@ -21,6 +22,10 @@ export class ClientService {
 
   list(query?: ListClientsQueryModel) {
     return this.api.get<ClientsListResponse>('/api/v1/clients', { params: toQueryParams(query) });
+  }
+
+  stats() {
+    return this.api.get<ClientsStatsResponse>('/api/v1/clients/stats');
   }
 
   getById(id: string) {
