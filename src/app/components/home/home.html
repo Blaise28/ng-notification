@@ -95,58 +95,13 @@
       </div>
       @if (trendLoading()) {
         <div class="skeleton h-[220px] w-full"></div>
-      } @else if (trendFailed() || !chart()) {
+      } @else if (trendFailed() || !trend() || trend()!.series.length === 0) {
         <div class="h-[220px] flex items-center justify-center text-sm text-base-content/60">
           Données indisponibles.
         </div>
       } @else {
-        <svg
-          [attr.viewBox]="'0 0 ' + chart()!.width + ' ' + chart()!.height"
-          class="w-full h-[220px]"
-          preserveAspectRatio="none"
-          role="img"
-          aria-label="Évolution des envois par canal sur 30 jours"
-        >
-          <line
-            x1="0"
-            [attr.y1]="chart()!.height - 1"
-            [attr.x2]="chart()!.width"
-            [attr.y2]="chart()!.height - 1"
-            class="stroke-base-300"
-            stroke-width="1"
-          />
-          <polyline
-            [attr.points]="chart()!.points.email"
-            fill="none"
-            class="text-primary"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <polyline
-            [attr.points]="chart()!.points.sms"
-            fill="none"
-            class="text-secondary"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <polyline
-            [attr.points]="chart()!.points.whatsapp"
-            fill="none"
-            class="text-info"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <div class="flex justify-between text-[11px] text-base-content/50 mt-1">
-          <span>{{ chart()!.firstLabel | date: 'd MMM' }}</span>
-          <span>{{ chart()!.midLabel | date: 'd MMM' }}</span>
-          <span>{{ chart()!.lastLabel | date: 'd MMM' }}</span>
+        <div class="h-[220px]">
+          <canvas #trendCanvas role="img" aria-label="Évolution des envois par canal sur 30 jours"></canvas>
         </div>
       }
     </div>
@@ -163,31 +118,13 @@
             <div class="skeleton h-3 w-full"></div>
           </div>
         </div>
-      } @else if (summaryFailed() || !donut()) {
+      } @else if (summaryFailed() || !donutPct()) {
         <div class="h-32 flex items-center justify-center text-sm text-base-content/60">Aucune donnée.</div>
       } @else {
         <div class="flex items-center gap-5">
-          <svg viewBox="0 0 120 120" class="size-32 shrink-0" role="img" aria-label="Répartition des envois par canal">
-            <circle cx="60" cy="60" r="46" fill="none" class="stroke-base-300" stroke-width="16" />
-            @for (channel of channels; track channel) {
-              <circle
-                cx="60"
-                cy="60"
-                r="46"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="16"
-                [class]="channelTextClass(channel)"
-                [attr.stroke-dasharray]="donut()!.segments[channel].dasharray"
-                [attr.stroke-dashoffset]="donut()!.segments[channel].dashoffset"
-                transform="rotate(-90 60 60)"
-              />
-            }
-            <text x="60" y="57" text-anchor="middle" class="fill-base-content text-[19px] font-bold">
-              {{ donut()!.total | number }}
-            </text>
-            <text x="60" y="73" text-anchor="middle" class="fill-base-content/50 text-[9px]">envois</text>
-          </svg>
+          <div class="size-32 shrink-0">
+            <canvas #donutCanvas role="img" aria-label="Répartition des envois par canal"></canvas>
+          </div>
           <div class="flex flex-col gap-2 flex-1">
             @for (channel of channels; track channel) {
               <div class="flex items-center justify-between text-sm">
@@ -195,7 +132,7 @@
                   <span class="size-2.5 rounded-sm" [class]="channelBgClass(channel)"></span>
                   {{ channelLabels[channel] }}
                 </span>
-                <span class="font-semibold">{{ donut()!.segments[channel].pct }}%</span>
+                <span class="font-semibold">{{ donutPct()![channel] }}%</span>
               </div>
             }
           </div>
@@ -206,98 +143,98 @@
 
   <!-- Channel breakdown + Upcoming scheduled -->
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
-  <div class="card bg-base-100 shadow-sm p-5">
-    <h2 class="font-semibold text-sm mb-3">Détail par canal (30 derniers jours)</h2>
-    @if (summaryLoading()) {
-      <div class="flex flex-col gap-3">
-        @for (_ of [1, 2, 3]; track $index) {
-          <div class="skeleton h-10 w-full rounded-md"></div>
-        }
-      </div>
-    } @else if (summaryFailed() || channelRows().length === 0) {
-      <p class="text-sm text-base-content/60">Aucune donnée disponible.</p>
-    } @else {
-      <div class="overflow-x-auto">
-        <table class="table w-full">
-          <thead>
-            <tr class="text-xs text-base-content/60">
-              <th class="font-medium">Canal</th>
-              <th class="font-medium">En file</th>
-              <th class="font-medium">Envoyés</th>
-              <th class="font-medium">Livrés</th>
-              <th class="font-medium">Échoués</th>
-              <th class="font-medium w-52">Taux de livraison</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of channelRows(); track row.channel) {
-              <tr class="text-sm">
-                <td>
-                  <span class="flex items-center gap-2 font-medium">
-                    <span class="size-2.5 rounded-sm" [class]="channelBgClass(row.channel)"></span>
-                    {{ channelLabels[row.channel] }}
-                  </span>
-                </td>
-                <td>{{ row.queued | number }}</td>
-                <td>{{ row.total | number }}</td>
-                <td>{{ row.delivered | number }}</td>
-                <td [class.text-error]="row.failed > 0">{{ row.failed | number }}</td>
-                <td>
-                  <div class="flex items-center gap-2">
-                    <div class="flex-1 h-1.5 rounded-full bg-base-300 overflow-hidden">
-                      <div [class]="rateBarClass(row.rate)" class="h-full" [style.width.%]="row.rate"></div>
-                    </div>
-                    <span class="text-xs font-semibold w-12 text-right">{{ row.rate }}%</span>
-                  </div>
-                </td>
+    <div class="card bg-base-100 shadow-sm p-5">
+      <h2 class="font-semibold text-sm mb-3">Détail par canal (30 derniers jours)</h2>
+      @if (summaryLoading()) {
+        <div class="flex flex-col gap-3">
+          @for (_ of [1, 2, 3]; track $index) {
+            <div class="skeleton h-10 w-full rounded-md"></div>
+          }
+        </div>
+      } @else if (summaryFailed() || channelRows().length === 0) {
+        <p class="text-sm text-base-content/60">Aucune donnée disponible.</p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="table w-full">
+            <thead>
+              <tr class="text-xs text-base-content/60">
+                <th class="font-medium">Canal</th>
+                <th class="font-medium">En file</th>
+                <th class="font-medium">Envoyés</th>
+                <th class="font-medium">Livrés</th>
+                <th class="font-medium">Échoués</th>
+                <th class="font-medium w-52">Taux de livraison</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  </div>
-
-  <!-- Upcoming scheduled -->
-  <div class="card bg-base-100 shadow-sm p-5">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="font-semibold text-sm">Envois programmés à venir</h2>
-      <a routerLink="/scheduled" class="text-xs font-semibold text-primary hover:underline">Tout voir</a>
+            </thead>
+            <tbody>
+              @for (row of channelRows(); track row.channel) {
+                <tr class="text-sm">
+                  <td>
+                    <span class="flex items-center gap-2 font-medium">
+                      <span class="size-2.5 rounded-sm" [class]="channelBgClass(row.channel)"></span>
+                      {{ channelLabels[row.channel] }}
+                    </span>
+                  </td>
+                  <td>{{ row.queued | number }}</td>
+                  <td>{{ row.total | number }}</td>
+                  <td>{{ row.delivered | number }}</td>
+                  <td [class.text-error]="row.failed > 0">{{ row.failed | number }}</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 h-1.5 rounded-full bg-base-300 overflow-hidden">
+                        <div [class]="rateBarClass(row.rate)" class="h-full" [style.width.%]="row.rate"></div>
+                      </div>
+                      <span class="text-xs font-semibold w-12 text-right">{{ row.rate }}%</span>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
-    @if (scheduledLoading()) {
-      <div class="flex flex-col gap-3">
-        @for (_ of [1, 2, 3]; track $index) {
-          <div class="skeleton h-10 w-full rounded-md"></div>
-        }
+
+    <!-- Upcoming scheduled -->
+    <div class="card bg-base-100 shadow-sm p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold text-sm">Envois programmés à venir</h2>
+        <a routerLink="/scheduled" class="text-xs font-semibold text-primary hover:underline">Tout voir</a>
       </div>
-    } @else if (scheduledFailed()) {
-      <p class="text-sm text-base-content/60">Indisponible pour le moment.</p>
-    } @else if (upcomingScheduled().length === 0) {
-      <p class="text-sm text-base-content/60">Aucun envoi programmé à venir.</p>
-    } @else {
-      <div class="flex flex-col divide-y divide-base-300/60">
-        @for (item of upcomingScheduled(); track item.id) {
-          <div class="flex items-center gap-3 py-2.5">
-            <span class="flex items-center justify-center size-8 rounded-lg bg-primary/10 text-primary shrink-0">
-              <hugeicons-icon [icon]="Calendar03Icon" [size]="15" [strokeWidth]="2" aria-hidden="true" />
-            </span>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium truncate">{{ targetTypeLabels[item.targetType] }}</p>
-              <p class="text-xs text-base-content/60">
-                {{ channelLabel(item.channel) }}
-                @if (item.recurrenceCron) {
-                  · récurrent
-                }
-              </p>
+      @if (scheduledLoading()) {
+        <div class="flex flex-col gap-3">
+          @for (_ of [1, 2, 3]; track $index) {
+            <div class="skeleton h-10 w-full rounded-md"></div>
+          }
+        </div>
+      } @else if (scheduledFailed()) {
+        <p class="text-sm text-base-content/60">Indisponible pour le moment.</p>
+      } @else if (upcomingScheduled().length === 0) {
+        <p class="text-sm text-base-content/60">Aucun envoi programmé à venir.</p>
+      } @else {
+        <div class="flex flex-col divide-y divide-base-300/60">
+          @for (item of upcomingScheduled(); track item.id) {
+            <div class="flex items-center gap-3 py-2.5">
+              <span class="flex items-center justify-center size-8 rounded-lg bg-primary/10 text-primary shrink-0">
+                <hugeicons-icon [icon]="Calendar03Icon" [size]="15" [strokeWidth]="2" aria-hidden="true" />
+              </span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">{{ targetTypeLabels[item.targetType] }}</p>
+                <p class="text-xs text-base-content/60">
+                  {{ channelLabel(item.channel) }}
+                  @if (item.recurrenceCron) {
+                    · récurrent
+                  }
+                </p>
+              </div>
+              <span class="text-xs font-semibold text-base-content/70 whitespace-nowrap">
+                {{ (item.nextSendAt ?? item.sendAt) | date: 'short' }}
+              </span>
             </div>
-            <span class="text-xs font-semibold text-base-content/70 whitespace-nowrap">
-              {{ (item.nextSendAt ?? item.sendAt) | date: 'short' }}
-            </span>
-          </div>
-        }
-      </div>
-    }
-  </div>
+          }
+        </div>
+      }
+    </div>
   </div>
 
   <!-- Recent notifications -->

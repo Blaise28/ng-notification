@@ -4,12 +4,15 @@ import {
   DestroyRef,
   ElementRef,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+
+import { Chart, type ChartConfiguration, type Plugin, registerables } from 'chart.js';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Calendar03Icon, RefreshIcon } from '@hugeicons/core-free-icons';
@@ -24,8 +27,11 @@ import { AnalyticsService } from '@services/analytics/analytics.service';
 import { ClientService } from '@services/clients/client.service';
 import { NotificationService } from '@services/notifications/notification.service';
 import { ScheduledService } from '@services/scheduled/scheduled.service';
+import { ThemeStore } from '@stores/theme/theme.store';
 import { UserStore } from '@stores/user/user.store';
 import { AnalyticsChannel, AnalyticsSummaryModel, AnalyticsTrendModel } from './home.models';
+
+Chart.register(...registerables);
 
 const CHANNEL_LABELS: Record<AnalyticsChannel, string> = {
   email: 'Email',
@@ -39,19 +45,49 @@ const TARGET_TYPE_LABELS: Record<string, string> = {
   filter: 'Segment filtré',
 };
 
-interface ChartGeometry {
-  width: number;
-  height: number;
-  points: Record<AnalyticsChannel, string>;
-  firstLabel: string;
-  lastLabel: string;
-  midLabel: string;
-}
+/** Theme hexes lifted from styles.css (resyst-light / resyst-dark) — Chart.js paints on a
+ * canvas, so it needs literal colors rather than CSS custom properties. */
+const CHART_THEME = {
+  light: {
+    primary: '#354464',
+    secondary: '#8fa0b8',
+    info: '#89e0eb',
+    grid: '#e4e4e4',
+    text: '#354464',
+    cardBg: '#f7f9fa',
+  },
+  dark: {
+    primary: '#a4c3e7',
+    secondary: '#4e5c7b',
+    info: '#89e0eb',
+    grid: '#354464',
+    text: '#ffffff',
+    cardBg: '#1e2d45',
+  },
+};
 
-interface DonutSegment {
-  dasharray: string;
-  dashoffset: number;
-  pct: number;
+function centerTextPlugin(total: number, textColor: string): Plugin<'doughnut'> {
+  return {
+    id: 'centerText',
+    afterDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) {
+        return;
+      }
+      const x = (chartArea.left + chartArea.right) / 2;
+      const y = (chartArea.top + chartArea.bottom) / 2;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = textColor;
+      ctx.font = '700 19px system-ui, sans-serif';
+      ctx.fillText(new Intl.NumberFormat('fr-FR').format(total), x, y - 8);
+      ctx.globalAlpha = 0.55;
+      ctx.font = '400 10px system-ui, sans-serif';
+      ctx.fillText('envois', x, y + 10);
+      ctx.restore();
+    },
+  };
 }
 
 @Component({
@@ -66,6 +102,9 @@ export class Home {
   private readonly clientService = inject(ClientService);
   private readonly notificationService = inject(NotificationService);
   private readonly scheduledService = inject(ScheduledService);
+  private readonly themeStore = inject(ThemeStore);
+
+  protected readonly isDark = computed(() => this.themeStore.isDark());
 
   protected readonly user = this.userStore.user;
 
@@ -102,6 +141,11 @@ export class Home {
   protected readonly recipientsModalFailed = signal(false);
   protected readonly recipientsModalRecipients = signal<SentNotificationRecipientModel[]>([]);
 
+  protected readonly trendCanvas = viewChild<ElementRef<HTMLCanvasElement>>('trendCanvas');
+  protected readonly donutCanvas = viewChild<ElementRef<HTMLCanvasElement>>('donutCanvas');
+  private trendChartInstance?: Chart<'line'>;
+  private donutChartInstance?: Chart<'doughnut'>;
+
   protected readonly kpis = computed(() => {
     const s = this.summary();
     if (!s) {
@@ -127,10 +171,8 @@ export class Home {
     });
   });
 
-  protected readonly donut = computed<{
-    total: number;
-    segments: Record<AnalyticsChannel, DonutSegment>;
-  } | null>(() => {
+  /** Percentages for the legend list beside the donut chart (the canvas itself carries the slices). */
+  protected readonly donutPct = computed<Record<AnalyticsChannel, number> | null>(() => {
     const s = this.summary();
     if (!s) {
       return null;
@@ -140,48 +182,11 @@ export class Home {
     if (total === 0) {
       return null;
     }
-    const radius = 46;
-    const circumference = 2 * Math.PI * radius;
-    let offset = 0;
-    const segments = {} as Record<AnalyticsChannel, DonutSegment>;
+    const result = {} as Record<AnalyticsChannel, number>;
     this.channels.forEach((channel) => {
-      const value = s.byChannel[channel].sent;
-      const length = (value / total) * circumference;
-      segments[channel] = {
-        dasharray: `${length} ${circumference - length}`,
-        dashoffset: -offset,
-        pct: Math.round((value / total) * 100),
-      };
-      offset += length;
+      result[channel] = Math.round((s.byChannel[channel].sent / total) * 100);
     });
-    return { total, segments };
-  });
-
-  protected readonly chart = computed<ChartGeometry | null>(() => {
-    const t = this.trend();
-    if (!t || t.series.length === 0) {
-      return null;
-    }
-    const width = 640;
-    const height = 200;
-    const max = Math.max(1, ...t.series.flatMap((p) => [p.email, p.sms, p.whatsapp]));
-    const n = t.series.length;
-    const stepX = n > 1 ? width / (n - 1) : 0;
-    const toY = (value: number) => height - (value / max) * height;
-    const buildPoints = (channel: AnalyticsChannel) =>
-      t.series.map((p, i) => `${i * stepX},${toY(p[channel])}`).join(' ');
-    return {
-      width,
-      height,
-      points: {
-        email: buildPoints('email'),
-        sms: buildPoints('sms'),
-        whatsapp: buildPoints('whatsapp'),
-      },
-      firstLabel: t.series[0].date,
-      lastLabel: t.series[n - 1].date,
-      midLabel: t.series[Math.floor(n / 2)].date,
-    };
+    return result;
   });
 
   protected readonly optInBar = computed(() => {
@@ -197,7 +202,166 @@ export class Home {
   });
 
   constructor() {
+    effect(() => {
+      const canvasRef = this.trendCanvas();
+      const t = this.trend();
+      const colors = this.isDark() ? CHART_THEME.dark : CHART_THEME.light;
+      if (!canvasRef) {
+        return;
+      }
+      if (!t || t.series.length === 0) {
+        this.trendChartInstance?.destroy();
+        this.trendChartInstance = undefined;
+        return;
+      }
+      const labels = t.series.map((p) => p.date);
+      const data: ChartConfiguration<'line'>['data'] = {
+        labels,
+        datasets: [
+          this.trendDataset(
+            'Email',
+            t.series.map((p) => p.email),
+            colors.primary,
+          ),
+          this.trendDataset(
+            'SMS',
+            t.series.map((p) => p.sms),
+            colors.secondary,
+          ),
+          this.trendDataset(
+            'WhatsApp',
+            t.series.map((p) => p.whatsapp),
+            colors.info,
+          ),
+        ],
+      };
+      const options: ChartConfiguration<'line'>['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: colors.text,
+              maxTicksLimit: 6,
+              font: { size: 11 },
+              callback: (_value, index) => this.formatDay(labels[index]),
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: colors.grid },
+            ticks: { color: colors.text, font: { size: 11 }, precision: 0 },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => this.formatDay(items[0]?.label ?? ''),
+            },
+          },
+        },
+      };
+      if (this.trendChartInstance) {
+        this.trendChartInstance.data = data;
+        this.trendChartInstance.options = options ?? {};
+        this.trendChartInstance.update();
+      } else {
+        this.trendChartInstance = new Chart(canvasRef.nativeElement, {
+          type: 'line',
+          data,
+          options,
+        });
+      }
+    });
+
+    effect(() => {
+      const canvasRef = this.donutCanvas();
+      const s = this.summary();
+      const colors = this.isDark() ? CHART_THEME.dark : CHART_THEME.light;
+      if (!canvasRef) {
+        return;
+      }
+      const values = this.channels.map((channel) => s?.byChannel[channel].sent ?? 0);
+      const total = values.reduce((sum, v) => sum + v, 0);
+      if (!s || total === 0) {
+        this.donutChartInstance?.destroy();
+        this.donutChartInstance = undefined;
+        return;
+      }
+      const data: ChartConfiguration<'doughnut'>['data'] = {
+        labels: this.channels.map((channel) => this.channelLabels[channel]),
+        datasets: [
+          {
+            data: values,
+            backgroundColor: [colors.primary, colors.secondary, colors.info],
+            borderColor: colors.cardBg,
+            borderWidth: 2,
+            hoverOffset: 4,
+          },
+        ],
+      };
+      const options: ChartConfiguration<'doughnut'>['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const value = typeof ctx.parsed === 'number' ? ctx.parsed : 0;
+                const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+                return ` ${ctx.label}: ${value} (${pct}%)`;
+              },
+            },
+          },
+        },
+      };
+      if (this.donutChartInstance) {
+        this.donutChartInstance.data = data;
+        this.donutChartInstance.options = options ?? {};
+        this.donutChartInstance.update();
+      } else {
+        this.donutChartInstance = new Chart(canvasRef.nativeElement, {
+          type: 'doughnut',
+          data,
+          options,
+          plugins: [centerTextPlugin(total, colors.text)],
+        });
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.trendChartInstance?.destroy();
+      this.donutChartInstance?.destroy();
+    });
+
     this.loadAll();
+  }
+
+  private trendDataset(label: string, data: number[], color: string) {
+    return {
+      label,
+      data,
+      borderColor: color,
+      backgroundColor: color,
+      tension: 0.3,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      borderWidth: 2,
+    };
+  }
+
+  private formatDay(iso: string): string {
+    if (!iso) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(
+      new Date(iso),
+    );
   }
 
   loadAll(): void {
@@ -277,19 +441,6 @@ export class Home {
       return 'bg-info';
     }
     return 'bg-neutral';
-  }
-
-  channelTextClass(channel: string): string {
-    if (channel === 'email') {
-      return 'text-primary';
-    }
-    if (channel === 'sms') {
-      return 'text-secondary';
-    }
-    if (channel === 'whatsapp') {
-      return 'text-info';
-    }
-    return 'text-neutral';
   }
 
   channelLabel(channel: string): string {
