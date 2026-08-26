@@ -11,7 +11,7 @@ import { NotificationChannel } from '../notification.models';
 })
 export class NotificationHistoryList {
   protected readonly channelFilter = signal<NotificationChannel | ''>('');
-  protected readonly listUrl = signal('/api/v1/notifications');
+  protected readonly listUrl = signal('/api/v1/notifications/');
 
   protected readonly headers: ListHeaderModel[] = [
     { label: 'Canaux', field: ['channels'] },

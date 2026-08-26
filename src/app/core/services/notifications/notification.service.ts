@@ -16,22 +16,22 @@ export class NotificationService {
   private readonly api = inject(Api);
 
   send(body: SendToClientsBodyModel) {
-    return this.api.post<SendNotificationResponse>('/api/v1/notifications/send', body);
+    return this.api.post<SendNotificationResponse>('/api/v1/notifications/send/', body);
   }
 
   list(query?: ListSentNotificationsQueryModel) {
-    return this.api.get<NotificationsListResponse>('/api/v1/notifications', {
+    return this.api.get<NotificationsListResponse>('/api/v1/notifications/', {
       params: toQueryParams(query),
     });
   }
 
   listByClient(clientId: string, query?: PaginatedQueryModel) {
-    return this.api.get<NotificationsListResponse>(`/api/v1/notifications/by-client/${clientId}`, {
+    return this.api.get<NotificationsListResponse>(`/api/v1/notifications/by-client/${clientId}/`, {
       params: toQueryParams(query),
     });
   }
 
   getById(id: string) {
-    return this.api.get<NotificationDetailResponse>(`/api/v1/notifications/${id}`);
+    return this.api.get<NotificationDetailResponse>(`/api/v1/notifications/${id}/`);
   }
 }

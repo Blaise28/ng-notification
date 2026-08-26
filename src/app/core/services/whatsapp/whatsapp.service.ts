@@ -12,14 +12,14 @@ export class WhatsappService {
   private readonly api = inject(Api);
 
   send(body: SendWhatsappBodyModel) {
-    return this.api.post<WhatsappJobResponse>('/api/v1/whatsapp', body);
+    return this.api.post<WhatsappJobResponse>('/api/v1/whatsapp/', body);
   }
 
   broadcast(body: BroadcastWhatsappBodyModel) {
-    return this.api.post<WhatsappJobResponse>('/api/v1/whatsapp/broadcast', body);
+    return this.api.post<WhatsappJobResponse>('/api/v1/whatsapp/broadcast/', body);
   }
 
   getJob(id: string) {
-    return this.api.get<WhatsappJobResponse>(`/api/v1/whatsapp/jobs/${id}`);
+    return this.api.get<WhatsappJobResponse>(`/api/v1/whatsapp/jobs/${id}/`);
   }
 }

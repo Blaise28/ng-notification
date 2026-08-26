@@ -22,7 +22,7 @@ export class TemplateList {
   private readonly list = viewChild(List);
 
   protected readonly channelFilter = signal<TemplateChannel | ''>('');
-  protected readonly listUrl = signal('/api/v1/templates');
+  protected readonly listUrl = signal('/api/v1/templates/');
 
   protected readonly headers: ListHeaderModel[] = [
     { label: 'Nom', field: ['name'] },

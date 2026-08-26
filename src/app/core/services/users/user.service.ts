@@ -12,10 +12,10 @@ export class UserService {
   private readonly api = inject(Api);
 
   create(body: CreateUserBodyModel) {
-    return this.api.post<UserResponse>('/api/v1/auth/users', body);
+    return this.api.post<UserResponse>('/api/v1/auth/users/', body);
   }
 
   update(id: string, body: UpdateUserBodyModel) {
-    return this.api.patch<UserResponse>(`/api/v1/auth/users/${id}`, body);
+    return this.api.patch<UserResponse>(`/api/v1/auth/users/${id}/`, body);
   }
 }
