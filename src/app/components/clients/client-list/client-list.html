@@ -4,7 +4,7 @@
     class="card bg-base-200 p-4"
     aria-label="Filtrer par fin d'abonnement"
   >
-    <div class="flex flex-wrap items-end gap-4">
+    <div class="flex flex-wrap items-end gap-5">
       <fieldset class="fieldset">
         <label class="fieldset-legend text-sm" for="subscription-end-from">
           Fin d'abonnement (à partir de)
@@ -12,7 +12,7 @@
         <input
           id="subscription-end-from"
           type="date"
-          class="input"
+          class="input h-9"
           [value]="subscriptionEndFrom()"
           (input)="subscriptionEndFrom.set($any($event.target).value)"
         />
@@ -24,13 +24,13 @@
         <input
           id="subscription-end-to"
           type="date"
-          class="input"
+          class="input h-9"
           [value]="subscriptionEndTo()"
           (input)="subscriptionEndTo.set($any($event.target).value)"
         />
       </fieldset>
-      <button type="submit" class="btn btn-secondary">Filtrer</button>
-      <button type="button" class="btn btn-ghost" (click)="resetSubscriptionFilter()">
+      <button type="submit" class="btn btn-primary py-3 px-4">Filtrer</button>
+      <button type="button" class="btn btn-ghost py-3 px-4" (click)="resetSubscriptionFilter()">
         Réinitialiser
       </button>
     </div>
