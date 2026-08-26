@@ -11,9 +11,6 @@ import { UserStore } from '@stores/user/user.store';
   selector: 'app-user-menu',
   imports: [HugeiconsIconComponent, ThemeController],
   templateUrl: './user-menu.html',
-  host: {
-    '(document:keydown.escape)': 'close()',
-  },
 })
 export class UserMenu {
   private readonly userStore = inject(UserStore);
@@ -24,16 +21,16 @@ export class UserMenu {
   protected readonly UserIcon = UserIcon;
   protected readonly Logout01Icon = Logout01Icon;
 
-  toggle(): void {
-    this.open.update((value) => !value);
-  }
+  // toggle(): void {
+  //   this.open.update((value) => !value);
+  // }
 
-  close(): void {
-    this.open.set(false);
-  }
+  // close(): void {
+  //   this.open.set(false);
+  // }
 
   logout(): void {
-    this.close();
+    // this.close();
     this.userStore.clearSession();
     void this.router.navigate(['/login']);
   }
