@@ -6,9 +6,8 @@ import { HugeiconsIconComponent, IconSvgObject } from '@hugeicons/angular';
 import {
   ArrowLeft02Icon,
   ArrowRight01Icon,
-  Calendar03Icon,
-  Clock01Icon,
   DashboardSquare01Icon,
+  HistoryIcon,
   Image02Icon,
   Megaphone02Icon,
   Note01Icon,
@@ -17,7 +16,6 @@ import {
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 
-import { ThemeStore } from '@stores/theme/theme.store';
 import { UserStore } from '@stores/user/user.store';
 
 interface AsideMenuItem {
@@ -41,11 +39,9 @@ interface AsideMenuSection {
   },
 })
 export class AsideMenu {
-  private readonly themeStore = inject(ThemeStore);
   private readonly userStore = inject(UserStore);
   private readonly router = inject(Router);
 
-  protected readonly isDark = computed(() => this.themeStore.isDark());
   protected readonly isAdmin = computed(() => this.userStore.user()?.role === 'admin');
   protected readonly activeSubmenu = signal<AsideMenuItem | null>(null);
   private lastTrigger: HTMLElement | null = null;
@@ -69,10 +65,10 @@ export class AsideMenu {
               url: '/notifications/compose',
               icon: Megaphone02Icon,
             },
-            { label: 'Historique', url: '/notifications', icon: Clock01Icon },
+            { label: 'Historique', url: '/notifications', icon: HistoryIcon },
           ],
         },
-        { label: 'Programmées', url: '/scheduled', icon: Calendar03Icon },
+        // { label: 'Programmées', url: '/scheduled', icon: Calendar03Icon },
         {
           label: 'Operateurs',
           url: '/users',
