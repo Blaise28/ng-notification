@@ -43,6 +43,34 @@ export class ScheduledDetail {
       });
   }
 
+  confirmRetry(): void {
+    this.dialogService.showConfirmDialog({
+      type: 'info',
+      title: 'Relancer la planification',
+      description: 'Relancer immédiatement cet envoi échoué ?',
+      onConfirm: () => {
+        this.scheduledService
+          .retry(this.scheduledId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (response) => {
+              this.scheduled.set(response.object);
+              this.dialogService.showToast({
+                type: 'success',
+                message: 'Planification relancée',
+              });
+            },
+            error: (err: unknown) => {
+              this.dialogService.showToast({
+                type: 'error',
+                message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+              });
+            },
+          });
+      },
+    });
+  }
+
   confirmCancel(): void {
     this.dialogService.showConfirmDialog({
       type: 'warning',

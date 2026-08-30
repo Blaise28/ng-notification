@@ -6,15 +6,7 @@ import {
 } from '@models/pagination.models';
 
 export type ScheduledChannel = 'sms' | 'whatsapp' | 'email' | 'multi';
-export type ScheduledStatus =
-  | 'PENDING'
-  | 'QUEUED'
-  | 'CANCELLED'
-  | 'FAILED'
-  | 'pending'
-  | 'queued'
-  | 'cancelled'
-  | 'failed';
+export type ScheduledStatus = 'pending' | 'completed' | 'cancelled' | 'failed';
 export type ScheduledTargetType = 'all' | 'clientId' | 'filter';
 
 export interface ScheduledTargetModel {
@@ -44,6 +36,8 @@ export interface ScheduledNotificationModel {
   status: ScheduledStatus;
   bullJobId?: string | null;
   errorMessage?: string | null;
+  lastDispatchedAt?: string | null;
+  recipientCount?: number | null;
   createdAt: string;
 }
 

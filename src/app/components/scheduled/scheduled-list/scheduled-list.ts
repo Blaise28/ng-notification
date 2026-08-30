@@ -41,6 +41,10 @@ export class ScheduledList {
       name: 'Annuler',
       callback: (line) => this.confirmCancel(line as ScheduledNotificationModel),
     },
+    {
+      name: 'Relancer',
+      callback: (line) => this.retry(line as ScheduledNotificationModel),
+    },
   ];
 
   setTab(tab: ScheduledTab): void {
@@ -73,5 +77,26 @@ export class ScheduledList {
           });
       },
     });
+  }
+
+  private retry(item: ScheduledNotificationModel): void {
+    this.scheduledService
+      .retry(item.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.list()?.reloadList();
+          this.dialogService.showToast({
+            type: 'success',
+            message: 'Planification relancée',
+          });
+        },
+        error: (err: unknown) => {
+          this.dialogService.showToast({
+            type: 'error',
+            message: err instanceof ApiError ? err.message : 'Une erreur est survenue.',
+          });
+        },
+      });
   }
 }

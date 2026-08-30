@@ -30,4 +30,8 @@ export class ScheduledService {
   cancel(id: string) {
     return this.api.delete<ScheduledResponse>(`/api/v1/scheduled/${id}`);
   }
+
+  retry(id: string) {
+    return this.api.patch<ScheduledResponse>(`/api/v1/scheduled/${id}/retry`, {});
+  }
 }

@@ -6,11 +6,18 @@
       <h1 tabindex="-1" class="text-xl font-bold text-primary">
         Envoi programmé du {{ currentScheduled.sendAt | date: 'medium' }}
       </h1>
-      @if (currentScheduled.status === 'PENDING') {
-        <button type="button" class="btn btn-error btn-sm" (click)="confirmCancel()">
-          Annuler
-        </button>
-      }
+      <div class="flex gap-2">
+        @if (currentScheduled.status === 'failed') {
+          <button type="button" class="btn btn-info btn-sm" (click)="confirmRetry()">
+            Relancer
+          </button>
+        }
+        @if (currentScheduled.status === 'pending') {
+          <button type="button" class="btn btn-error btn-sm" (click)="confirmCancel()">
+            Annuler
+          </button>
+        }
+      </div>
     </div>
 
     <div class="card bg-base-200 mb-4">
@@ -28,6 +35,18 @@
             <dt class="text-secondary">Type de cible</dt>
             <dd class="font-medium capitalize">{{ currentScheduled.targetType }}</dd>
           </div>
+          @if (currentScheduled.lastDispatchedAt) {
+            <div>
+              <dt class="text-secondary">Dernier envoi</dt>
+              <dd class="font-medium">{{ currentScheduled.lastDispatchedAt | date: 'medium' }}</dd>
+            </div>
+          }
+          @if (currentScheduled.recipientCount !== null) {
+            <div>
+              <dt class="text-secondary">Destinataires touchés</dt>
+              <dd class="font-medium">{{ currentScheduled.recipientCount }}</dd>
+            </div>
+          }
           @if (currentScheduled.errorMessage) {
             <div>
               <dt class="text-secondary">Erreur</dt>
