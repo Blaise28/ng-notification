@@ -11,7 +11,7 @@
         <legend class="fieldset-legend text-sm text-primary/90">
           Type de client <code>*</code>
         </legend>
-        <select [formField]="clientForm.type" class="select w-full">
+        <select [formField]="clientForm.type" class="select input w-full">
           <option value="individual">Particulier</option>
           <option value="business">Entreprise</option>
         </select>
@@ -83,7 +83,8 @@
         </div>
       </fieldset>
 
-      <div class="flex gap-3 mt-4">
+      <div class="flex gap-3 justify-end mt-4">
+        <a routerLink="/clients" class="btn btn-ghost">Annuler</a>
         <button
           type="submit"
           class="btn btn-primary"
@@ -94,7 +95,6 @@
             <span class="loading loading-sm ms-2"></span>
           }
         </button>
-        <a routerLink="/clients" class="btn btn-ghost">Annuler</a>
       </div>
     </form>
   }

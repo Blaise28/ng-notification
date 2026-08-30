@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
@@ -13,7 +13,7 @@ import { ClientModel } from '../client.models';
   imports: [RouterLink, DatePipe],
   templateUrl: './client-detail.html',
 })
-export class ClientDetail {
+export class ClientDetail implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -24,7 +24,11 @@ export class ClientDetail {
   protected readonly client = signal<ClientModel | null>(null);
   protected readonly loading = signal(true);
 
-  constructor() {
+  ngOnInit() {
+    this.getClientDetails();
+  }
+
+  getClientDetails() {
     this.clientService
       .getById(this.clientId)
       .pipe(takeUntilDestroyed(this.destroyRef))

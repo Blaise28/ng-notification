@@ -12,14 +12,14 @@ export class OmnichannelService {
   private readonly api = inject(Api);
 
   send(body: SendOmnichannelBodyModel) {
-    return this.api.post<OmnichannelJobResponse>('/api/v1/omnichannel/send', body);
+    return this.api.post<OmnichannelJobResponse>('/api/v1/omnichannel/send/', body);
   }
 
   broadcast(body: BroadcastOmnichannelBodyModel) {
-    return this.api.post<OmnichannelJobResponse>('/api/v1/omnichannel/broadcast', body);
+    return this.api.post<OmnichannelJobResponse>('/api/v1/omnichannel/broadcast/', body);
   }
 
   getJob(id: string) {
-    return this.api.get<OmnichannelJobResponse>(`/api/v1/omnichannel/jobs/${id}`);
+    return this.api.get<OmnichannelJobResponse>(`/api/v1/omnichannel/jobs/${id}/`);
   }
 }

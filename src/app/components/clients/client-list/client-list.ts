@@ -23,7 +23,7 @@ export class ClientList {
 
   protected readonly subscriptionEndFrom = signal('');
   protected readonly subscriptionEndTo = signal('');
-  protected readonly listUrl = signal('/api/v1/clients');
+  protected readonly listUrl = signal('/api/v1/clients/');
 
   protected readonly headers: ListHeaderModel[] = [
     { label: 'Nom', field: ['displayName'] },

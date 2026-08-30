@@ -12,14 +12,14 @@ export class EmailService {
   private readonly api = inject(Api);
 
   send(body: SendEmailBodyModel) {
-    return this.api.post<EmailJobResponse>('/api/v1/email', body);
+    return this.api.post<EmailJobResponse>('/api/v1/email/', body);
   }
 
   broadcast(body: BroadcastEmailBodyModel) {
-    return this.api.post<EmailJobResponse>('/api/v1/email/broadcast', body);
+    return this.api.post<EmailJobResponse>('/api/v1/email/broadcast/', body);
   }
 
   getJob(id: string) {
-    return this.api.get<EmailJobResponse>(`/api/v1/email/jobs/${id}`);
+    return this.api.get<EmailJobResponse>(`/api/v1/email/jobs/${id}/`);
   }
 }

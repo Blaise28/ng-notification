@@ -13,13 +13,13 @@ export class AnalyticsService {
   private readonly api = inject(Api);
 
   summary(query?: AnalyticsSummaryQueryModel) {
-    return this.api.get<AnalyticsSummaryResponse>('/api/v1/analytics/summary', {
+    return this.api.get<AnalyticsSummaryResponse>('/api/v1/analytics/summary/', {
       params: toQueryParams(query),
     });
   }
 
   trend(days = 30) {
-    return this.api.get<AnalyticsTrendResponse>('/api/v1/analytics/trend', {
+    return this.api.get<AnalyticsTrendResponse>('/api/v1/analytics/trend/', {
       params: toQueryParams({ days }),
     });
   }

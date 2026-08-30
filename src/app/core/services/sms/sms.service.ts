@@ -12,14 +12,14 @@ export class SmsService {
   private readonly api = inject(Api);
 
   send(body: SendSmsBodyModel) {
-    return this.api.post<SmsJobResponse>('/api/v1/sms', body);
+    return this.api.post<SmsJobResponse>('/api/v1/sms/', body);
   }
 
   broadcast(body: BroadcastSmsBodyModel) {
-    return this.api.post<SmsJobResponse>('/api/v1/sms/broadcast', body);
+    return this.api.post<SmsJobResponse>('/api/v1/sms/broadcast/', body);
   }
 
   getJob(id: string) {
-    return this.api.get<SmsJobResponse>(`/api/v1/sms/jobs/${id}`);
+    return this.api.get<SmsJobResponse>(`/api/v1/sms/jobs/${id}/`);
   }
 }

@@ -15,11 +15,11 @@ export class AuthService {
   private readonly api = inject(Api);
 
   login(body: LoginBodyModel) {
-    return this.api.post<AuthSuccessResponse>('/api/v1/auth/login', body);
+    return this.api.post<AuthSuccessResponse>('/api/v1/auth/login/', body);
   }
 
   me() {
-    return this.api.get<MeSuccessResponse>('/api/v1/auth/populate');
+    return this.api.get<MeSuccessResponse>('/api/v1/auth/populate/');
   }
 
   requestOtp(body: RequestOtpBodyModel) {

@@ -17,26 +17,26 @@ export class ClientService {
   private readonly api = inject(Api);
 
   create(body: CreateClientBodyModel) {
-    return this.api.post<ClientResponse>('/api/v1/clients', body);
+    return this.api.post<ClientResponse>('/api/v1/clients/', body);
   }
 
   list(query?: ListClientsQueryModel) {
-    return this.api.get<ClientsListResponse>('/api/v1/clients', { params: toQueryParams(query) });
+    return this.api.get<ClientsListResponse>('/api/v1/clients/', { params: toQueryParams(query) });
   }
 
   stats() {
-    return this.api.get<ClientsStatsResponse>('/api/v1/clients/stats');
+    return this.api.get<ClientsStatsResponse>('/api/v1/clients/stats/');
   }
 
   getById(id: string) {
-    return this.api.get<ClientResponse>(`/api/v1/clients/${id}`);
+    return this.api.get<ClientResponse>(`/api/v1/clients/${id}/`);
   }
 
   update(id: string, body: UpdateClientBodyModel) {
-    return this.api.patch<ClientResponse>(`/api/v1/clients/${id}`, body);
+    return this.api.patch<ClientResponse>(`/api/v1/clients/${id}/`, body);
   }
 
   remove(id: string) {
-    return this.api.delete<DeleteClientResponse>(`/api/v1/clients/${id}`);
+    return this.api.delete<DeleteClientResponse>(`/api/v1/clients/${id}/`);
   }
 }
