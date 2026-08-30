@@ -3,7 +3,6 @@ import { UserRole } from '@components/auth/auth.models';
 
 export interface CreateUserBodyModel {
   email: string;
-  password: string;
   name: string;
   role?: UserRole;
 }

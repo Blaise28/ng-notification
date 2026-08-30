@@ -3,7 +3,6 @@ import { Router, RouterLink } from '@angular/router';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { Password } from '@globals/components/password/password';
 import { ApiError } from '@services/api/api-error';
 import { DialogService } from '@services/dialog/dialog.service';
 import { UserService } from '@services/users/user.service';
@@ -12,13 +11,12 @@ import { UserRole } from '@components/auth/auth.models';
 interface UserFormValue {
   name: string;
   email: string;
-  password: string;
   role: UserRole;
 }
 
 @Component({
   selector: 'app-user-form',
-  imports: [RouterLink, FormField, Password],
+  imports: [RouterLink, FormField],
   templateUrl: './user-form.html',
 })
 export class UserForm {
@@ -31,14 +29,12 @@ export class UserForm {
     signal<UserFormValue>({
       name: '',
       email: '',
-      password: '',
       role: 'operator',
     }),
     (schema) => {
       required(schema.name);
       required(schema.email);
       email(schema.email);
-      required(schema.password);
     },
   );
 
@@ -56,7 +52,8 @@ export class UserForm {
           this.submitLoading.set(false);
           this.dialogService.showToast({
             type: 'success',
-            message: 'Opérateur créé',
+            message:
+              'Opérateur créé. Il pourra activer son compte via "Mot de passe oublié" sur la page de connexion.',
           });
           await this.router.navigate(['/users']);
         },

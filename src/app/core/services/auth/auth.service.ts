@@ -4,6 +4,9 @@ import {
   AuthSuccessResponse,
   LoginBodyModel,
   MeSuccessResponse,
+  MessageSuccessResponse,
+  RequestOtpBodyModel,
+  ResetPasswordBodyModel,
 } from '@components/auth/auth.models';
 import { Api } from '@services/api/api';
 
@@ -17,5 +20,13 @@ export class AuthService {
 
   me() {
     return this.api.get<MeSuccessResponse>('/api/v1/auth/populate');
+  }
+
+  requestOtp(body: RequestOtpBodyModel) {
+    return this.api.post<MessageSuccessResponse>('/api/v1/auth/password/otp', body);
+  }
+
+  resetPassword(body: ResetPasswordBodyModel) {
+    return this.api.post<MessageSuccessResponse>('/api/v1/auth/password/reset', body);
   }
 }

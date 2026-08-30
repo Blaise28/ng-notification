@@ -27,7 +27,11 @@
           [required]="true"
           mode="simple"
           autocomplete="current-password"
-        />
+        >
+          <a slot="extra-links" routerLink="/forgot-password" class="link link-primary text-xs font-normal">
+            Mot de passe oublié ?
+          </a>
+        </app-password>
         <div class="mt-8">
           <button
             [disabled]="loginForm().invalid() || submitLoginLoading()"

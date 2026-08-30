@@ -24,3 +24,21 @@ export interface AuthSuccessResponse {
 export interface MeSuccessResponse {
   object: UserModel;
 }
+
+export interface RequestOtpBodyModel {
+  email: string;
+}
+
+export interface ResetPasswordBodyModel {
+  email: string;
+  otp: string;
+  password: string;
+}
+
+export interface MessagePayloadModel {
+  message: string;
+}
+
+export interface MessageSuccessResponse {
+  object: MessagePayloadModel;
+}

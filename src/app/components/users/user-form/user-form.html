@@ -29,13 +29,10 @@
       />
     </fieldset>
 
-    <app-password
-      [field]="userForm.password"
-      label="Mot de passe"
-      [required]="true"
-      mode="create"
-      autocomplete="new-password"
-    />
+    <p class="text-xs text-secondary -mt-2">
+      Aucun mot de passe n'est requis ici : l'opérateur recevra un e-mail pour définir le sien via
+      "Mot de passe oublié" et son compte sera activé automatiquement à cette étape.
+    </p>
 
     <fieldset class="fieldset">
       <legend class="fieldset-legend text-sm text-primary/90">
