@@ -31,7 +31,24 @@ export interface SendToClientsBodyModel {
   templateIds?: TemplateIdsModel;
   variables?: Record<string, string>;
   content?: ChannelContentModel;
+  /** parallel (default): all channels at once. waterfall: failover to next channel. */
+  strategy?: 'parallel' | 'waterfall';
 }
+
+export interface EstimateBodyModel {
+  channels: NotificationChannel[];
+  clientIds?: string[];
+  filter?: { type?: ClientType };
+  broadcastAll?: boolean;
+}
+
+export interface EstimateResultModel {
+  totalMatched: number;
+  byChannel: Record<string, number>;
+  channels: string[];
+}
+
+export type EstimateResponse = { object: EstimateResultModel };
 
 export interface SentNotificationRecipientModel {
   id: string;

@@ -157,6 +157,7 @@ export class NotificationCompose {
 
   // Channel & Content State
   protected readonly selectedChannels = signal<NotificationChannel[]>(['email']);
+  protected readonly sendStrategy = signal<'parallel' | 'waterfall'>('parallel');
   protected readonly contentSource = signal<ContentSource>('template');
   protected readonly templateIds = signal<TemplateIdsModel>({});
   protected readonly variableLabels = TEMPLATE_VARIABLE_LABELS;
@@ -545,6 +546,7 @@ export class NotificationCompose {
 
     return {
       channels: this.selectedChannels(),
+      strategy: this.sendStrategy(),
       clientIds: this.targetMode() === 'clients' ? this.selectedClientIds() : undefined,
       filter: this.targetMode() === 'filter' ? { type: this.filterType() || undefined } : undefined,
       broadcastAll: this.targetMode() === 'broadcast' ? true : undefined,

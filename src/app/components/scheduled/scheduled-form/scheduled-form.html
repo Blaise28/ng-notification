@@ -1,308 +1,458 @@
-<section class="p-6 max-w-6xl mx-auto">
-  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">Nouvelle planification</h1>
+<div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-base-200 to-base-100 p-6 rounded-2xl border border-primary/20 shadow-xs backdrop-blur-xs">
+    <div class="flex items-center gap-4">
+      <div class="p-3 bg-primary text-primary-content rounded-xl shadow-md flex items-center justify-center">
+        <hugeicons-icon [icon]="Calendar01Icon" [size]="28" [strokeWidth]="2" />
+      </div>
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-base-content flex items-center gap-2">
+          Nouvelle Planification de Notification
+        </h1>
+        <p class="text-sm text-base-content/70 mt-0.5">
+          Programmez l'envoi différé d'un message vers vos clients ou un groupe spécifique.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a routerLink="/scheduled" class="btn btn-ghost btn-sm gap-2 rounded-xl">
+        <hugeicons-icon [icon]="ArrowLeft02Icon" [size]="16" [strokeWidth]="2" />
+        Retour aux planifications
+      </a>
+    </div>
+  </div>
 
-  <form (submit)="submit($event)" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-    <div class="flex flex-col gap-4">
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Canal <code>*</code></legend>
-        <select
-          class="select w-full"
-          [value]="channel()"
-          (change)="onChannelChange($any($event.target).value)"
-        >
-          <option value="email">E-mail</option>
-          <option value="sms">SMS</option>
-          <option value="whatsapp">WhatsApp</option>
-          <option value="multi">Multi-canal</option>
-        </select>
-      </fieldset>
+  <form (submit)="submit($event)" class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+    <!-- Main Form Column -->
+    <div class="xl:col-span-7 space-y-6">
+      
+      <!-- Section 1: Timing & Schedule Date -->
+      <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+        <h2 class="text-base font-bold text-base-content flex items-center gap-2 pb-3 border-b border-base-200">
+          <hugeicons-icon [icon]="Clock01Icon" [size]="18" [strokeWidth]="2" class="text-primary" />
+          Date & Heure d'Envoi Différé <span class="text-error">*</span>
+        </h2>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">
-          Date et heure d'envoi <code>*</code>
-        </legend>
-        <input
-          type="datetime-local"
-          class="input w-full"
-          [min]="minSendAt"
-          [value]="sendAt()"
-          (input)="sendAt.set($any($event.target).value)"
-        />
-      </fieldset>
+        <div>
+          <label for="scheduled-send-at" class="text-xs font-bold text-base-content/80 block mb-1.5">
+            Sélectionner le moment d'exécution
+          </label>
+          <input
+            id="scheduled-send-at"
+            type="datetime-local"
+            class="input input-bordered input-md w-full rounded-xl font-medium"
+            [min]="minSendAt"
+            [value]="sendAt()"
+            (input)="sendAt.set($any($event.target).value)"
+            required
+          />
+          <p class="text-xs text-base-content/60 mt-1.5 flex items-center gap-1">
+            <hugeicons-icon [icon]="Clock01Icon" [size]="14" [strokeWidth]="2" class="text-info" />
+            L'envoi automatique sera déclenché à la minute indiquée.
+          </p>
+        </div>
+      </div>
 
-      <fieldset class="fieldset card bg-base-200 p-4">
-        <legend class="fieldset-legend text-sm text-primary/90 px-2">Cible <code>*</code></legend>
-        <div class="flex gap-4 mb-3 flex-wrap">
-          <label class="label gap-2">
+      <!-- Section 2: Target Selection Card -->
+      <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+        <h2 class="text-base font-bold text-base-content flex items-center gap-2 pb-3 border-b border-base-200">
+          <hugeicons-icon [icon]="UserGroupIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+          Audience & Destinataires <span class="text-error">*</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Option All -->
+          <label
+            class="flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer bg-base-100 hover:border-primary/50"
+            [class.border-primary]="targetType() === 'all'"
+            [class.bg-primary/5]="targetType() === 'all'"
+            [class.border-base-200]="targetType() !== 'all'"
+            for="target-all"
+          >
             <input
               type="radio"
+              id="target-all"
               name="target-type"
-              class="radio radio-sm"
+              class="radio radio-primary radio-xs mt-0.5"
               [checked]="targetType() === 'all'"
               (change)="targetType.set('all')"
             />
-            Tous les clients
+            <div>
+              <span class="text-xs font-bold text-base-content block">Tous les clients</span>
+              <span class="text-[11px] text-base-content/60">Diffusion globale à toute la base</span>
+            </div>
           </label>
-          <label class="label gap-2">
+
+          <!-- Option Single Client -->
+          <label
+            class="flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer bg-base-100 hover:border-primary/50"
+            [class.border-primary]="targetType() === 'clientId'"
+            [class.bg-primary/5]="targetType() === 'clientId'"
+            [class.border-base-200]="targetType() !== 'clientId'"
+            for="target-client"
+          >
             <input
               type="radio"
+              id="target-client"
               name="target-type"
-              class="radio radio-sm"
+              class="radio radio-primary radio-xs mt-0.5"
               [checked]="targetType() === 'clientId'"
               (change)="targetType.set('clientId')"
             />
-            Un client
+            <div>
+              <span class="text-xs font-bold text-base-content block">Un client spécifique</span>
+              <span class="text-[11px] text-base-content/60">Recherche individuelle</span>
+            </div>
           </label>
-          <label class="label gap-2">
+
+          <!-- Option Filter -->
+          <label
+            class="flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer bg-base-100 hover:border-primary/50"
+            [class.border-primary]="targetType() === 'filter'"
+            [class.bg-primary/5]="targetType() === 'filter'"
+            [class.border-base-200]="targetType() !== 'filter'"
+            for="target-filter"
+          >
             <input
               type="radio"
+              id="target-filter"
               name="target-type"
-              class="radio radio-sm"
+              class="radio radio-primary radio-xs mt-0.5"
               [checked]="targetType() === 'filter'"
               (change)="targetType.set('filter')"
             />
-            Filtrer par type
+            <div>
+              <span class="text-xs font-bold text-base-content block">Filtrer par type</span>
+              <span class="text-[11px] text-base-content/60">Segment Particulier / Pro</span>
+            </div>
           </label>
         </div>
 
+        <!-- Single Client Autocomplete -->
         @if (targetType() === 'clientId') {
-          <select
-            class="select w-full"
-            [value]="targetClientId()"
-            (change)="targetClientId.set($any($event.target).value)"
-          >
-            <option value="">Sélectionner…</option>
-            @for (client of clients(); track client.id) {
-              <option [value]="client.id">{{ client.displayName }}</option>
-            }
-          </select>
+          <div class="pt-2 border-t border-base-200 space-y-1.5">
+            <label class="text-xs font-bold text-base-content/80 block" for="scheduled-client-lookup">
+              Sélectionner le destinataire
+            </label>
+            <app-lookup
+              [url]="clientAutocompleteUrl"
+              label="Rechercher par nom, email, téléphone..."
+              option="autocomplete"
+              [selectedId]="targetClientId() || null"
+              inputId="scheduled-client-lookup"
+              (selectedItemEvent)="onClientAutocompleteSelected($event)"
+            />
+          </div>
         }
 
+        <!-- Filter Segment Selector -->
         @if (targetType() === 'filter') {
-          <select
-            class="select w-full"
-            [value]="targetFilterType()"
-            (change)="targetFilterType.set($any($event.target).value)"
-          >
-            <option value="">Sélectionner…</option>
-            <option value="individual">Particulier</option>
-            <option value="business">Entreprise</option>
-          </select>
+          <div class="pt-2 border-t border-base-200 space-y-1.5">
+            <label class="text-xs font-bold text-base-content/80 block" for="scheduled-filter-type">
+              Type de client ciblé
+            </label>
+            <select
+              id="scheduled-filter-type"
+              class="select select-bordered select-sm w-full rounded-xl font-medium"
+              [value]="targetFilterType()"
+              (change)="targetFilterType.set($any($event.target).value)"
+            >
+              <option value="">Sélectionner un profil...</option>
+              <option value="individual">Particuliers uniquement</option>
+              <option value="business">Entreprises / Professionnels uniquement</option>
+            </select>
+          </div>
         }
-      </fieldset>
+      </div>
 
-      <fieldset class="fieldset card bg-base-200 p-4">
-        <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
+      <!-- Section 3: Channel & Message Content Card -->
+      <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+        <h2 class="text-base font-bold text-base-content flex items-center gap-2 pb-3 border-b border-base-200">
+          <hugeicons-icon [icon]="Megaphone02Icon" [size]="18" [strokeWidth]="2" class="text-primary" />
+          Canal & Modèle de Message <span class="text-error">*</span>
+        </h2>
 
-        <div class="flex gap-4 mb-3 flex-wrap">
-          <label class="label gap-2">
+        <!-- Channel Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center gap-1.5"
+            [class.border-primary]="channel() === 'email'"
+            [class.bg-primary/10]="channel() === 'email'"
+            [class.border-base-200]="channel() !== 'email'"
+            (click)="onChannelChange('email')"
+          >
+            <hugeicons-icon [icon]="Mail01Icon" [size]="20" [strokeWidth]="2" class="text-info" />
+            <span class="text-xs font-bold text-base-content">E-mail</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center gap-1.5"
+            [class.border-primary]="channel() === 'sms'"
+            [class.bg-primary/10]="channel() === 'sms'"
+            [class.border-base-200]="channel() !== 'sms'"
+            (click)="onChannelChange('sms')"
+          >
+            <hugeicons-icon [icon]="Comment01Icon" [size]="20" [strokeWidth]="2" class="text-warning" />
+            <span class="text-xs font-bold text-base-content">SMS</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center gap-1.5"
+            [class.border-primary]="channel() === 'whatsapp'"
+            [class.bg-primary/10]="channel() === 'whatsapp'"
+            [class.border-base-200]="channel() !== 'whatsapp'"
+            (click)="onChannelChange('whatsapp')"
+          >
+            <hugeicons-icon [icon]="WhatsappIcon" [size]="20" [strokeWidth]="2" class="text-success" />
+            <span class="text-xs font-bold text-base-content">WhatsApp</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center gap-1.5"
+            [class.border-primary]="channel() === 'multi'"
+            [class.bg-primary/10]="channel() === 'multi'"
+            [class.border-base-200]="channel() !== 'multi'"
+            (click)="onChannelChange('multi')"
+          >
+            <hugeicons-icon [icon]="Megaphone02Icon" [size]="20" [strokeWidth]="2" class="text-accent" />
+            <span class="text-xs font-bold text-base-content">Multi-Canal</span>
+          </button>
+        </div>
+
+        <!-- Content Mode Selector (Template vs Custom) -->
+        <div class="flex items-center gap-4 p-3 bg-base-200/50 rounded-xl border border-base-200">
+          <span class="text-xs font-bold text-base-content/80">Source du contenu :</span>
+          <label class="label gap-2 cursor-pointer">
             <input
               type="radio"
               name="content-source"
-              class="radio radio-sm"
+              class="radio radio-primary radio-xs"
               [checked]="contentSource() === 'template'"
               (change)="contentSource.set('template')"
             />
-            Utiliser un modèle
+            <span class="text-xs font-semibold text-base-content">Utiliser un modèle prédéfini</span>
           </label>
-          <label class="label gap-2">
+          <label class="label gap-2 cursor-pointer">
             <input
               type="radio"
               name="content-source"
-              class="radio radio-sm"
+              class="radio radio-primary radio-xs"
               [checked]="contentSource() === 'custom'"
               (change)="contentSource.set('custom')"
             />
-            Contenu personnalisé
+            <span class="text-xs font-semibold text-base-content">Contenu sur-mesure</span>
           </label>
         </div>
 
+        <!-- Template Selection Mode -->
         @if (contentSource() === 'template') {
           @if (channel() === 'multi') {
-            <div class="flex gap-4 mb-3 flex-wrap">
-              <label class="label gap-2">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  [checked]="multiChannels().includes('email')"
-                  (change)="toggleMultiChannel('email')"
-                />
-                E-mail
-              </label>
-              <label class="label gap-2">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  [checked]="multiChannels().includes('sms')"
-                  (change)="toggleMultiChannel('sms')"
-                />
-                SMS
-              </label>
-              <label class="label gap-2">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  [checked]="multiChannels().includes('whatsapp')"
-                  (change)="toggleMultiChannel('whatsapp')"
-                />
-                WhatsApp
-              </label>
+            <div class="space-y-2">
+              <span class="text-xs font-bold text-base-content/80 block">Canaux ciblés pour le modèle :</span>
+              <div class="flex gap-4 flex-wrap">
+                <label class="label gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-primary checkbox-xs rounded-md"
+                    [checked]="multiChannels().includes('email')"
+                    (change)="toggleMultiChannel('email')"
+                  />
+                  <span class="text-xs font-medium">E-mail</span>
+                </label>
+                <label class="label gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-primary checkbox-xs rounded-md"
+                    [checked]="multiChannels().includes('sms')"
+                    (change)="toggleMultiChannel('sms')"
+                  />
+                  <span class="text-xs font-medium">SMS</span>
+                </label>
+                <label class="label gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-primary checkbox-xs rounded-md"
+                    [checked]="multiChannels().includes('whatsapp')"
+                    (change)="toggleMultiChannel('whatsapp')"
+                  />
+                  <span class="text-xs font-medium">WhatsApp</span>
+                </label>
+              </div>
             </div>
           }
 
-          <label class="fieldset-legend text-sm" for="scheduled-template">Modèle</label>
-          <select
-            id="scheduled-template"
-            class="select w-full mb-3"
-            [value]="templateId()"
-            (change)="setTemplateId($any($event.target).value)"
-          >
-            <option value="">Sélectionner…</option>
-            @for (template of templatesForChannel(); track template.id) {
-              <option [value]="template.id">{{ template.name }}</option>
-            }
-          </select>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-base-content/80 block" for="scheduled-template">
+              Sélectionner le modèle
+            </label>
+            <app-lookup
+              [url]="getTemplateAutocompleteUrl(channel())"
+              label="Rechercher un modèle par nom..."
+              option="autocomplete"
+              [selectedId]="templateId() || null"
+              inputId="scheduled-template"
+              (selectedItemEvent)="onTemplateAutocompleteSelected($event)"
+            />
+          </div>
 
+          <!-- Dynamic Template Variables Fields -->
           @if (templateVariableTokens().length > 0) {
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              @for (token of templateVariableTokens(); track token) {
-                <label class="fieldset">
-                  <span class="fieldset-legend text-xs">{{ labelFor(token) }}</span>
+            <div class="pt-3 border-t border-base-200 space-y-2">
+              <span class="text-xs font-bold text-base-content/80 block">
+                Variables dynamiques du modèle :
+              </span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (token of templateVariableTokens(); track token) {
+                  <div>
+                    <label [for]="'scheduled-var-' + token" class="text-[11px] font-semibold text-base-content/70 block mb-1">
+                      {{ labelFor(token) }}
+                    </label>
+                    <input
+                      [id]="'scheduled-var-' + token"
+                      type="text"
+                      class="input input-bordered input-sm w-full rounded-lg text-xs"
+                      [placeholder]="'Valeur pour {' + token + '}'"
+                      [value]="variables()[token] ?? ''"
+                      (input)="setVariable(token, $any($event.target).value)"
+                    />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Custom Content Mode -->
+        @if (contentSource() === 'custom') {
+          <div class="space-y-4">
+            @if (channel() === 'email' || (channel() === 'multi' && multiChannels().includes('email'))) {
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-200 space-y-3">
+                <h3 class="text-xs font-bold text-base-content/90 flex items-center gap-2">
+                  <hugeicons-icon [icon]="Mail01Icon" [size]="16" [strokeWidth]="2" class="text-info" />
+                  Contenu E-mail
+                </h3>
+                <input
+                  type="text"
+                  class="input input-bordered input-sm w-full rounded-lg font-medium"
+                  placeholder="Sujet de l'e-mail..."
+                  [value]="emailSubject()"
+                  (input)="emailSubject.set($any($event.target).value)"
+                />
+                <textarea
+                  class="textarea textarea-bordered w-full rounded-lg font-mono text-xs"
+                  rows="4"
+                  placeholder="Contenu HTML..."
+                  [value]="emailHtml()"
+                  (input)="emailHtml.set($any($event.target).value)"
+                ></textarea>
+              </div>
+            }
+
+            @if (channel() === 'sms' || (channel() === 'multi' && multiChannels().includes('sms'))) {
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-200 space-y-3">
+                <h3 class="text-xs font-bold text-base-content/90 flex items-center gap-2">
+                  <hugeicons-icon [icon]="Comment01Icon" [size]="16" [strokeWidth]="2" class="text-warning" />
+                  Contenu SMS
+                </h3>
+                <textarea
+                  class="textarea textarea-bordered w-full rounded-lg text-sm"
+                  rows="3"
+                  placeholder="Texte du message SMS..."
+                  [value]="smsBody()"
+                  (input)="smsBody.set($any($event.target).value)"
+                ></textarea>
+              </div>
+            }
+
+            @if (channel() === 'whatsapp' || (channel() === 'multi' && multiChannels().includes('whatsapp'))) {
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-200 space-y-3">
+                <h3 class="text-xs font-bold text-base-content/90 flex items-center gap-2">
+                  <hugeicons-icon [icon]="WhatsappIcon" [size]="16" [strokeWidth]="2" class="text-success" />
+                  Contenu WhatsApp Meta
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <input
                     type="text"
-                    class="input input-sm w-full"
-                    [value]="variables()[token] ?? ''"
-                    (input)="setVariable(token, $any($event.target).value)"
+                    class="input input-bordered input-sm w-full rounded-lg"
+                    placeholder="Nom du modèle Meta..."
+                    [value]="whatsappTemplateName()"
+                    (input)="whatsappTemplateName.set($any($event.target).value)"
                   />
-                </label>
-              }
-            </div>
-          }
+                  <input
+                    type="text"
+                    class="input input-bordered input-sm w-full rounded-lg"
+                    placeholder="Code langue (fr_FR)..."
+                    [value]="whatsappTemplateLanguage()"
+                    (input)="whatsappTemplateLanguage.set($any($event.target).value)"
+                  />
+                </div>
+              </div>
+            }
+          </div>
         }
+      </div>
 
-        @if (contentSource() === 'custom') {
-          @if (channel() === 'multi') {
-            <div class="flex gap-4 mb-3 flex-wrap">
-              <label class="label gap-2">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  [checked]="multiChannels().includes('email')"
-                  (change)="toggleMultiChannel('email')"
-                />
-                E-mail
-              </label>
-              <label class="label gap-2">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  [checked]="multiChannels().includes('sms')"
-                  (change)="toggleMultiChannel('sms')"
-                />
-                SMS
-              </label>
-              <label class="label gap-2">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  [checked]="multiChannels().includes('whatsapp')"
-                  (change)="toggleMultiChannel('whatsapp')"
-                />
-                WhatsApp
-              </label>
-            </div>
-          }
-
-          @if (channel() === 'email' || (channel() === 'multi' && multiChannels().includes('email'))) {
-            <div class="mb-3">
-              <p class="text-sm font-medium mb-2">E-mail</p>
-              <input
-                type="text"
-                class="input w-full mb-2"
-                placeholder="Sujet"
-                [value]="emailSubject()"
-                (input)="emailSubject.set($any($event.target).value)"
-              />
-              <textarea
-                class="textarea w-full mb-2"
-                rows="4"
-                placeholder="Contenu HTML"
-                [value]="emailHtml()"
-                (input)="emailHtml.set($any($event.target).value)"
-              ></textarea>
-              <textarea
-                class="textarea w-full"
-                rows="2"
-                placeholder="Contenu texte (optionnel)"
-                [value]="emailText()"
-                (input)="emailText.set($any($event.target).value)"
-              ></textarea>
-            </div>
-          }
-
-          @if (channel() === 'sms' || (channel() === 'multi' && multiChannels().includes('sms'))) {
-            <div class="mb-3">
-              <p class="text-sm font-medium mb-2">SMS</p>
-              <textarea
-                class="textarea w-full"
-                rows="3"
-                placeholder="Contenu du SMS"
-                [value]="smsBody()"
-                (input)="smsBody.set($any($event.target).value)"
-              ></textarea>
-            </div>
-          }
-
-          @if (
-            channel() === 'whatsapp' || (channel() === 'multi' && multiChannels().includes('whatsapp'))
-          ) {
-            <div>
-              <p class="text-sm font-medium mb-2">WhatsApp</p>
-              <input
-                type="text"
-                class="input w-full mb-2"
-                placeholder="Nom du modèle Meta"
-                [value]="whatsappTemplateName()"
-                (input)="whatsappTemplateName.set($any($event.target).value)"
-              />
-              <input
-                type="text"
-                class="input w-full"
-                placeholder="Langue (ex. fr_FR, en_US)"
-                [value]="whatsappTemplateLanguage()"
-                (input)="whatsappTemplateLanguage.set($any($event.target).value)"
-              />
-            </div>
-          }
-        }
-      </fieldset>
-
-      <div class="flex gap-3">
-        <button type="submit" class="btn btn-primary" [disabled]="submitLoading()">
-          Planifier
+      <!-- Form Action Buttons -->
+      <div class="flex items-center justify-between gap-3 pt-2">
+        <a routerLink="/scheduled" class="btn btn-ghost btn-md gap-2 rounded-xl">
+          Annuler
+        </a>
+        <button
+          type="submit"
+          class="btn btn-primary btn-md gap-2 rounded-xl shadow-md"
+          [disabled]="submitLoading()"
+        >
+          <hugeicons-icon [icon]="CheckmarkCircle02Icon" [size]="18" [strokeWidth]="2" />
+          Enregistrer la Planification
           @if (submitLoading()) {
-            <span class="loading loading-sm ms-2"></span>
+            <span class="loading loading-spinner loading-xs ms-1"></span>
           }
         </button>
-        <a routerLink="/scheduled" class="btn btn-ghost">Annuler</a>
       </div>
+
     </div>
 
-    @if (contentSource() === 'template' && selectedTemplate(); as template) {
-      <div class="xl:sticky xl:top-4 xl:self-start">
-        <app-template-preview
-          [channel]="template.channel"
-          [subject]="template.subject ?? ''"
-          [htmlBody]="template.htmlBody ?? ''"
-          [css]="template.css ?? ''"
-          [smsBody]="template.smsBody ?? ''"
-          [whatsappTemplateName]="template.whatsappTemplateName ?? ''"
-          [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr_FR'"
-          [whatsappVariableKeys]="template.whatsappVariableKeys ?? []"
-          [variables]="previewVariables()"
-          title="Aperçu du modèle"
-        />
+    <!-- Preview Side Column -->
+    <div class="xl:col-span-5">
+      <div class="xl:sticky xl:top-6 space-y-4">
+        @if (contentSource() === 'template' && selectedTemplate(); as template) {
+          <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+            <h2 class="text-base font-bold text-base-content flex items-center gap-2 pb-3 border-b border-base-200">
+              <hugeicons-icon [icon]="EyeIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+              Aperçu du Modèle Sélectionné
+            </h2>
+
+            <app-template-preview
+              [channel]="template.channel"
+              [subject]="template.subject ?? ''"
+              [htmlBody]="template.htmlBody ?? ''"
+              [css]="template.css ?? ''"
+              [smsBody]="template.smsBody ?? ''"
+              [whatsappTemplateName]="template.whatsappTemplateName ?? ''"
+              [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr_FR'"
+              [whatsappVariableKeys]="template.whatsappVariableKeys ?? []"
+              [variables]="previewVariables()"
+              title="Aperçu en direct"
+            />
+          </div>
+        } @else {
+          <div class="card bg-base-100 border border-base-200 shadow-xs p-8 text-center space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-base-200 flex items-center justify-center mx-auto text-base-content/40">
+              <hugeicons-icon [icon]="EyeIcon" [size]="24" [strokeWidth]="2" />
+            </div>
+            <div>
+              <span class="text-sm font-bold text-base-content block">Aperçu en Temps Réel</span>
+              <p class="text-xs text-base-content/60 max-w-xs mx-auto mt-1">
+                Sélectionnez un modèle de message ci-contre pour afficher son rendu en direct.
+              </p>
+            </div>
+          </div>
+        }
       </div>
-    }
+    </div>
   </form>
-</section>
+</div>

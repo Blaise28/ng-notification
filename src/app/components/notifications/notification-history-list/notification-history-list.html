@@ -1,39 +1,65 @@
-<section class="p-6 max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col gap-4">
+<div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-base-200 to-base-100 p-6 rounded-2xl border border-primary/20 shadow-xs backdrop-blur-xs">
+    <div class="flex items-center gap-4">
+      <div class="p-3 bg-primary text-primary-content rounded-xl shadow-md flex items-center justify-center">
+        <hugeicons-icon [icon]="Megaphone02Icon" [size]="28" [strokeWidth]="2" />
+      </div>
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-base-content flex items-center gap-2">
+          Historique des Notifications
+        </h1>
+        <p class="text-sm text-base-content/70 mt-0.5">
+          Consultez et suivez l'état de toutes les campagnes de notifications envoyées.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a routerLink="/notifications/compose" class="btn btn-primary btn-md gap-2 rounded-xl shadow-sm">
+        <hugeicons-icon [icon]="Add01Icon" [size]="18" [strokeWidth]="2" />
+        Nouvelle Notification
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
   <form
     (submit)="$event.preventDefault(); applyFilters()"
-    class="card bg-base-200 p-4"
+    class="card bg-base-100 border border-base-200 shadow-xs p-4"
     aria-label="Filtrer l'historique"
   >
-    <div class="flex flex-wrap items-end gap-4">
-      <fieldset class="fieldset">
-        <label class="fieldset-legend text-sm" for="channel-filter">Canal</label>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <label class="text-xs font-bold text-base-content/70 flex items-center gap-1.5" for="channel-filter">
+          <hugeicons-icon [icon]="FilterIcon" [size]="16" [strokeWidth]="2" class="text-primary" />
+          Canal :
+        </label>
         <select
           id="channel-filter"
-          class="select"
+          class="select select-bordered select-sm rounded-xl font-medium"
           [value]="channelFilter()"
-          (change)="channelFilter.set($any($event.target).value)"
+          (change)="channelFilter.set($any($event.target).value); applyFilters()"
         >
-          <option value="">Tous</option>
+          <option value="">Tous les canaux</option>
           <option value="email">E-mail</option>
           <option value="sms">SMS</option>
           <option value="whatsapp">WhatsApp</option>
         </select>
-      </fieldset>
-      <button type="submit" class="btn btn-secondary">Filtrer</button>
+      </div>
     </div>
   </form>
 
-  <div class="flex-1 min-h-0">
+  <!-- List View Container -->
+  <div class="card bg-base-100 border border-base-200 shadow-xs overflow-hidden">
     <app-list
-      listTitle="Historique"
+      listTitle="Notifications envoyées"
       [url]="listUrl()"
       [headers]="headers"
       [detailLink]="{ link: '/notifications/', field: 'id' }"
-      [showAddButton]="true"
-      [addButtonLink]="{ url: '/notifications/compose' }"
+      [showAddButton]="false"
       [showFilters]="false"
       [showOverview]="false"
       [showPageSizeSelector]="true"
     />
   </div>
-</section>
+</div>

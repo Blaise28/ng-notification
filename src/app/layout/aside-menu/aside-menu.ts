@@ -6,6 +6,7 @@ import { HugeiconsIconComponent, IconSvgObject } from '@hugeicons/angular';
 import {
   ArrowLeft02Icon,
   ArrowRight01Icon,
+  Calendar03Icon,
   DashboardSquare01Icon,
   HistoryIcon,
   Image02Icon,
@@ -68,7 +69,7 @@ export class AsideMenu {
             { label: 'Historique', url: '/notifications', icon: HistoryIcon },
           ],
         },
-        // { label: 'Programmées', url: '/scheduled', icon: Calendar03Icon },
+        { label: 'Programmées', url: '/scheduled', icon: Calendar03Icon },
         {
           label: 'Operateurs',
           url: '/users',

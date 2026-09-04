@@ -1,6 +1,8 @@
 import { inject, Service } from '@angular/core';
 
 import {
+  EstimateBodyModel,
+  EstimateResponse,
   ListSentNotificationsQueryModel,
   NotificationDetailResponse,
   NotificationsListResponse,
@@ -14,6 +16,10 @@ import { PaginatedQueryModel } from '@models/pagination.models';
 @Service()
 export class NotificationService {
   private readonly api = inject(Api);
+
+  estimate(body: EstimateBodyModel) {
+    return this.api.post<EstimateResponse>('/api/v1/notifications/estimate/', body);
+  }
 
   send(body: SendToClientsBodyModel) {
     return this.api.post<SendNotificationResponse>('/api/v1/notifications/send/', body);

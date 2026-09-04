@@ -16,6 +16,23 @@ import {
   TemplateModel,
   TemplateVariableToken,
 } from '@components/templates/template.models';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import {
+  ArrowLeft02Icon,
+  Calendar01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Comment01Icon,
+  EyeIcon,
+  FilterIcon,
+  Mail01Icon,
+  Megaphone02Icon,
+  UserGroupIcon,
+  WhatsappIcon,
+} from '@hugeicons/core-free-icons';
+
+import { Lookup } from '@globals/components/lookup/lookup';
+import type { AutocompleteModel, LookupModel } from '@globals/components/lookup/lookup.models';
 import {
   CreateScheduledBodyModel,
   ScheduledChannel,
@@ -26,10 +43,21 @@ type ContentSource = 'template' | 'custom';
 
 @Component({
   selector: 'app-scheduled-form',
-  imports: [RouterLink, TemplatePreview],
+  imports: [RouterLink, TemplatePreview, Lookup, HugeiconsIconComponent],
   templateUrl: './scheduled-form.html',
 })
 export class ScheduledForm {
+  protected readonly Megaphone02Icon = Megaphone02Icon;
+  protected readonly Calendar01Icon = Calendar01Icon;
+  protected readonly Clock01Icon = Clock01Icon;
+  protected readonly UserGroupIcon = UserGroupIcon;
+  protected readonly FilterIcon = FilterIcon;
+  protected readonly Mail01Icon = Mail01Icon;
+  protected readonly Comment01Icon = Comment01Icon;
+  protected readonly WhatsappIcon = WhatsappIcon;
+  protected readonly EyeIcon = EyeIcon;
+  protected readonly CheckmarkCircle02Icon = CheckmarkCircle02Icon;
+  protected readonly ArrowLeft02Icon = ArrowLeft02Icon;
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly clientService = inject(ClientService);
@@ -282,6 +310,31 @@ export class ScheduledForm {
             ? this.whatsappTemplateLanguage().trim()
             : undefined,
         };
+    }
+  }
+
+  protected readonly clientAutocompleteUrl = '/api/v1/clients/autocomplete?search=';
+
+  protected getTemplateAutocompleteUrl(channel: ScheduledChannel): string {
+    if (channel === 'multi') {
+      return '/api/v1/templates/autocomplete?search=';
+    }
+    return `/api/v1/templates/autocomplete?channel=${channel}&search=`;
+  }
+
+  protected onClientAutocompleteSelected(item: AutocompleteModel | LookupModel | null): void {
+    if (item) {
+      this.targetClientId.set(String(item.id));
+    } else {
+      this.targetClientId.set('');
+    }
+  }
+
+  protected onTemplateAutocompleteSelected(item: AutocompleteModel | LookupModel | null): void {
+    if (item) {
+      this.setTemplateId(String(item.id));
+    } else {
+      this.setTemplateId('');
     }
   }
 
