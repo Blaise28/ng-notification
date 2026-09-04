@@ -68,3 +68,45 @@ export interface ClientsStatsModel {
 }
 
 export type ClientsStatsResponse = SingleResponseModel<ClientsStatsModel>;
+
+export interface ClientImportRowDataModel {
+  type?: ClientType;
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  contactPersonName?: string;
+  taxId?: string;
+  phoneE164: string;
+  email?: string;
+  locale?: string;
+  optInSms?: boolean;
+  optInWhatsapp?: boolean;
+  optInEmail?: boolean;
+  subscriptionEndAt?: string;
+}
+
+export interface ClientImportRowResultModel {
+  row: number;
+  data: ClientImportRowDataModel;
+  status: 'success' | 'updated' | 'error';
+  message?: string;
+  errors?: string[];
+  clientId?: string;
+}
+
+export interface ClientImportJobModel {
+  id: string;
+  filename: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  totalRows: number;
+  processedRows: number;
+  progressPercentage: number;
+  successCount: number;
+  updatedCount: number;
+  errorCount: number;
+  results: ClientImportRowResultModel[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ClientImportJobResponse = SingleResponseModel<ClientImportJobModel>;

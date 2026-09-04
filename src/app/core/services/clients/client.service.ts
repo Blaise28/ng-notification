@@ -1,6 +1,6 @@
 import { inject, Service } from '@angular/core';
-
 import {
+  ClientImportJobResponse,
   ClientResponse,
   ClientsListResponse,
   ClientsStatsResponse,
@@ -38,5 +38,23 @@ export class ClientService {
 
   remove(id: string) {
     return this.api.delete<DeleteClientResponse>(`/api/v1/clients/${id}/`);
+  }
+
+  uploadExcelImport(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.post<ClientImportJobResponse>('/api/v1/clients/import/file', formData);
+  }
+
+  getImportJob(id: string) {
+    return this.api.get<ClientImportJobResponse>(`/api/v1/clients/import/${id}`);
+  }
+
+  retryImportRows(id: string, rows: { row: number; data: unknown }[]) {
+    return this.api.post<ClientImportJobResponse>(`/api/v1/clients/import/${id}/retry`, { rows });
+  }
+
+  downloadTemplate() {
+    return this.api.getBlob('/api/v1/clients/import/template');
   }
 }

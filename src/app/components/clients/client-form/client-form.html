@@ -1,101 +1,576 @@
-<section class="p-6 max-w-2xl mx-auto">
-  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">
-    {{ isEdit() ? 'Modifier le client' : 'Nouveau client' }}
-  </h1>
+<section class="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-linear-to-r from-primary/10 via-base-200 to-base-100 p-6 rounded-2xl border border-primary/20 shadow-xs">
+    <div class="flex items-center gap-4">
+      <a routerLink="/clients" class="btn btn-ghost btn-circle btn-sm">
+        <hugeicons-icon [icon]="ArrowLeft02Icon" [size]="20" [strokeWidth]="2" />
+      </a>
+      <div>
+        <h1 tabindex="-1" class="text-2xl font-extrabold tracking-tight text-base-content flex items-center gap-2">
+          {{ isEdit() ? 'Modifier le client' : 'Nouveau client / Importation' }}
+        </h1>
+        <p class="text-xs text-base-content/70 mt-1">
+          {{ isEdit() ? 'Mettez à jour les informations du client.' : 'Ajoutez un client manuellement ou importez un fichier Excel en arrière-plan.' }}
+        </p>
+      </div>
+    </div>
+  </div>
 
   @if (loading()) {
-    <div class="flex justify-center py-10"><span class="loading loading-spinner"></span></div>
+    <div class="flex justify-center py-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
   } @else {
-    <form (submit)="submit($event)" class="flex flex-col gap-4">
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">
-          Type de client <code>*</code>
-        </legend>
-        <select [formField]="clientForm.type" class="select input w-full">
-          <option value="individual">Particulier</option>
-          <option value="business">Entreprise</option>
-        </select>
-      </fieldset>
-
-      @if (clientForm.type().value() === 'individual') {
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <fieldset class="fieldset">
-            <legend class="fieldset-legend text-sm text-primary/90">Prénom <code>*</code></legend>
-            <input type="text" [formField]="clientForm.firstName" class="input w-full" />
-          </fieldset>
-          <fieldset class="fieldset">
-            <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
-            <input type="text" [formField]="clientForm.lastName" class="input w-full" />
-          </fieldset>
-        </div>
-      } @else {
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">
-            Nom de l'entreprise <code>*</code>
-          </legend>
-          <input type="text" [formField]="clientForm.companyName" class="input w-full" />
-        </fieldset>
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Personne à contacter</legend>
-          <input type="text" [formField]="clientForm.contactPersonName" class="input w-full" />
-        </fieldset>
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-sm text-primary/90">Numéro fiscal</legend>
-          <input type="text" [formField]="clientForm.taxId" class="input w-full" />
-        </fieldset>
-      }
-
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">
-          Téléphone <code>*</code>
-        </legend>
-        <app-phone-number-field
-          [initialValue]="clientForm.phoneE164().value()"
-          (phoneNumberEvent)="onPhoneNumber($event)"
-        />
-      </fieldset>
-
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">E-mail</legend>
-        <input type="email" [formField]="clientForm.email" class="input w-full" />
-      </fieldset>
-
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Fin d'abonnement</legend>
-        <input type="date" [formField]="clientForm.subscriptionEndAt" class="input w-full" />
-      </fieldset>
-
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-sm text-primary/90">Consentements</legend>
-        <div class="flex gap-4">
-          <label class="label gap-2">
-            <input type="checkbox" [formField]="clientForm.optInSms" class="checkbox" />
-            SMS
-          </label>
-          <label class="label gap-2">
-            <input type="checkbox" [formField]="clientForm.optInWhatsapp" class="checkbox" />
-            WhatsApp
-          </label>
-          <label class="label gap-2">
-            <input type="checkbox" [formField]="clientForm.optInEmail" class="checkbox" />
-            E-mail
-          </label>
-        </div>
-      </fieldset>
-
-      <div class="flex gap-3 justify-end mt-4">
-        <a routerLink="/clients" class="btn btn-ghost">Annuler</a>
+    <!-- Tabs Switcher (Only when creating new client) -->
+    @if (!isEdit()) {
+      <div class="flex border-b border-base-200 gap-2">
         <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="clientForm().invalid() || submitLoading()"
+          type="button"
+          class="btn btn-sm rounded-b-none border-b-2 gap-2"
+          [class.btn-primary]="activeTab() === 'single'"
+          [class.btn-ghost]="activeTab() !== 'single'"
+          [class.border-primary]="activeTab() === 'single'"
+          [class.border-transparent]="activeTab() !== 'single'"
+          (click)="activeTab.set('single')"
         >
-          Enregistrer
-          @if (submitLoading()) {
-            <span class="loading loading-sm ms-2"></span>
-          }
+          <hugeicons-icon [icon]="UserIcon" [size]="16" [strokeWidth]="2" />
+          Saisie Manuelle (Unitaire)
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm rounded-b-none border-b-2 gap-2"
+          [class.btn-primary]="activeTab() === 'excel'"
+          [class.btn-ghost]="activeTab() !== 'excel'"
+          [class.border-primary]="activeTab() === 'excel'"
+          [class.border-transparent]="activeTab() !== 'excel'"
+          (click)="activeTab.set('excel')"
+        >
+          <hugeicons-icon [icon]="FileUploadIcon" [size]="16" [strokeWidth]="2" />
+          Importation Excel / CSV (Arrière-plan)
         </button>
       </div>
-    </form>
+    }
+
+    <!-- TAB 1: Single Client Form -->
+    @if (activeTab() === 'single' || isEdit()) {
+      <div class="bg-base-100 p-6 rounded-2xl border border-base-200 shadow-xs max-w-2xl">
+        <form (submit)="submitSingle($event)" class="flex flex-col gap-4">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">
+              Type de client <code>*</code>
+            </legend>
+            <select [formField]="clientForm.type" class="select input w-full">
+              <option value="individual">Particulier</option>
+              <option value="business">Entreprise</option>
+            </select>
+          </fieldset>
+
+          @if (clientForm.type().value() === 'individual') {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend text-sm text-primary/90">Prénom <code>*</code></legend>
+                <input type="text" [formField]="clientForm.firstName" class="input w-full" />
+              </fieldset>
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend text-sm text-primary/90">Nom <code>*</code></legend>
+                <input type="text" [formField]="clientForm.lastName" class="input w-full" />
+              </fieldset>
+            </div>
+          } @else {
+            <fieldset class="fieldset">
+              <legend class="fieldset-legend text-sm text-primary/90">
+                Nom de l'entreprise <code>*</code>
+              </legend>
+              <input type="text" [formField]="clientForm.companyName" class="input w-full" />
+            </fieldset>
+            <fieldset class="fieldset">
+              <legend class="fieldset-legend text-sm text-primary/90">Personne à contacter</legend>
+              <input type="text" [formField]="clientForm.contactPersonName" class="input w-full" />
+            </fieldset>
+            <fieldset class="fieldset">
+              <legend class="fieldset-legend text-sm text-primary/90">Numéro fiscal</legend>
+              <input type="text" [formField]="clientForm.taxId" class="input w-full" />
+            </fieldset>
+          }
+
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">
+              Téléphone <code>*</code>
+            </legend>
+            <app-phone-number-field
+              [initialValue]="clientForm.phoneE164().value()"
+              (phoneNumberEvent)="onPhoneNumber($event)"
+            />
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">E-mail</legend>
+            <input type="email" [formField]="clientForm.email" class="input w-full" />
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Fin d'abonnement</legend>
+            <input type="date" [formField]="clientForm.subscriptionEndAt" class="input w-full" />
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-sm text-primary/90">Consentements</legend>
+            <div class="flex gap-4">
+              <label class="label gap-2 cursor-pointer">
+                <input type="checkbox" [formField]="clientForm.optInSms" class="checkbox checkbox-primary" />
+                SMS
+              </label>
+              <label class="label gap-2 cursor-pointer">
+                <input type="checkbox" [formField]="clientForm.optInWhatsapp" class="checkbox checkbox-primary" />
+                WhatsApp
+              </label>
+              <label class="label gap-2 cursor-pointer">
+                <input type="checkbox" [formField]="clientForm.optInEmail" class="checkbox checkbox-primary" />
+                E-mail
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="flex gap-3 justify-end mt-4">
+            <a routerLink="/clients" class="btn btn-ghost">Annuler</a>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="clientForm().invalid() || submitLoading()"
+            >
+              Enregistrer
+              @if (submitLoading()) {
+                <span class="loading loading-sm ms-2"></span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- TAB 2: Excel Import Section -->
+    @if (activeTab() === 'excel' && !isEdit()) {
+      <div class="space-y-6">
+        <!-- Download Template & Instructions Banner -->
+        <div class="bg-base-100 p-6 rounded-2xl border border-base-200 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="p-3 bg-primary/10 text-primary rounded-xl">
+                <hugeicons-icon [icon]="InformationCircleIcon" [size]="24" [strokeWidth]="2" />
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-base-content">Instructions & Format d'Importation</h3>
+                <p class="text-xs text-base-content/70 mt-0.5">
+                  Préparez votre fichier Excel (.xlsx, .xls) ou CSV en suivant les règles ci-dessous.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm gap-2 shrink-0"
+              (click)="downloadTemplate()"
+            >
+              <hugeicons-icon [icon]="Download01Icon" [size]="16" [strokeWidth]="2" />
+              Télécharger le modèle Excel
+            </button>
+          </div>
+
+          <!-- Detailed Instructions & Columns Reference Grid -->
+          <div class="collapse collapse-plus bg-base-200/50 border border-base-200 rounded-xl">
+            <input type="checkbox" id="instructions-collapse" class="peer" defaultChecked />
+            <label for="instructions-collapse" class="collapse-title text-xs font-bold text-primary flex items-center gap-2 cursor-pointer">
+              <hugeicons-icon [icon]="InformationCircleIcon" [size]="16" [strokeWidth]="2" />
+              Consignes et liste des colonnes acceptées (Cliquez pour afficher / masquer)
+            </label>
+            <div class="collapse-content space-y-4 pt-2 text-xs">
+              <div class="alert alert-info py-2 px-3 text-xs rounded-lg">
+                <span>
+                  <strong>Information :</strong> Le système effectue une mise à jour automatique s'il trouve un client existant avec le même numéro de téléphone.
+                </span>
+              </div>
+
+              <!-- Columns Table -->
+              <div class="overflow-x-auto">
+                <table class="table table-xs w-full bg-base-100 rounded-lg">
+                  <thead>
+                    <tr class="bg-base-200 text-base-content/80">
+                      <th>Nom de colonne (FR / EN)</th>
+                      <th>Obligatoire ?</th>
+                      <th>Valeurs acceptées / Exemples</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold text-primary">Téléphone / phoneE164</td>
+                      <td><span class="badge badge-error badge-xs font-semibold">Obligatoire</span></td>
+                      <td class="font-mono text-xs">+221770000000</td>
+                      <td>Numéro au format international. Utilisé comme identifiant unique.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Type / type</td>
+                      <td><span class="badge badge-ghost badge-xs">Optionnel</span></td>
+                      <td class="font-mono text-xs">individual ou business</td>
+                      <td>Par défaut <code>individual</code>. Indique s'il s'agit d'un particulier ou d'une entreprise.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Prénom / firstName</td>
+                      <td><span class="badge badge-warning badge-xs font-semibold">Requis si Particulier</span></td>
+                      <td>Jean, Fatou, etc.</td>
+                      <td>Prénom du client particulier.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Nom / lastName</td>
+                      <td><span class="badge badge-warning badge-xs font-semibold">Requis si Particulier</span></td>
+                      <td>Dupont, Ndiaye, etc.</td>
+                      <td>Nom de famille du client particulier.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Entreprise / companyName</td>
+                      <td><span class="badge badge-warning badge-xs font-semibold">Requis si Entreprise</span></td>
+                      <td>Tech SARL, Agro SA, etc.</td>
+                      <td>Raison sociale pour une entreprise.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Personne de contact / contactPersonName</td>
+                      <td><span class="badge badge-ghost badge-xs">Optionnel</span></td>
+                      <td>M. Fall, Alice Diop</td>
+                      <td>Nom de l'interlocuteur principal dans l'entreprise.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Email / email</td>
+                      <td><span class="badge badge-ghost badge-xs">Optionnel</span></td>
+                      <td class="font-mono text-xs">client&#64;example.com</td>
+                      <td>Adresse e-mail valide.</td>
+                    </tr>
+                    <tr class="border-b border-base-200">
+                      <td class="font-bold">Opt-in SMS / WhatsApp / Email</td>
+                      <td><span class="badge badge-ghost badge-xs">Optionnel</span></td>
+                      <td class="font-mono text-xs">oui, non, yes, no, 1, 0</td>
+                      <td>Consentement de réception des notifications sur chaque canal.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- File Upload Drag & Drop Area -->
+        @if (!currentJob()) {
+          <div
+            class="border-2 border-dashed rounded-2xl p-8 text-center transition-all bg-base-100 cursor-pointer hover:border-primary"
+            [class.border-primary]="isDragging()"
+            [class.bg-primary/5]="isDragging()"
+            [class.border-base-300]="!isDragging()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            <input
+              type="file"
+              id="excel-file-input"
+              accept=".xlsx, .xls, .csv"
+              class="hidden"
+              (change)="onFileSelected($event)"
+            />
+            <label for="excel-file-input" class="cursor-pointer flex flex-col items-center justify-center gap-3">
+              <div class="p-4 bg-primary/10 text-primary rounded-full">
+                <hugeicons-icon [icon]="FileUploadIcon" [size]="32" [strokeWidth]="2" />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-base-content">
+                  Glissez-déposez votre fichier Excel / CSV ici
+                </p>
+                <p class="text-xs text-base-content/60 mt-1">
+                  Formats pris en charge : .xlsx, .xls, .csv
+                </p>
+              </div>
+              @if (selectedFile()) {
+                <div class="badge badge-primary badge-lg gap-2 py-3 px-4">
+                  <hugeicons-icon [icon]="FileUploadIcon" [size]="16" [strokeWidth]="2" />
+                  {{ selectedFile()?.name }}
+                </div>
+              }
+            </label>
+
+            @if (selectedFile()) {
+              <div class="mt-6 flex justify-center gap-3">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  (click)="selectedFile.set(null)"
+                >
+                  Changer de fichier
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm gap-2"
+                  [disabled]="uploading()"
+                  (click)="startImport()"
+                >
+                  @if (uploading()) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                    Démarrage...
+                  } @else {
+                    <hugeicons-icon [icon]="FileUploadIcon" [size]="16" [strokeWidth]="2" />
+                    Lancer l'importation en arrière-plan
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Active Background Job Progress & Results Section -->
+        @if (currentJob()) {
+          @let job = currentJob()!;
+          <div class="space-y-6">
+            <!-- Job Header & Progress Card -->
+            <div class="bg-base-100 p-6 rounded-2xl border border-base-200 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-base-content text-base">{{ job.filename }}</span>
+                    <span
+                      class="badge badge-sm font-semibold uppercase"
+                      [class.badge-warning]="job.status === 'processing' || job.status === 'pending'"
+                      [class.badge-success]="job.status === 'completed' && job.errorCount === 0"
+                      [class.badge-error]="job.status === 'failed' || (job.status === 'completed' && job.errorCount > 0)"
+                    >
+                      {{ job.status === 'processing' ? 'En cours d\'exécution' : job.status }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-base-content/70 mt-1">
+                    {{ job.processedRows }} sur {{ job.totalRows }} lignes traitées en arrière-plan
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm gap-2"
+                    (click)="resetImport()"
+                  >
+                    <hugeicons-icon [icon]="RefreshIcon" [size]="16" [strokeWidth]="2" />
+                    Nouvel import
+                  </button>
+                </div>
+              </div>
+
+              <!-- Progress bar -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-xs font-semibold text-base-content/80">
+                  <span>Progression : {{ job.progressPercentage }}%</span>
+                  <span>{{ job.processedRows }}/{{ job.totalRows }}</span>
+                </div>
+                <progress
+                  class="progress progress-primary w-full h-3"
+                  [value]="job.progressPercentage"
+                  max="100"
+                ></progress>
+              </div>
+
+              <!-- Summary Metrics Cards -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="bg-base-200/50 p-3 rounded-xl border border-base-200 text-center">
+                  <span class="text-xs text-base-content/70 block">Total Lignes</span>
+                  <span class="text-lg font-black text-base-content">{{ job.totalRows }}</span>
+                </div>
+                <div class="bg-success/10 p-3 rounded-xl border border-success/20 text-center">
+                  <span class="text-xs text-success font-semibold block">Créés</span>
+                  <span class="text-lg font-black text-success">{{ job.successCount }}</span>
+                </div>
+                <div class="bg-info/10 p-3 rounded-xl border border-info/20 text-center">
+                  <span class="text-xs text-info font-semibold block">Mis à jour</span>
+                  <span class="text-lg font-black text-info">{{ job.updatedCount }}</span>
+                </div>
+                <div class="bg-error/10 p-3 rounded-xl border border-error/20 text-center">
+                  <span class="text-xs text-error font-semibold block">En Erreur</span>
+                  <span class="text-lg font-black text-error">{{ job.errorCount }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detailed Results & Inline Correction Table -->
+            <div class="bg-base-100 rounded-2xl border border-base-200 shadow-xs overflow-hidden">
+              <div class="p-4 border-b border-base-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-base-200/30">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-bold text-base-content">Rapport détaillé des lignes</h3>
+                  <span class="badge badge-neutral badge-sm">{{ job.results.length }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="join">
+                    <button
+                      type="button"
+                      class="btn btn-xs join-item"
+                      [class.btn-active]="errorFilter() === 'all'"
+                      (click)="errorFilter.set('all')"
+                    >
+                      Toutes
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-xs join-item"
+                      [class.btn-active]="errorFilter() === 'errors_only'"
+                      (click)="errorFilter.set('errors_only')"
+                    >
+                      Erreurs ({{ job.errorCount }})
+                    </button>
+                  </div>
+                  @if (job.errorCount > 0) {
+                    <button
+                      type="button"
+                      class="btn btn-error btn-xs gap-1"
+                      [disabled]="retryingAll()"
+                      (click)="retryAllErrors()"
+                    >
+                      @if (retryingAll()) {
+                        <span class="loading loading-spinner loading-xs"></span>
+                      } @else {
+                        <hugeicons-icon [icon]="RefreshIcon" [size]="14" [strokeWidth]="2" />
+                      }
+                      Réessayer les erreurs
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Table list -->
+              <div class="overflow-x-auto">
+                <table class="table table-xs sm:table-sm w-full">
+                  <thead>
+                    <tr class="bg-base-200/50 text-base-content/70">
+                      <th class="w-12 text-center">Ligne</th>
+                      <th class="w-28">Statut</th>
+                      <th>Type / Nom / Entreprise</th>
+                      <th>Téléphone E.164</th>
+                      <th>Email</th>
+                      <th class="w-24 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (res of job.results; track res.row) {
+                      @if (errorFilter() === 'all' || res.status === 'error') {
+                        <tr
+                          class="hover:bg-base-200/40 border-b border-base-200/60"
+                          [class.bg-error/5]="res.status === 'error'"
+                        >
+                          <td class="font-bold text-center text-base-content/80">#{{ res.row }}</td>
+                          <td>
+                            @if (res.status === 'success') {
+                              <span class="badge badge-success badge-sm gap-1">
+                                <hugeicons-icon [icon]="CheckmarkCircle02Icon" [size]="12" [strokeWidth]="2" />
+                                Créé
+                              </span>
+                            } @else if (res.status === 'updated') {
+                              <span class="badge badge-info badge-sm gap-1">
+                                <hugeicons-icon [icon]="CheckmarkCircle02Icon" [size]="12" [strokeWidth]="2" />
+                                Mis à jour
+                              </span>
+                            } @else {
+                              <span class="badge badge-error badge-sm gap-1">
+                                <hugeicons-icon [icon]="Cancel01Icon" [size]="12" [strokeWidth]="2" />
+                                Erreur
+                              </span>
+                            }
+                          </td>
+
+                          <!-- Editable Data for Error Rows, Display for Success -->
+                          @if (res.status === 'error') {
+                            @let editData = editedRowDataMap()[res.row] || res.data;
+                            <td class="space-y-1 py-2">
+                              <div class="flex gap-2">
+                                <select
+                                  class="select select-xs select-bordered shrink-0"
+                                  [ngModel]="editData.type || 'individual'"
+                                  (ngModelChange)="updateRowField(res.row, 'type', $event)"
+                                >
+                                  <option value="individual">Particulier</option>
+                                  <option value="business">Entreprise</option>
+                                </select>
+
+                                @if (editData.type === 'business') {
+                                  <input
+                                    type="text"
+                                    class="input input-xs input-bordered w-full"
+                                    placeholder="Nom entreprise"
+                                    [ngModel]="editData.companyName || ''"
+                                    (ngModelChange)="updateRowField(res.row, 'companyName', $event)"
+                                  />
+                                } @else {
+                                  <input
+                                    type="text"
+                                    class="input input-xs input-bordered w-1/2"
+                                    placeholder="Prénom"
+                                    [ngModel]="editData.firstName || ''"
+                                    (ngModelChange)="updateRowField(res.row, 'firstName', $event)"
+                                  />
+                                  <input
+                                    type="text"
+                                    class="input input-xs input-bordered w-1/2"
+                                    placeholder="Nom"
+                                    [ngModel]="editData.lastName || ''"
+                                    (ngModelChange)="updateRowField(res.row, 'lastName', $event)"
+                                  />
+                                }
+                              </div>
+                              <span class="text-[11px] text-error font-medium block">
+                                {{ res.message }}
+                              </span>
+                            </td>
+                            <td class="py-2">
+                              <input
+                                type="text"
+                                class="input input-xs input-bordered w-full font-mono text-xs"
+                                placeholder="+221770000000"
+                                [ngModel]="editData.phoneE164 || ''"
+                                (ngModelChange)="updateRowField(res.row, 'phoneE164', $event)"
+                              />
+                            </td>
+                            <td class="py-2">
+                              <input
+                                type="email"
+                                class="input input-xs input-bordered w-full text-xs"
+                                placeholder="email@exemple.com"
+                                [ngModel]="editData.email || ''"
+                                (ngModelChange)="updateRowField(res.row, 'email', $event)"
+                              />
+                            </td>
+                            <td class="text-right py-2">
+                              <button
+                                type="button"
+                                class="btn btn-primary btn-xs gap-1"
+                                [disabled]="retryingRow() === res.row"
+                                (click)="retrySingleRow(res)"
+                              >
+                                @if (retryingRow() === res.row) {
+                                  <span class="loading loading-spinner loading-xs"></span>
+                                } @else {
+                                  <hugeicons-icon [icon]="RefreshIcon" [size]="12" [strokeWidth]="2" />
+                                }
+                                Réessayer
+                              </button>
+                            </td>
+                          } @else {
+                            <td class="font-medium text-base-content">
+                              {{ res.data.type === 'business' ? res.data.companyName : ((res.data.firstName || '') + ' ' + (res.data.lastName || '')) }}
+                            </td>
+                            <td class="font-mono text-xs text-base-content/80">{{ res.data.phoneE164 }}</td>
+                            <td class="text-xs text-base-content/80">{{ res.data.email || '-' }}</td>
+                            <td class="text-right text-xs text-success font-semibold">
+                              {{ res.message }}
+                            </td>
+                          }
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
   }
 </section>

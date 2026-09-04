@@ -63,6 +63,14 @@ export class Api {
     );
   }
 
+  getBlob(path: string): Observable<Blob> {
+    return this.pipeErrors(
+      this.http.get(this.buildUrl(path), {
+        responseType: 'blob',
+      }),
+    );
+  }
+
   post<T>(path: string, body: unknown, options?: ApiRequestOptions): Observable<T> {
     const { headerOverrides, httpOptions } = this.splitOptions(options);
     return this.pipeErrors(
