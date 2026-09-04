@@ -52,6 +52,8 @@ export class Lookup implements OnInit {
   // NOUVEAU : quand un selectedId est fourni et que l'item correspondant a été
   // trouvé, la valeur reste verrouillée (non modifiable/déselectionnable) par défaut.
   readonly lockValueWhenFound = input(true);
+  readonly clearOnSelect = input(false);
+  readonly inputId = input('lookup-input');
 
   readonly selectedItemEvent = output<LookupModel | AutocompleteModel | null>();
 
@@ -371,8 +373,16 @@ export class Lookup implements OnInit {
   }
 
   protected setSelectedItem(item: LookupModel | AutocompleteModel): void {
-    this.selectedItem.set(item);
     this.selectedItemEvent.emit(item);
+    if (this.clearOnSelect()) {
+      this.selectedItem.set(null);
+      this.searchTerm.set('');
+      this.debouncedSearch.set('');
+      this.lookupTerm.set('');
+      this.resetAutocompletePagination();
+    } else {
+      this.selectedItem.set(item);
+    }
     this.showAutoComplete.set(false);
     this.activeOptionIndex.set(-1);
   }

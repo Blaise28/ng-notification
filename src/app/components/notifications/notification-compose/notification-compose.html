@@ -1,372 +1,799 @@
-<section class="p-6 max-w-3xl mx-auto">
-  <h1 tabindex="-1" class="text-xl font-bold text-primary mb-6">Envoyer une notification</h1>
+<div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
+  <!-- Top Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-base-200 to-base-100 p-6 rounded-2xl border border-primary/20 shadow-xs backdrop-blur-xs">
+    <div class="flex items-center gap-4">
+      <div class="p-3 bg-primary text-primary-content rounded-xl shadow-md flex items-center justify-center">
+        <hugeicons-icon [icon]="Megaphone02Icon" [size]="28" [strokeWidth]="2" />
+      </div>
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-base-content flex items-center gap-2">
+          Envoyer une Notification
+          <span class="badge badge-accent badge-sm font-semibold gap-1">
+            <hugeicons-icon [icon]="ZapIcon" [size]="12" [strokeWidth]="2.5" />
+            Envoi Rapide
+          </span>
+        </h1>
+        <p class="text-sm text-base-content/70 mt-0.5">
+          Créez et envoyez facilement vos campagnes de notification ciblées à tous vos destinataires.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a routerLink="/notifications" class="btn btn-ghost btn-sm gap-2">
+        <hugeicons-icon [icon]="ArrowLeft02Icon" [size]="16" [strokeWidth]="2" />
+        Historique
+      </a>
+    </div>
+  </div>
 
-  <form (submit)="submit($event)" class="flex flex-col gap-4">
-    <fieldset class="fieldset card bg-base-200 p-3">
-      <legend class="fieldset-legend text-sm text-primary/90 px-2">Destinataires</legend>
+  <!-- Step Wizard Progress Bar -->
+  <div class="card bg-base-100 border border-base-200 shadow-sm p-4">
+    <ul class="steps steps-horizontal w-full">
+      <li
+        class="step cursor-pointer text-xs sm:text-sm font-medium transition-colors"
+        [class.step-primary]="currentStep() >= 1"
+        (click)="setStep(1)"
+        tabindex="0"
+        (keydown.enter)="setStep(1)"
+        (keydown.space)="setStep(1)"
+      >
+        <span class="flex items-center gap-1.5">
+          <hugeicons-icon [icon]="UserGroupIcon" [size]="16" [strokeWidth]="2" />
+          1. Audience & Cible
+        </span>
+      </li>
+      <li
+        class="step cursor-pointer text-xs sm:text-sm font-medium transition-colors"
+        [class.step-primary]="currentStep() >= 2"
+        (click)="setStep(2)"
+        tabindex="0"
+        (keydown.enter)="setStep(2)"
+        (keydown.space)="setStep(2)"
+      >
+        <span class="flex items-center gap-1.5">
+          <hugeicons-icon [icon]="FilterIcon" [size]="16" [strokeWidth]="2" />
+          2. Canaux & Modèles
+        </span>
+      </li>
+      <li
+        class="step cursor-pointer text-xs sm:text-sm font-medium transition-colors"
+        [class.step-primary]="currentStep() >= 3"
+        (click)="setStep(3)"
+        tabindex="0"
+        (keydown.enter)="setStep(3)"
+        (keydown.space)="setStep(3)"
+      >
+        <span class="flex items-center gap-1.5">
+          <hugeicons-icon [icon]="EyeIcon" [size]="16" [strokeWidth]="2" />
+          3. Aperçu & Envoi
+        </span>
+      </li>
+    </ul>
+  </div>
 
-      <div class="flex gap-3 mb-2 flex-wrap">
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="radio"
-            name="target-mode"
-            class="radio radio-xs"
-            [checked]="targetMode() === 'clients'"
-            (change)="targetMode.set('clients')"
-          />
-          Clients sélectionnés
+  <!-- STEP 1: AUDIENCE & TARGET SELECTION -->
+  @if (currentStep() === 1) {
+    <div class="space-y-6">
+      <!-- Target Mode Selection Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Target Mode: Clients -->
+        <label
+          class="card bg-base-100 border transition-all duration-200 cursor-pointer hover:shadow-md relative overflow-hidden"
+          [class.border-primary]="targetMode() === 'clients'"
+          [class.ring-2]="targetMode() === 'clients'"
+          [class.ring-primary/40]="targetMode() === 'clients'"
+          [class.border-base-200]="targetMode() !== 'clients'"
+          for="target-mode-clients"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-primary/10 text-primary">
+                <hugeicons-icon [icon]="UserIcon" [size]="20" [strokeWidth]="2" />
+              </div>
+              <input
+                type="radio"
+                id="target-mode-clients"
+                name="target-mode"
+                class="radio radio-primary radio-sm"
+                [checked]="targetMode() === 'clients'"
+                (change)="targetMode.set('clients')"
+                aria-label="Clients sélectionnés"
+              />
+            </div>
+            <h3 class="text-base font-bold text-base-content mt-3">Clients sélectionnés</h3>
+            <p class="text-xs text-base-content/70 mt-1">
+              Choix manuel et ciblé de clients précis dans votre base.
+            </p>
+            @if (selectedClientIds().length > 0) {
+              <div class="mt-3">
+                <span class="badge badge-primary badge-sm font-medium">
+                  {{ selectedClientIds().length }} client(s) choisi(s)
+                </span>
+              </div>
+            }
+          </div>
         </label>
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="radio"
-            name="target-mode"
-            class="radio radio-xs"
-            [checked]="targetMode() === 'filter'"
-            (change)="targetMode.set('filter')"
-          />
-          Filtrer par type
+
+        <!-- Target Mode: Filter -->
+        <label
+          class="card bg-base-100 border transition-all duration-200 cursor-pointer hover:shadow-md relative overflow-hidden"
+          [class.border-primary]="targetMode() === 'filter'"
+          [class.ring-2]="targetMode() === 'filter'"
+          [class.ring-primary/40]="targetMode() === 'filter'"
+          [class.border-base-200]="targetMode() !== 'filter'"
+          for="target-mode-filter"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-secondary/10 text-secondary">
+                <hugeicons-icon [icon]="FilterIcon" [size]="20" [strokeWidth]="2" />
+              </div>
+              <input
+                type="radio"
+                id="target-mode-filter"
+                name="target-mode"
+                class="radio radio-primary radio-sm"
+                [checked]="targetMode() === 'filter'"
+                (change)="targetMode.set('filter')"
+                aria-label="Filtrer par type"
+              />
+            </div>
+            <h3 class="text-base font-bold text-base-content mt-3">Filtrer par Segment</h3>
+            <p class="text-xs text-base-content/70 mt-1">
+              Ciblez des sous-groupes (ex. Entreprises, Particuliers).
+            </p>
+            @if (filterType()) {
+              <div class="mt-3">
+                <span class="badge badge-secondary badge-sm font-medium capitalize">
+                  {{ filterType() === 'individual' ? 'Particuliers' : 'Entreprises' }}
+                </span>
+              </div>
+            }
+          </div>
         </label>
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="radio"
-            name="target-mode"
-            class="radio radio-xs"
-            [checked]="targetMode() === 'broadcast'"
-            (change)="targetMode.set('broadcast')"
-          />
-          Diffuser à tous
+
+        <!-- Target Mode: Broadcast -->
+        <label
+          class="card bg-base-100 border transition-all duration-200 cursor-pointer hover:shadow-md relative overflow-hidden"
+          [class.border-primary]="targetMode() === 'broadcast'"
+          [class.ring-2]="targetMode() === 'broadcast'"
+          [class.ring-primary/40]="targetMode() === 'broadcast'"
+          [class.border-base-200]="targetMode() !== 'broadcast'"
+          for="target-mode-broadcast"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-accent/10 text-accent">
+                <hugeicons-icon [icon]="ZapIcon" [size]="20" [strokeWidth]="2" />
+              </div>
+              <input
+                type="radio"
+                id="target-mode-broadcast"
+                name="target-mode"
+                class="radio radio-primary radio-sm"
+                [checked]="targetMode() === 'broadcast'"
+                (change)="targetMode.set('broadcast')"
+                aria-label="Diffuser à tous"
+              />
+            </div>
+            <h3 class="text-base font-bold text-base-content mt-3">Diffuser à Tous (1000+)</h3>
+            <p class="text-xs text-base-content/70 mt-1">
+              Envoi massif simultané à l'intégralité de la base de clients opt-in.
+            </p>
+            <div class="mt-3">
+              <span class="badge badge-outline badge-accent badge-sm font-semibold">
+                Toute la base
+              </span>
+            </div>
+          </div>
         </label>
       </div>
 
+      <!-- Mode 1 Detail: Clients Autocomplete Search & Selected List Below -->
       @if (targetMode() === 'clients') {
-        @if (selectedClientObjects().length > 0) {
-          <div class="flex items-center justify-between gap-2 mb-1">
-            <p class="text-xs text-base-content/60">
-              {{ selectedClientObjects().length }} sélectionné(s)
-            </p>
-            <button type="button" class="btn btn-ghost btn-xs" (click)="clearSelectedClients()">
-              Tout désélectionner
-            </button>
-          </div>
-          <div class="flex flex-wrap gap-1.5 mb-2 max-h-20 overflow-y-auto">
-            @for (client of selectedClientObjects(); track client.id) {
+        <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-base-200">
+            <div>
+              <h2 class="text-base font-bold text-base-content flex items-center gap-2">
+                <hugeicons-icon [icon]="UserGroupIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+                Sélection des Destinataires
+              </h2>
+              <p class="text-xs text-base-content/60">
+                Recherchez les clients dans votre base et ajoutez-les à la liste des destinataires ci-dessous.
+              </p>
+            </div>
+            @if (selectedClientObjects().length > 0) {
               <button
                 type="button"
-                class="badge badge-primary badge-sm gap-1"
-                (click)="toggleClient(client)"
-                title="Retirer ce client"
+                class="btn btn-ghost btn-xs text-error gap-1 self-start sm:self-auto font-medium"
+                (click)="clearSelectedClients()"
               >
-                {{ client.displayName }}
-                <span aria-hidden="true">✕</span>
-                <span class="sr-only">Retirer {{ client.displayName }}</span>
+                <hugeicons-icon [icon]="Cancel01Icon" [size]="14" [strokeWidth]="2" />
+                Tout vider ({{ selectedClientObjects().length }})
               </button>
             }
           </div>
-        }
 
-        <input
-          type="search"
-          class="input input-sm w-full mb-1"
-          placeholder="Rechercher par nom, e-mail, téléphone…"
-          [value]="clientSearch()"
-          (input)="onClientSearch($any($event.target).value)"
-          aria-label="Rechercher un client"
-          aria-controls="client-search-results"
-          [attr.aria-busy]="clientsLoading()"
-        />
+          <!-- Autocomplete Component Bar -->
+          <div class="space-y-1.5 bg-base-200/50 p-4 rounded-2xl border border-base-200 shadow-2xs">
+            <label for="clients-lookup" class="text-xs font-extrabold text-base-content/80 flex items-center gap-1.5">
+              <hugeicons-icon [icon]="Search01Icon" [size]="14" [strokeWidth]="2" class="text-primary" />
+              Rechercher et ajouter un client :
+            </label>
+            <app-lookup
+              [url]="clientAutocompleteUrl"
+              label="Nom, e-mail, SIRET ou numéro de téléphone..."
+              option="autocomplete"
+              [pageSize]="20"
+              [clearOnSelect]="true"
+              inputId="clients-lookup"
+              (selectedItemEvent)="onClientAutocompleteSelected($event)"
+            />
+          </div>
 
-        @if (!clientSearch().trim() && clientsTotal() > clientSearchLimit) {
-          <p class="text-xs text-info mb-1">
-            {{ clientsTotal() }} clients au total — affinez la recherche pour trouver quelqu'un
-            précis, ou utilisez « Filtrer par type »/« Diffuser à tous » pour cibler un grand
-            nombre de destinataires.
-          </p>
-        }
-
-        <div class="flex items-center justify-between gap-2 mb-1">
-          <p class="text-xs text-base-content/60">
-            @if (!clientsLoading()) {
-              {{ clients().length }}{{ clientsTotal() > clients().length ? ' sur ' + clientsTotal() : '' }} affiché(s)
-            }
-          </p>
-          @if (clients().length > 0) {
-            <button type="button" class="btn btn-ghost btn-xs" (click)="selectAllDisplayed()">
-              Tout sélectionner
-            </button>
-          }
-        </div>
-
-        <div
-          id="client-search-results"
-          class="max-h-40 overflow-y-auto border border-base-300 rounded-lg p-1"
-          role="listbox"
-          aria-label="Résultats de recherche clients"
-          aria-multiselectable="true"
-        >
-          @if (clientsLoading()) {
-            <p class="text-xs text-base-content/60 px-2 py-1.5">Recherche…</p>
-          } @else if (displayedClients().length === 0) {
-            <p class="text-xs text-base-content/60 px-2 py-1.5">Aucun client trouvé</p>
-          } @else {
-            @for (client of displayedClients(); track client.id) {
-              <label
-                class="flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer hover:bg-base-300"
-              >
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-xs"
-                  role="option"
-                  [attr.aria-selected]="selectedClientIds().includes(client.id)"
-                  [checked]="selectedClientIds().includes(client.id)"
-                  (change)="toggleClient(client)"
-                />
-                <span class="flex flex-col items-start leading-tight">
-                  <span>{{ client.displayName }}</span>
-                  @if (client.email || client.phoneE164) {
-                    <span class="text-xs text-base-content/60">
-                      {{ client.email || client.phoneE164 }}
-                    </span>
-                  }
+          <!-- Selected Clients Displayed Below in flex-wrap gap-4 with max height scroll -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold text-base-content/70">
+              <span class="flex items-center gap-2">
+                Clients Sélectionnés
+                <span class="badge badge-primary badge-sm font-semibold">{{ selectedClientObjects().length }}</span>
+              </span>
+              @if (selectedClientObjects().length > 0) {
+                <span class="text-success flex items-center gap-1">
+                  <hugeicons-icon [icon]="CheckmarkCircleIcon" [size]="14" [strokeWidth]="2.5" />
+                  Prêt pour l'envoi
                 </span>
-              </label>
-            }
-          }
-        </div>
-
-        @if (hasMoreClients() && !clientsLoading()) {
-          <button
-            type="button"
-            class="btn btn-ghost btn-xs w-full mt-1"
-            [disabled]="clientsLoadingMore()"
-            (click)="loadMoreClients()"
-          >
-            Charger plus ({{ clientsTotal() - clients().length }} restant(s))
-            @if (clientsLoadingMore()) {
-              <span class="loading loading-xs ms-1"></span>
-            }
-          </button>
-        }
-      }
-
-      @if (targetMode() === 'filter') {
-        <label class="fieldset-legend text-sm" for="filter-type">Type de client</label>
-        <select
-          id="filter-type"
-          class="select select-sm w-full"
-          [value]="filterType()"
-          (change)="filterType.set($any($event.target).value)"
-        >
-          <option value="">Sélectionner…</option>
-          <option value="individual">Particulier</option>
-          <option value="business">Entreprise</option>
-        </select>
-      }
-
-      @if (targetMode() === 'broadcast') {
-        <div role="alert" class="alert alert-warning text-xs py-2 mb-2">
-          Cette action enverra la notification à <strong>tous</strong> les clients opt-in. Cette
-          action est irréversible.
-        </div>
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="checkbox"
-            class="checkbox checkbox-xs checkbox-warning"
-            [checked]="broadcastConfirmed()"
-            (change)="broadcastConfirmed.set($any($event.target).checked)"
-          />
-          Je comprends et confirme la diffusion à tous les clients
-        </label>
-      }
-    </fieldset>
-
-    <fieldset class="fieldset card bg-base-200 p-3">
-      <legend class="fieldset-legend text-sm text-primary/90 px-2">Canaux <code>*</code></legend>
-      <div class="flex gap-3 flex-wrap">
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="checkbox"
-            class="checkbox checkbox-xs"
-            [checked]="selectedChannels().includes('email')"
-            (change)="toggleChannel('email')"
-          />
-          E-mail
-        </label>
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="checkbox"
-            class="checkbox checkbox-xs"
-            [checked]="selectedChannels().includes('sms')"
-            (change)="toggleChannel('sms')"
-          />
-          SMS
-        </label>
-      </div>
-    </fieldset>
-
-    <fieldset class="fieldset card bg-base-200 p-3">
-      <legend class="fieldset-legend text-sm text-primary/90 px-2">Contenu</legend>
-
-      <div class="flex gap-3 mb-2 flex-wrap">
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="radio"
-            name="content-source"
-            class="radio radio-xs"
-            [checked]="contentSource() === 'template'"
-            (change)="contentSource.set('template')"
-          />
-          Utiliser un modèle
-        </label>
-        <label class="label gap-1.5 text-sm">
-          <input
-            type="radio"
-            name="content-source"
-            class="radio radio-xs"
-            [checked]="contentSource() === 'custom'"
-            (change)="contentSource.set('custom')"
-          />
-          Contenu personnalisé
-        </label>
-      </div>
-
-      @if (contentSource() === 'template') {
-        <div class="flex flex-col gap-3 mb-3">
-          @for (channel of selectedChannels(); track channel) {
-            <div>
-              <label class="fieldset-legend text-sm" [attr.for]="'template-' + channel">
-                Modèle {{ channel }}
-              </label>
-              <select
-                class="select select-sm w-full"
-                [id]="'template-' + channel"
-                [value]="templateIds()[channel] ?? ''"
-                (change)="setTemplateForChannel(channel, $any($event.target).value)"
-              >
-                <option value="">Sélectionner…</option>
-                @for (template of templatesByChannel()[channel]; track template.id) {
-                  <option [value]="template.id">{{ template.name }}</option>
-                }
-              </select>
-            </div>
-          }
-          @if (selectedChannels().length === 0) {
-            <p class="text-sm text-base-content/60">Sélectionnez d'abord un canal.</p>
-          }
-        </div>
-
-        @if (customVariableTokens().length > 0) {
-          <div class="mb-3">
-            <p class="text-sm text-secondary mb-1">Variables personnalisées</p>
-            <p class="text-xs text-base-content/60 mb-2">
-              Aucune valeur destinataire disponible pour ces variables — la même valeur sera
-              envoyée à tous.
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              @for (token of customVariableTokens(); track token) {
-                <label class="fieldset">
-                  <span class="fieldset-legend text-xs">{{ labelFor(token) }}</span>
-                  <input
-                    type="text"
-                    class="input input-sm w-full"
-                    [value]="variables()[token] ?? ''"
-                    (input)="setVariable(token, $any($event.target).value)"
-                  />
-                </label>
               }
             </div>
-          </div>
-        }
 
-        @if (selectedTemplates().length > 0) {
-          <div class="mb-3">
-            @for (template of selectedTemplates(); track template.id) {
-              <app-template-preview
-                class="mb-3 block"
-                [channel]="template.channel"
-                [subject]="template.subject ?? ''"
-                [htmlBody]="template.htmlBody ?? ''"
-                [css]="template.css ?? ''"
-                [smsBody]="template.smsBody ?? ''"
-                [whatsappTemplateName]="template.whatsappTemplateName ?? ''"
-                [whatsappTemplateLanguage]="template.whatsappTemplateLanguage ?? 'fr_FR'"
-                [whatsappVariableKeys]="template.whatsappVariableKeys ?? []"
-                [variables]="previewVariables()"
-                [title]="'Aperçu — ' + template.name"
-              />
+            @if (selectedClientObjects().length === 0) {
+              <div class="p-8 text-center bg-base-200/30 rounded-2xl border border-dashed border-base-300 space-y-2">
+                <hugeicons-icon [icon]="UserIcon" [size]="36" [strokeWidth]="1.5" class="mx-auto text-base-content/30" />
+                <p class="text-sm font-semibold text-base-content/70">Aucun destinataire sélectionné</p>
+                <p class="text-xs text-base-content/50 max-w-md mx-auto">
+                  Recherchez et choisissez un ou plusieurs clients dans le champ ci-dessus.
+                </p>
+              </div>
+            } @else {
+              <!-- Scrollable container with fixed max height and flex-wrap gap-4 -->
+              <div class="p-3 bg-base-200/30 rounded-2xl border border-base-200 max-h-72 overflow-y-auto">
+                <div class="flex flex-wrap gap-4">
+                  @for (client of selectedClientObjects(); track client.id) {
+                    <div
+                      class="flex items-center gap-3 bg-base-100 border border-base-300/80 hover:border-primary/50 hover:shadow-xs p-2.5 pe-3 rounded-xl transition-all"
+                    >
+                      <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0">
+                        {{ client.displayName.substring(0, 1).toUpperCase() }}
+                      </div>
+
+                      <div class="min-w-0 max-w-45">
+                        <div class="font-bold text-xs text-base-content truncate flex items-center gap-1.5" [title]="client.displayName">
+                          <span class="truncate">{{ client.displayName }}</span>
+                          <span
+                            class="badge badge-xs text-[10px] font-medium shrink-0"
+                            [class.badge-secondary]="client.type === 'business'"
+                            [class.badge-ghost]="client.type === 'individual'"
+                          >
+                            {{ client.type === 'business' ? 'Ent.' : 'Part.' }}
+                          </span>
+                        </div>
+                        <div class="text-[11px] text-base-content/60 truncate" [title]="client.email || client.phoneE164 || ''">
+                          {{ client.email || client.phoneE164 || 'Aucun contact' }}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-circle btn-xs text-base-content/40 hover:text-error hover:bg-error/10 shrink-0 ms-1"
+                        (click)="removeClient(client.id)"
+                        [attr.aria-label]="'Retirer ' + client.displayName"
+                        title="Retirer ce destinataire"
+                      >
+                        <hugeicons-icon [icon]="Cancel01Icon" [size]="14" [strokeWidth]="2" />
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Mode 2 Detail: Segment Filter Configuration -->
+      @if (targetMode() === 'filter') {
+        <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+          <h2 class="text-base font-bold text-base-content flex items-center gap-2">
+            <hugeicons-icon [icon]="FilterIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+            Paramètres du Filtre de Segment
+          </h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="label text-xs font-bold text-base-content/80 mb-1" for="filter-type">
+                Type de client <span class="text-error">*</span>
+              </label>
+              <select
+                id="filter-type"
+                class="select select-bordered select-md w-full rounded-xl"
+                [value]="filterType()"
+                (change)="filterType.set($any($event.target).value)"
+              >
+                <option value="">Sélectionner un type...</option>
+                <option value="individual">Particulier (Individuel)</option>
+                <option value="business">Entreprise (Business)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Mode 3 Detail: Broadcast Confirmation Warning -->
+      @if (targetMode() === 'broadcast') {
+        <div class="card bg-warning/10 border border-warning/30 p-5 space-y-3 rounded-2xl">
+          <div class="flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-warning/20 text-warning-content">
+              <hugeicons-icon [icon]="Alert02Icon" [size]="24" [strokeWidth]="2" />
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold text-base-content">
+                Confirmation de Diffusion globale (All Clients 1,000+)
+              </h2>
+              <p class="text-xs text-base-content/80 mt-1 leading-relaxed">
+                Cette opération va créer un envoi de masse en arrière-plan ciblant
+                <strong>tous les clients enregistrés</strong> possédant une autorisation d'opt-in valide pour les canaux choisis.
+              </p>
+            </div>
+          </div>
+
+          <label class="label gap-3 cursor-pointer justify-start bg-base-100 p-3 rounded-xl border border-warning/20">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-warning checkbox-md rounded-md"
+              [checked]="broadcastConfirmed()"
+              (change)="broadcastConfirmed.set($any($event.target).checked)"
+            />
+            <span class="text-xs font-bold text-base-content">
+              Je confirme vouloir envoyer cette notification à toute la base d'utilisateurs.
+            </span>
+          </label>
+        </div>
+      }
+
+      <!-- Audience Overview Summary Bar -->
+      <div class="bg-base-200/60 p-4 rounded-xl border border-base-200 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-primary/10 text-primary">
+            <hugeicons-icon [icon]="UserGroupIcon" [size]="20" [strokeWidth]="2" />
+          </div>
+          <div>
+            <span class="text-xs text-base-content/60 block">Estimation Audience</span>
+            <span class="text-base font-extrabold text-base-content">
+              ~{{ estimatedAudienceCount() }} Destinataire(s) ciblé(s)
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" class="btn btn-primary btn-md gap-2 rounded-xl" (click)="nextStep()">
+            Étape Suivante : Canaux & Modèles
+            <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" [strokeWidth]="2" />
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- STEP 2: CHANNELS & TEMPLATES CONTENT BUILDER -->
+  @if (currentStep() === 2) {
+    <div class="space-y-6">
+      <!-- Channel Selection Cards -->
+      <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+        <h2 class="text-base font-bold text-base-content flex items-center gap-2">
+          <hugeicons-icon [icon]="Megaphone02Icon" [size]="18" [strokeWidth]="2" class="text-primary" />
+          Choix des Canaux de Diffusion <span class="text-error">*</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Email Channel Card -->
+          <label
+            class="flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer"
+            [class.border-primary]="selectedChannels().includes('email')"
+            [class.bg-primary/5]="selectedChannels().includes('email')"
+            [class.border-base-200]="!selectedChannels().includes('email')"
+            for="channel-email"
+          >
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 rounded-lg bg-info/10 text-info">
+                <hugeicons-icon [icon]="Mail01Icon" [size]="22" [strokeWidth]="2" />
+              </div>
+              <div>
+                <span class="text-sm font-bold text-base-content block">E-mail</span>
+                <span class="text-xs text-base-content/60">
+                  Portée estimée: {{ selectedClientOptInStats().email }} client(s)
+                </span>
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              id="channel-email"
+              class="checkbox checkbox-primary checkbox-sm rounded-md"
+              [checked]="selectedChannels().includes('email')"
+              (change)="toggleChannel('email')"
+            />
+          </label>
+
+          <!-- SMS Channel Card -->
+          <label
+            class="flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer"
+            [class.border-primary]="selectedChannels().includes('sms')"
+            [class.bg-primary/5]="selectedChannels().includes('sms')"
+            [class.border-base-200]="!selectedChannels().includes('sms')"
+            for="channel-sms"
+          >
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 rounded-lg bg-warning/10 text-warning">
+                <hugeicons-icon [icon]="Comment01Icon" [size]="22" [strokeWidth]="2" />
+              </div>
+              <div>
+                <span class="text-sm font-bold text-base-content block">SMS</span>
+                <span class="text-xs text-base-content/60">
+                  Portée estimée: {{ selectedClientOptInStats().sms }} client(s)
+                </span>
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              id="channel-sms"
+              class="checkbox checkbox-primary checkbox-sm rounded-md"
+              [checked]="selectedChannels().includes('sms')"
+              (change)="toggleChannel('sms')"
+            />
+          </label>
+        </div>
+      </div>
+
+      <!-- Content Source Selector (Template vs Custom) -->
+      <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-base-200">
+          <h2 class="text-base font-bold text-base-content flex items-center gap-2">
+            <hugeicons-icon [icon]="FilterIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+            Source du Contenu
+          </h2>
+
+          <div class="join bg-base-200 p-1 rounded-xl">
+            <button
+              type="button"
+              class="join-item btn btn-sm border-0 font-medium rounded-lg"
+              [class.btn-primary]="contentSource() === 'template'"
+              [class.btn-ghost]="contentSource() !== 'template'"
+              (click)="contentSource.set('template')"
+            >
+              Modèles prédéfinis
+            </button>
+            <button
+              type="button"
+              class="join-item btn btn-sm border-0 font-medium rounded-lg"
+              [class.btn-primary]="contentSource() === 'custom'"
+              [class.btn-ghost]="contentSource() !== 'custom'"
+              (click)="contentSource.set('custom')"
+            >
+              Contenu sur-mesure
+            </button>
+          </div>
+        </div>
+
+        <!-- Template Mode: Selectors per channel -->
+        @if (contentSource() === 'template') {
+          <div class="space-y-4">
+            @for (channel of selectedChannels(); track channel) {
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-200 space-y-3">
+                <label class="text-xs font-bold text-base-content/80 flex items-center gap-2" [attr.for]="'template-' + channel">
+                  Modèle pour canal {{ channel.toUpperCase() }} <span class="text-error">*</span>
+                </label>
+                <div class="space-y-2">
+                  <app-lookup
+                    [url]="getTemplateAutocompleteUrl(channel)"
+                    [label]="'Recherche de modèle ' + channel.toUpperCase() + '...'"
+                    option="autocomplete"
+                    [selectedId]="templateIds()[channel] ?? null"
+                    (selectedItemEvent)="onTemplateAutocompleteSelected(channel, $event)"
+                  />
+                  <div class="text-xs text-base-content/50 italic flex items-center justify-between">
+                    <span>Ou sélectionnez dans la liste des modèles chargés :</span>
+                    <select
+                      [id]="'template-' + channel"
+                      class="select select-bordered select-xs rounded-lg"
+                      [value]="templateIds()[channel] ?? ''"
+                      (change)="setTemplateForChannel(channel, $any($event.target).value)"
+                    >
+                      <option value="">-- Choix dans la liste --</option>
+                      @for (tmpl of templatesByChannel()[channel]; track tmpl.id) {
+                        <option [value]="tmpl.id">
+                          {{ tmpl.name }} {{ tmpl.isDefault ? '(Par défaut)' : '' }}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Custom Variables Assistant -->
+            @if (customVariableTokens().length > 0) {
+              <div class="bg-info/10 border border-info/20 p-4 rounded-xl space-y-3">
+                <div class="flex items-center gap-2 text-info-content font-bold text-xs">
+                  <hugeicons-icon [icon]="Message02Icon" [size]="16" [strokeWidth]="2" />
+                  Variables de campagne personnalisées (Saisie uniforme pour les {{ estimatedAudienceCount() }} destinataires)
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  @for (token of customVariableTokens(); track token) {
+                    <div>
+                      <label [for]="'var-input-' + token" class="text-xs font-semibold text-base-content/80 block mb-1">
+                        {{ labelFor(token) }} ({{ token }})
+                      </label>
+                      <input
+                        type="text"
+                        [id]="'var-input-' + token"
+                        class="input input-bordered input-sm w-full rounded-lg"
+                        [placeholder]="'Valeur pour ' + token"
+                        [value]="variables()[token] ?? ''"
+                        (input)="setVariable(token, $any($event.target).value)"
+                      />
+                    </div>
+                  }
+                </div>
+              </div>
             }
           </div>
         }
-      }
 
-      @if (contentSource() === 'custom') {
-        @if (selectedChannels().includes('email')) {
-          <div class="mb-3">
-            <p class="text-sm font-medium mb-2">E-mail</p>
-            <input
-              type="text"
-              class="input w-full mb-2"
-              placeholder="Sujet"
-              [value]="emailSubject()"
-              (input)="emailSubject.set($any($event.target).value)"
-            />
-            <textarea
-              class="textarea w-full mb-2"
-              rows="4"
-              placeholder="Contenu HTML"
-              [value]="emailHtml()"
-              (input)="emailHtml.set($any($event.target).value)"
-            ></textarea>
-            <textarea
-              class="textarea w-full"
-              rows="2"
-              placeholder="Contenu texte (optionnel)"
-              [value]="emailText()"
-              (input)="emailText.set($any($event.target).value)"
-            ></textarea>
-          </div>
-        }
-        @if (selectedChannels().includes('sms')) {
-          <div class="mb-3">
-            <p class="text-sm font-medium mb-2">SMS</p>
-            <textarea
-              class="textarea w-full"
-              rows="3"
-              placeholder="Contenu du SMS"
-              [value]="smsBody()"
-              (input)="smsBody.set($any($event.target).value)"
-            ></textarea>
-          </div>
-        }
-        @if (selectedChannels().includes('whatsapp')) {
-          <div>
-            <p class="text-sm font-medium mb-2">WhatsApp</p>
-            <input
-              type="text"
-              class="input w-full mb-2"
-              placeholder="Nom du modèle Meta"
-              [value]="whatsappTemplateName()"
-              (input)="whatsappTemplateName.set($any($event.target).value)"
-            />
-            <input
-              type="text"
-              class="input w-full"
-              placeholder="Langue (ex. fr_FR, en_US)"
-              [value]="whatsappTemplateLanguage()"
-              (input)="whatsappTemplateLanguage.set($any($event.target).value)"
-            />
-          </div>
-        }
-      }
-    </fieldset>
+        <!-- Custom Content Mode: Direct Text Areas per Channel -->
+        @if (contentSource() === 'custom') {
+          <div class="space-y-4">
+            @if (selectedChannels().includes('email')) {
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-200 space-y-3">
+                <h3 class="text-xs font-bold text-base-content/90 flex items-center gap-2">
+                  <hugeicons-icon [icon]="Mail01Icon" [size]="16" [strokeWidth]="2" class="text-info" />
+                  Contenu E-mail Personnalisé
+                </h3>
+                <div>
+                  <input
+                    type="text"
+                    class="input input-bordered input-sm w-full rounded-lg font-medium"
+                    placeholder="Sujet de l'e-mail..."
+                    [value]="emailSubject()"
+                    (input)="emailSubject.set($any($event.target).value)"
+                  />
+                </div>
+                <div>
+                  <textarea
+                    class="textarea textarea-bordered w-full rounded-lg font-mono text-xs"
+                    rows="5"
+                    placeholder="Contenu HTML de l'e-mail..."
+                    [value]="emailHtml()"
+                    (input)="emailHtml.set($any($event.target).value)"
+                  ></textarea>
+                </div>
+              </div>
+            }
 
-    <div class="flex gap-3">
-      <button type="submit" class="btn btn-primary" [disabled]="submitLoading()">
-        Envoyer
-        @if (submitLoading()) {
-          <span class="loading loading-sm ms-2"></span>
+            @if (selectedChannels().includes('sms')) {
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-200 space-y-3">
+                <h3 class="text-xs font-bold text-base-content/90 flex items-center gap-2">
+                  <hugeicons-icon [icon]="Comment01Icon" [size]="16" [strokeWidth]="2" class="text-warning" />
+                  Contenu SMS Personnalisé
+                </h3>
+                <textarea
+                  class="textarea textarea-bordered w-full rounded-lg text-sm"
+                  rows="3"
+                  placeholder="Texte du message SMS (Max 160 caractères recommandés)..."
+                  [value]="smsBody()"
+                  (input)="smsBody.set($any($event.target).value)"
+                ></textarea>
+              </div>
+            }
+          </div>
         }
-      </button>
-      <a routerLink="/notifications" class="btn btn-ghost">Annuler</a>
+      </div>
+
+      <!-- Nav Step Buttons -->
+      <div class="flex items-center justify-between gap-3">
+        <button type="button" class="btn btn-ghost btn-md gap-2 rounded-xl" (click)="prevStep()">
+          <hugeicons-icon [icon]="ArrowLeft02Icon" [size]="18" [strokeWidth]="2" />
+          Précédent : Audience
+        </button>
+        <button type="button" class="btn btn-primary btn-md gap-2 rounded-xl" (click)="nextStep()">
+          Étape Suivante : Aperçu & Validation
+          <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" [strokeWidth]="2" />
+        </button>
+      </div>
     </div>
-  </form>
-</section>
+  }
+
+  <!-- STEP 3: PREVIEW & FINAL DISPATCH REVIEW -->
+  @if (currentStep() === 3) {
+    <div class="space-y-6">
+      <!-- Live Preview Container -->
+      <div class="card bg-base-100 border border-base-200 shadow-xs p-5 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-base-200">
+          <div>
+            <h2 class="text-base font-bold text-base-content flex items-center gap-2">
+              <hugeicons-icon [icon]="EyeIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+              Aperçu en Temps Réel
+            </h2>
+            <p class="text-xs text-base-content/60">
+              Rendu interactif des messages tels qu'ils seront générés pour vos destinataires.
+            </p>
+          </div>
+
+          <!-- Channel Tabs for Preview -->
+          <div class="join bg-base-200 p-1 rounded-xl">
+            @for (channel of selectedChannels(); track channel) {
+              <button
+                type="button"
+                class="join-item btn btn-xs border-0 font-medium capitalize rounded-lg"
+                [class.btn-primary]="activePreviewChannel() === channel"
+                [class.btn-ghost]="activePreviewChannel() !== channel"
+                (click)="activePreviewChannel.set(channel)"
+              >
+                {{ channel }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Render Selected Channel Template Preview -->
+        @if (contentSource() === 'template' && selectedTemplates().length > 0) {
+          @for (tmpl of selectedTemplates(); track tmpl.id) {
+            @if (tmpl.channel === activePreviewChannel()) {
+              <app-template-preview
+                class="block border border-base-200 rounded-xl overflow-hidden shadow-2xs"
+                [channel]="tmpl.channel"
+                [subject]="tmpl.subject ?? ''"
+                [htmlBody]="tmpl.htmlBody ?? ''"
+                [css]="tmpl.css ?? ''"
+                [smsBody]="tmpl.smsBody ?? ''"
+                [whatsappTemplateName]="tmpl.whatsappTemplateName ?? ''"
+                [whatsappTemplateLanguage]="tmpl.whatsappTemplateLanguage ?? 'fr_FR'"
+                [whatsappVariableKeys]="tmpl.whatsappVariableKeys ?? []"
+                [variables]="previewVariables()"
+                [title]="'Aperçu — ' + tmpl.name"
+              />
+            }
+          }
+        } @else if (contentSource() === 'custom') {
+          <div class="p-4 bg-base-200/50 rounded-xl border border-base-200 text-sm space-y-2">
+            <span class="badge badge-accent badge-sm font-semibold uppercase">
+              {{ activePreviewChannel() }} (Sur-Mesure)
+            </span>
+            @if (activePreviewChannel() === 'email') {
+              <div class="p-3 bg-base-100 rounded-lg border border-base-200 space-y-1">
+                <div class="font-bold text-xs text-base-content/70">Sujet: {{ emailSubject() || '(Non renseigné)' }}</div>
+                <div class="text-xs font-mono bg-base-200 p-2 rounded max-h-40 overflow-y-auto">
+                  {{ emailHtml() || '(Contenu HTML vide)' }}
+                </div>
+              </div>
+            } @else if (activePreviewChannel() === 'sms') {
+              <div class="p-3 bg-base-100 rounded-lg border border-base-200 text-xs font-sans">
+                {{ smsBody() || '(Contenu SMS vide)' }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Pre-Flight Summary Card -->
+      <div class="card bg-gradient-to-br from-primary/5 via-base-100 to-base-200 border border-primary/20 p-5 space-y-4">
+        <h3 class="text-sm font-extrabold text-base-content uppercase tracking-wider flex items-center gap-2">
+          <hugeicons-icon [icon]="ZapIcon" [size]="18" [strokeWidth]="2" class="text-primary" />
+          Récapitulatif de la file d'attente (Pre-Flight Check)
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          <div class="p-3 bg-base-100 rounded-xl border border-base-200 shadow-2xs">
+            <span class="text-xs text-base-content/60 block">Destinataires estimé(s)</span>
+            <span class="text-lg font-black text-primary">~{{ estimatedAudienceCount() }}</span>
+          </div>
+
+          <div class="p-3 bg-base-100 rounded-xl border border-base-200 shadow-2xs">
+            <span class="text-xs text-base-content/60 block">Canaux activés</span>
+            <span class="text-sm font-bold text-base-content capitalize">
+              {{ selectedChannels().join(', ') }}
+            </span>
+          </div>
+
+          <div class="p-3 bg-base-100 rounded-xl border border-base-200 shadow-2xs">
+            <span class="text-xs text-base-content/60 block">Traitement Envoi</span>
+            <span class="text-xs font-semibold text-success flex items-center justify-center gap-1 mt-1">
+              <hugeicons-icon [icon]="CheckmarkCircleIcon" [size]="14" [strokeWidth]="2.5" />
+              Automatique & Sécurisé
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final Actions -->
+      <div class="flex items-center justify-between gap-3 pt-2">
+        <button type="button" class="btn btn-ghost btn-md gap-2 rounded-xl" (click)="prevStep()">
+          <hugeicons-icon [icon]="ArrowLeft02Icon" [size]="18" [strokeWidth]="2" />
+          Précédent : Canaux
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-lg gap-2 rounded-xl shadow-md"
+          [disabled]="submitLoading()"
+          (click)="openConfirmModal()"
+        >
+          <hugeicons-icon [icon]="Megaphone02Icon" [size]="20" [strokeWidth]="2" />
+          Lancer la Campagne
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- PRE-FLIGHT CONFIRMATION MODAL -->
+@if (showConfirmModal()) {
+  <dialog class="modal modal-open bg-neutral-900/60 backdrop-blur-xs">
+    <div class="modal-box max-w-lg p-6 rounded-2xl border border-base-200 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-base-200">
+        <h3 class="text-lg font-extrabold text-base-content flex items-center gap-2">
+          <hugeicons-icon [icon]="Alert02Icon" [size]="22" [strokeWidth]="2" class="text-warning" />
+          Confirmer l'envoi de masse
+        </h3>
+        <button
+          type="button"
+          class="btn btn-ghost btn-circle btn-xs"
+          (click)="closeConfirmModal()"
+          aria-label="Fermer"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-3 text-sm text-base-content/80">
+        <p>
+          Vous êtes sur le point de déclencher l'envoi d'une notification à environ
+          <strong class="text-primary font-bold">~{{ estimatedAudienceCount() }} destinataire(s)</strong>.
+        </p>
+
+        <div class="p-3 bg-base-200/60 rounded-xl space-y-1 text-xs">
+          <div>• <strong>Mode :</strong> {{ targetMode().toUpperCase() }}</div>
+          <div>• <strong>Canaux :</strong> {{ selectedChannels().join(', ').toUpperCase() }}</div>
+          <div>• <strong>Type de contenu :</strong> {{ contentSource().toUpperCase() }}</div>
+        </div>
+
+        <p class="text-xs text-base-content/60">
+          Cette action va générer les tâches d'envoi en arrière-plan et ne peut pas être annulée une fois lancée.
+        </p>
+      </div>
+
+      <div class="modal-action flex items-center gap-3">
+        <button
+          type="button"
+          class="btn btn-ghost btn-md rounded-xl"
+          [disabled]="submitLoading()"
+          (click)="closeConfirmModal()"
+        >
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-md gap-2 rounded-xl"
+          [disabled]="submitLoading()"
+          (click)="submit()"
+        >
+          @if (submitLoading()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            Traitement de la file...
+          } @else {
+            <hugeicons-icon [icon]="CheckmarkCircleIcon" [size]="18" [strokeWidth]="2.5" />
+            Oui, Lancer l'Envoi
+          }
+        </button>
+      </div>
+    </div>
+  </dialog>
+}
